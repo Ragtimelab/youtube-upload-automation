@@ -1,0 +1,241 @@
+"""
+YouTube 업로드 관리자
+"""
+
+import os
+from typing import Optional
+
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+
+from ...config import get_settings
+from ...core.exceptions import (
+    UnverifiedProjectRestrictionError,
+    VideoFileNotFoundError,
+    YouTubeAuthenticationError,
+    YouTubeUploadError,
+)
+from .auth_manager import YouTubeAuthManager
+
+
+class YouTubeUploadManager:
+    """YouTube 업로드 관리"""
+
+    def __init__(self, auth_manager: YouTubeAuthManager):
+        self.auth_manager = auth_manager
+        self.youtube = None
+        self.settings = get_settings()
+
+    def _ensure_authenticated(self):
+        """인증 상태 확인 및 YouTube 클라이언트 초기화"""
+        if not self.auth_manager.is_authenticated():
+            raise YouTubeAuthenticationError("인증이 필요합니다.")
+
+        if not self.youtube:
+            credentials = self.auth_manager.get_credentials()
+            self.youtube = build("youtube", "v3", credentials=credentials)
+
+    def upload_video(self, video_path: str, metadata: dict) -> Optional[str]:
+        """YouTube에 비디오 업로드
+
+        Args:
+            video_path: 업로드할 비디오 파일 경로
+            metadata: 비디오 메타데이터
+                - title: 제목 (필수)
+                - description: 설명
+                - tags: 태그 (문자열 또는 리스트)
+                - category_id: 카테고리 ID (기본: 22 - People & Blogs)
+                - privacy_status: 공개 설정 (private, unlisted, public)
+                - scheduled_time: 예약 발행 시간 (ISO 8601 형식)
+
+        Returns:
+            업로드된 비디오 ID 또는 None
+        """
+        self._ensure_authenticated()
+
+        if not os.path.exists(video_path):
+            raise VideoFileNotFoundError(video_path)
+
+        # 메타데이터 검증
+        if not metadata.get("title"):
+            raise YouTubeUploadError("비디오 제목이 필요합니다.")
+
+        # 미인증 프로젝트 제한 검증
+        privacy_status = metadata.get("privacy_status", "private")
+        if (
+            self.settings.is_unverified_project_restricted
+            and privacy_status != "private"
+        ):
+            print("⚠️  미인증 프로젝트는 비공개 모드로만 업로드 가능합니다.")
+            metadata["privacy_status"] = "private"
+
+        # 업로드 메타데이터 구성
+        body = self._build_upload_body(metadata)
+
+        try:
+            print(f"📤 비디오 업로드 시작: {video_path}")
+            print(f"📝 제목: {metadata['title']}")
+
+            # 미디어 파일 업로드 객체 생성
+            media = MediaFileUpload(
+                video_path, chunksize=-1, resumable=True  # 한 번에 전체 파일 업로드
+            )
+
+            # 업로드 요청 실행
+            request = self.youtube.videos().insert(
+                part=",".join(body.keys()), body=body, media_body=media
+            )
+
+            response = request.execute()
+            video_id = response["id"]
+
+            print(f"✅ 업로드 성공! 비디오 ID: {video_id}")
+            print(f"🔗 비디오 URL: https://www.youtube.com/watch?v={video_id}")
+
+            return video_id
+
+        except Exception as e:
+            raise YouTubeUploadError(f"비디오 업로드 실패: {e}")
+
+    def get_video_info(self, video_id: str) -> Optional[dict]:
+        """비디오 정보 조회
+
+        Args:
+            video_id: YouTube 비디오 ID
+
+        Returns:
+            비디오 정보 딕셔너리 또는 None
+        """
+        self._ensure_authenticated()
+
+        try:
+            request = self.youtube.videos().list(
+                part="snippet,status,statistics", id=video_id
+            )
+            response = request.execute()
+
+            if response["items"]:
+                video = response["items"][0]
+                return {
+                    "id": video["id"],
+                    "title": video["snippet"]["title"],
+                    "description": video["snippet"]["description"],
+                    "published_at": video["snippet"]["publishedAt"],
+                    "privacy_status": video["status"]["privacyStatus"],
+                    "upload_status": video["status"]["uploadStatus"],
+                    "view_count": video["statistics"].get("viewCount", "0"),
+                    "like_count": video["statistics"].get("likeCount", "0"),
+                    "comment_count": video["statistics"].get("commentCount", "0"),
+                }
+            else:
+                print(f"❌ 비디오를 찾을 수 없습니다: {video_id}")
+                return None
+
+        except Exception as e:
+            print(f"❌ 비디오 정보 조회 실패: {e}")
+            return None
+
+    def update_video_metadata(self, video_id: str, metadata: dict) -> bool:
+        """비디오 메타데이터 업데이트"""
+        self._ensure_authenticated()
+
+        try:
+            # 현재 비디오 정보 조회
+            current_video = self.get_video_info(video_id)
+            if not current_video:
+                return False
+
+            # 업데이트할 메타데이터 구성
+            body = {
+                "id": video_id,
+                "snippet": {
+                    "title": metadata.get("title", current_video["title"]),
+                    "description": metadata.get(
+                        "description", current_video["description"]
+                    ),
+                    "categoryId": str(metadata.get("category_id", 22)),
+                },
+            }
+
+            # 태그 처리 (최대 500자 제한)
+            tags = metadata.get("tags")
+            if tags:
+                if isinstance(tags, str):
+                    # 태그 문자열 전체 길이 제한
+                    if len(tags) > 500:
+                        tags = tags[:500]
+                    tags = [tag.strip() for tag in tags.split(",") if tag.strip()]
+                body["snippet"]["tags"] = tags
+
+            # 공개 설정 업데이트
+            if metadata.get("privacy_status"):
+                body["status"] = {"privacyStatus": metadata["privacy_status"]}
+
+            request = self.youtube.videos().update(
+                part=",".join(body.keys()), body=body
+            )
+
+            request.execute()
+            print(f"✅ 비디오 메타데이터 업데이트 성공: {video_id}")
+            return True
+
+        except Exception as e:
+            print(f"❌ 비디오 메타데이터 업데이트 실패: {e}")
+            return False
+
+    def _build_upload_body(self, metadata: dict) -> dict:
+        """업로드용 메타데이터 구성"""
+        # 태그 처리 (최대 500자 제한)
+        tags = metadata.get("tags", "")
+        if isinstance(tags, str):
+            # 태그 문자열 전체 길이 제한
+            if len(tags) > 500:
+                tags = tags[:500]
+            tags = [tag.strip() for tag in tags.split(",") if tag.strip()]
+        elif not isinstance(tags, list):
+            tags = []
+
+        # 설명 바이트 단위 제한 (5000 바이트)
+        description = metadata.get("description", "")
+        description_bytes = description.encode("utf-8")
+        if len(description_bytes) > 5000:
+            # 바이트 단위로 자른 후 디코딩
+            description = description_bytes[:5000].decode("utf-8", errors="ignore")
+
+        body = {
+            "snippet": {
+                "title": metadata["title"][:100],  # YouTube 제목 길이 제한
+                "description": description,  # YouTube 설명 바이트 제한 적용
+                "tags": tags,  # 태그 문자열 길이 제한 적용
+                "categoryId": str(metadata.get("category_id", 22)),  # People & Blogs
+                "defaultLanguage": "ko",
+                "defaultAudioLanguage": "ko",
+            },
+            "status": {"privacyStatus": metadata.get("privacy_status", "private")},
+        }
+
+        # 예약 발행 시간 설정
+        if metadata.get("scheduled_time"):
+            body["status"]["publishAt"] = metadata["scheduled_time"]
+            body["status"]["privacyStatus"] = "private"  # 예약 발행시 일단 private
+
+        return body
+
+    def get_quota_usage(self) -> dict:
+        """API 할당량 사용량 정보 (추정치)
+
+        Returns:
+            할당량 사용량 추정 정보
+        """
+        # YouTube API는 직접적인 할당량 조회 기능을 제공하지 않음
+        return {
+            "note": "YouTube API는 직접적인 할당량 조회를 지원하지 않습니다.",
+            "estimated_costs": {
+                "channel_info": "1 unit per request",
+                "video_upload": "1600 units per request",
+                "video_info": "1 unit per request",
+                "playlist_info": "1 unit per request",
+            },
+            "daily_quota_limit": "10,000 units (기본)",
+            "recommendation": "Google Cloud Console에서 실제 사용량을 확인하세요.",
+        }

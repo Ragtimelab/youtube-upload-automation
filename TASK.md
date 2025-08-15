@@ -6,19 +6,20 @@
 ## 🎯 프로젝트 시작 전 체크리스트
 
 ### ✅ 사전 준비 사항
-- [ ] Python 3.13 설치 확인
-- [ ] Node.js 18+ 설치 확인
-- [ ] Google Cloud Platform 계정 생성
-- [ ] YouTube 채널 준비 (테스트용)
-- [ ] **Git/GitHub 저장소 설정**
-- [ ] 개발 환경 IDE 설정 (VS Code 추천)
+- [x] Python 3.13 설치 확인 (Python 3.13.6)
+- [x] Poetry 설치 확인 (Poetry 2.1.4)
+- [x] Node.js 18+ 설치 확인 (Node.js v22.18.0)
+- [x] Google Cloud Platform 계정 생성
+- [x] YouTube 채널 준비 (테스트용 - "소망의 등불" 채널)
+- [x] **Git/GitHub 저장소 설정** (https://github.com/Ragtimelab/youtube-upload-automation)
+- [x] 개발 환경 IDE 설정 (PyCharm + VS Code 모두 설정 완료)
 
 ### ✅ Google API 설정
-- [ ] Google Cloud Console 프로젝트 생성
-- [ ] YouTube Data API v3 활성화
-- [ ] OAuth 2.0 클라이언트 ID 생성
-- [ ] credentials.json 파일 다운로드
-- [ ] YouTube 채널 연동 테스트
+- [x] Google Cloud Console 프로젝트 생성
+- [x] YouTube Data API v3 활성화
+- [x] OAuth 2.0 클라이언트 ID 생성
+- [x] credentials.json 파일 다운로드
+- [x] YouTube 채널 연동 테스트 (채널명: "소망의 등불", ID: UCSLS6pkO1kaz9I9dJMahN6w)
 
 ---
 
@@ -94,15 +95,27 @@ pip freeze > requirements.txt
 ```
 
 **완료 기준:**
-- [ ] Git 저장소 초기화 완료
-- [ ] GitHub 저장소 생성 및 연결
-- [ ] .gitignore 설정 완료
-- [ ] **Poetry 프로젝트 초기화 완료**
-- [ ] **Poetry 가상환경 활성화 확인**
-- [ ] **기본 의존성 설치 완료**
-- [ ] **pyproject.toml 생성 확인**
+- [x] Git 저장소 초기화 완료
+- [x] GitHub 저장소 생성 및 연결 (https://github.com/Ragtimelab/youtube-upload-automation)
+- [x] .gitignore 설정 완료 (Python, Node.js, Google API credentials, IDE 설정 포함)
+- [x] **Poetry 프로젝트 초기화 완료**
+- [x] **Poetry 가상환경 활성화 확인** (.venv 디렉토리 생성됨)
+- [x] **기본 의존성 설치 완료** (FastAPI, SQLAlchemy, Google API 클라이언트 등)
+- [x] **pyproject.toml 생성 확인** (모든 의존성 및 도구 설정 포함)
 
-#### 🗄️ 1.2 데이터베이스 설정 (Day 2)
+**추가 완료 사항:**
+- [x] **개발 환경 설정 완료**
+  - [x] PyCharm 설정 가이드 제공
+  - [x] VS Code 설정 파일 생성 (.vscode/settings.json, extensions.json, launch.json, tasks.json)
+  - [x] Makefile 생성 (Poetry 기반 편의 명령어)
+  - [x] pre-commit 설정 완료 (코드 품질 도구 통합)
+- [x] **YouTube API 테스트 완료**
+  - [x] test_youtube_auth.py 스크립트 작성
+  - [x] OAuth 2.0 인증 플로우 성공
+  - [x] 채널 정보 조회 성공 (채널명: "소망의 등불")
+  - [x] token.pickle 파일 생성됨
+
+#### 🗄️ 1.2 데이터베이스 설정 (Day 2) - **📍 현재 진행 중**
 ```python
 # backend/app/database.py 생성
 from sqlalchemy import create_engine
@@ -140,7 +153,7 @@ class Script(Base):
 ```
 
 **작업 목록:**
-- [ ] database.py 설정
+- [ ] database.py 설정 **← 다음 작업**
 - [ ] Script 모델 정의
 - [ ] Channel 모델 정의 (나중에 다중 채널용)
 - [ ] Alembic 마이그레이션 설정

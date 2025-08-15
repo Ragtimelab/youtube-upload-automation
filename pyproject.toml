@@ -2,38 +2,39 @@
 name = "youtube-upload-automation"
 version = "1.0.0"
 description = "YouTube 업로드 자동화 시스템 - 시니어 대상 콘텐츠 제작자를 위한 완전 자동화 솔루션"
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Ragtime Lab <ragtime1260@gmail.com>"]
 readme = "README.md"
 packages = [{include = "app", from = "backend"}]
 
 [tool.poetry.dependencies]
 python = "^3.13"
-fastapi = "^0.104.1"
-uvicorn = {extras = ["standard"], version = "^0.24.0"}
+fastapi = "^0.116.0"
+uvicorn = {extras = ["standard"], version = "^0.35.0"}
 sqlalchemy = "^2.0.23"
 alembic = "^1.12.1"
-python-multipart = "^0.0.6"
-websockets = "^12.0"
+python-multipart = "^0.0.20"
+websockets = "^15.0.0"
 google-auth = "^2.25.2"
 google-auth-oauthlib = "^1.1.0"
-google-auth-httplib2 = "^0.1.1"
-google-api-python-client = "^2.108.0"
+google-auth-httplib2 = "^0.2.0"
+google-api-python-client = "^2.179.0"
 python-dotenv = "^1.0.0"
 pydantic = "^2.5.0"
+pydantic-settings = "^2.10.1"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.4.0"
-pytest-asyncio = "^0.21.0"
-httpx = "^0.25.0"
-black = "^23.9.0"
-isort = "^5.12.0"
-flake8 = "^6.1.0"
+pytest = "^8.4.0"
+pytest-asyncio = "^1.1.0"
+httpx = "^0.28.0"
+black = "^25.0.0"
+isort = "^6.0.0"
+flake8 = "^7.0.0"
 mypy = "^1.6.0"
-pre-commit = "^3.5.0"
+pre-commit = "^4.3.0"
 
 [tool.poetry.group.test.dependencies]
 coverage = "^7.3.0"
-pytest-cov = "^4.1.0"
+pytest-cov = "^6.2.0"
 factory-boy = "^3.3.0"
 
 [build-system]

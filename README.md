@@ -50,19 +50,28 @@ poetry run pre-commit install
 poetry run alembic upgrade head
 ```
 
-### 4. YouTube API 설정
+### 4. 환경 변수 설정
+```bash
+# .env.example을 복사하여 .env 파일 생성
+cp .env.example .env
+
+# .env 파일을 수정하여 본인 환경에 맞게 설정
+# 대부분의 설정은 기본값을 사용해도 됨
+```
+
+### 5. YouTube API 설정
 1. [Google Cloud Console](https://console.cloud.google.com/)에서 프로젝트 생성
 2. YouTube Data API v3 활성화
 3. OAuth 2.0 클라이언트 ID 생성
-4. `credentials.json` 파일을 `backend/` 폴더에 배치
+4. `credentials.json` 파일을 프로젝트 루트에 배치
 
-### 5. 프론트엔드 설정
+### 6. 프론트엔드 설정
 ```bash
 cd ../frontend
 npm install
 ```
 
-### 6. 개발 서버 실행
+### 7. 개발 서버 실행
 ```bash
 # 터미널 1: 백엔드 서버 (Poetry 환경)
 poetry run uvicorn app.main:app --reload
@@ -76,7 +85,7 @@ cd frontend
 npm start
 ```
 
-### 7. 시스템 접속
+### 8. 시스템 접속
 - **웹 대시보드**: http://localhost:3000
 - **API 문서**: http://localhost:8000/docs
 
@@ -192,6 +201,39 @@ ImageFX 프롬프트: elderly korean person with emotional expression, warm ligh
 
 ---
 
+## ⚙️ 환경 변수 설정 가이드
+
+### 주요 설정 항목
+`.env` 파일에서 다음 설정을 수정할 수 있습니다:
+
+```bash
+# 서버 설정
+BACKEND_HOST=0.0.0.0          # 백엔드 호스트
+BACKEND_PORT=8000             # 백엔드 포트
+FRONTEND_URL=http://localhost:3000  # 프론트엔드 URL
+
+# 파일 경로
+UPLOAD_DIR=uploads/videos     # 비디오 업로드 디렉토리
+CREDENTIALS_PATH=credentials.json  # Google OAuth 인증 파일
+TOKEN_PATH=token.pickle       # 인증 토큰 캐시 파일
+
+# YouTube API 기본값
+DEFAULT_PRIVACY_STATUS=private  # 기본 공개 설정 (private/unlisted/public)
+DEFAULT_CATEGORY_ID=22         # 기본 카테고리 ID (22 = People & Blogs)
+
+# 업로드 제한
+MAX_VIDEO_SIZE_MB=2048        # 최대 비디오 파일 크기 (MB)
+```
+
+### 프로덕션 환경 설정
+```bash
+# 프로덕션용 .env 설정 예시
+DEBUG=false
+LOG_LEVEL=WARNING
+BACKEND_RELOAD=false
+DATABASE_URL=sqlite:///./production.db
+```
+
 ## 🔐 보안 고려사항
 
 ### 중요 파일 보호
@@ -202,7 +244,7 @@ token.json           # YouTube API 액세스 토큰
 token.pickle         # 인증 토큰 캐시
 *.db                # 데이터베이스 파일
 uploads/            # 업로드된 파일들
-.env                # 환경변수
+.env                # 환경변수 (중요!)
 ```
 
 ### API 키 관리

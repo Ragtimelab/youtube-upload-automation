@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 
 from .database import SessionLocal, engine, get_db
 from .models import script
+from .routers import scripts
 
 # 데이터베이스 테이블 생성
 script.Base.metadata.create_all(bind=engine)
@@ -25,6 +26,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 라우터 등록
+app.include_router(scripts.router)
 
 
 @app.get("/")

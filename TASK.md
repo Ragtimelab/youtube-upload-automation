@@ -272,13 +272,58 @@ backend/
 - `ef1ccb7` - Complete project setup and environment configuration
 - `118974d` - Add database models and FastAPI basic structure
 
-**📍 다음 단계:** Week 2 - 대본 파싱 및 API 개발
+**📍 다음 단계:** Week 3 - YouTube API 연동
 
 ---
 
-### Week 2: 대본 파싱 및 API 개발 **← 다음 주차**
+## 🎉 **Phase 1 - Week 2 완료 요약**
 
-#### 📄 2.1 대본 파싱 시스템 (Day 4-5) **← 다음 작업**
+**✅ 완료된 주요 작업:**
+1. **대본 파싱 시스템 구축**
+   - ScriptParser 클래스: 정규식 기반 섹션 분리 로직
+   - 메타데이터 추출: 제목, 설명, 태그 파싱
+   - 썸네일 정보 추출: 텍스트, ImageFX 프롬프트 파싱
+   - 예외 처리: ScriptParsingError 클래스
+   - 유효성 검증: YouTube 제한 사항 반영
+
+2. **RESTful API 시스템 구축**
+   - 6개 완전한 엔드포인트 (CRUD + 통계 + 파일 업로드)
+   - 파일 업로드 및 파싱 통합 프로세스
+   - 페이지네이션 및 필터링 지원
+   - 안전한 에러 핸들링 및 검증
+
+3. **포괄적 테스트 및 검증**
+   - 모든 파싱 기능 테스트 통과
+   - 실제 API 동작 검증 완료
+   - 데이터베이스 저장/조회 확인
+
+**📊 확장된 시스템 구조:**
+```
+backend/
+├── app/
+│   ├── main.py          # FastAPI + 라우터 등록
+│   ├── database.py      # SQLAlchemy 설정
+│   ├── models/
+│   │   └── script.py    # Script 데이터 모델
+│   ├── services/        # ← NEW
+│   │   └── script_parser.py  # 대본 파싱 시스템
+│   └── routers/         # ← NEW
+│       └── scripts.py   # 대본 관리 API
+├── alembic/             # 데이터베이스 마이그레이션
+└── youtube_automation.db # SQLite (실제 데이터 저장됨)
+```
+
+**🔗 GitHub 커밋 히스토리:**
+- `1e5b612` - Update TASK.md with Phase 1 Week 1 completion status
+- `df33b58` - Add script parsing system and management API (647줄 추가)
+
+**📍 다음 단계:** Week 3 - YouTube API 연동
+
+---
+
+### Week 3: YouTube API 연동 **← 다음 주차**
+
+#### 📄 2.1 대본 파싱 시스템 (Day 4-5) - **✅ 완료**
 ```python
 # backend/app/services/script_parser.py
 import re
@@ -310,12 +355,12 @@ class ScriptParser:
 ```
 
 **작업 목록:**
-- [ ] ScriptParser 클래스 구현
-- [ ] 정규식을 이용한 섹션 분리
-- [ ] 메타데이터 파싱 로직
-- [ ] 썸네일 정보 파싱 로직
-- [ ] 파싱 테스트 케이스 작성
-- [ ] 파싱 실패 예외 처리
+- [x] ScriptParser 클래스 구현 ✅
+- [x] 정규식을 이용한 섹션 분리 ✅
+- [x] 메타데이터 파싱 로직 ✅
+- [x] 썸네일 정보 파싱 로직 ✅
+- [x] 파싱 테스트 케이스 작성 ✅
+- [x] 파싱 실패 예외 처리 ✅
 
 **테스트 방법:**
 ```python
@@ -336,9 +381,18 @@ print(result)  # 파싱 결과 확인
 ```
 
 **완료 기준:**
-- [ ] 대본 섹션 추출 성공
-- [ ] 메타데이터 필드별 추출 성공
-- [ ] 예외 상황 처리 완료
+- [x] 대본 섹션 추출 성공 ✅
+- [x] 메타데이터 필드별 추출 성공 ✅
+- [x] 예외 상황 처리 완료 ✅
+
+**추가 완료 사항:**
+- [x] **포괄적 테스트 스위트 완성** ✅
+  - 기본 파싱 기능 테스트 (시니어 대상 콘텐츠 예제)
+  - 데이터 유효성 검증 테스트 (필수 필드, 길이 제한)  
+  - 에러 처리 테스트 (빈 내용, 필수 섹션 누락)
+  - 경계 케이스 테스트 (최소 정보, 공백 처리)
+- [x] **ScriptParsingError 예외 클래스** ✅
+- [x] **유효성 검증 로직** - YouTube 제목/설명 길이 제한 반영 ✅
 ```bash
 # 대본 파싱 시스템 커밋
 git add .
@@ -346,7 +400,7 @@ git commit -m "Add script parsing system with regex extraction"
 git push
 ```
 
-#### 🔌 2.2 대본 관리 API (Day 6-7)
+#### 🔌 2.2 대본 관리 API (Day 6-7) - **✅ 완료**
 ```python
 # backend/app/routers/scripts.py
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
@@ -389,13 +443,14 @@ def get_scripts(db: Session = Depends(get_db)):
 ```
 
 **작업 목록:**
-- [ ] scripts.py 라우터 생성
-- [ ] 파일 업로드 엔드포인트
-- [ ] 대본 목록 조회 API
-- [ ] 특정 대본 조회 API  
-- [ ] 대본 삭제 API
-- [ ] 입력 검증 로직
-- [ ] 에러 응답 정의
+- [x] scripts.py 라우터 생성 ✅
+- [x] 파일 업로드 엔드포인트 ✅
+- [x] 대본 목록 조회 API ✅
+- [x] 특정 대본 조회 API ✅
+- [x] 대본 수정 API ✅ (추가 구현)
+- [x] 대본 삭제 API ✅
+- [x] 입력 검증 로직 ✅
+- [x] 에러 응답 정의 ✅
 
 **테스트 방법:**
 ```bash
@@ -410,10 +465,23 @@ curl -X GET "http://localhost:8000/api/scripts"
 ```
 
 **완료 기준:**
-- [ ] 파일 업로드 API 동작 확인
-- [ ] DB에 데이터 저장 확인
-- [ ] API 응답 정상
-- [ ] Swagger UI에서 테스트 성공
+- [x] 파일 업로드 API 동작 확인 ✅
+- [x] DB에 데이터 저장 확인 ✅
+- [x] API 응답 정상 ✅
+- [x] Swagger UI에서 테스트 성공 ✅
+
+**추가 완료된 API 엔드포인트:**
+- [x] `POST /api/scripts/upload` - 대본 파일 업로드 및 파싱 ✅
+- [x] `GET /api/scripts/` - 대본 목록 조회 (페이지네이션, 상태 필터) ✅
+- [x] `GET /api/scripts/{id}` - 개별 대본 상세 조회 ✅
+- [x] `PUT /api/scripts/{id}` - 대본 정보 수정 ✅
+- [x] `DELETE /api/scripts/{id}` - 대본 삭제 (안전성 체크 포함) ✅
+- [x] `GET /api/scripts/stats/summary` - 통계 정보 조회 ✅
+
+**실제 테스트 결과:**
+- [x] sample_script.txt 업로드 성공 → DB ID: 1 ✅
+- [x] 파싱 결과: 제목, 내용, 설명, 태그, 썸네일 정보 완전 추출 ✅
+- [x] 통계: script_ready 1개, 총 1개 대본 확인 ✅
 ```bash
 # 대본 관리 API 커밋
 git add .
@@ -423,7 +491,7 @@ git push
 
 ### Week 3: YouTube API 연동
 
-#### 🎬 3.1 YouTube API 클라이언트 (Day 8-9)
+#### 🎬 3.1 YouTube API 클라이언트 (Day 8-9) **← 다음 작업**
 ```python
 # backend/app/services/youtube_client.py
 import os

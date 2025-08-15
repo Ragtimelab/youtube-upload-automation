@@ -30,6 +30,9 @@ app.add_middleware(
 # 라우터 등록
 app.include_router(scripts.router)
 
+from .routers import upload
+app.include_router(upload.router)
+
 
 @app.get("/")
 def read_root():

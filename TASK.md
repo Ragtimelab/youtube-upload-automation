@@ -10,7 +10,7 @@
 - [x] Poetry 설치 확인 (Poetry 2.1.4)
 - [x] Node.js 18+ 설치 확인 (Node.js v22.18.0)
 - [x] Google Cloud Platform 계정 생성
-- [x] YouTube 채널 준비 (테스트용 - "소망의 등불" 채널)
+- [x] YouTube 채널 준비 (업로드 대상 채널 - UC9Ng3G-y6A-PtPuIddjIcMg)
 - [x] **Git/GitHub 저장소 설정** (https://github.com/Ragtimelab/youtube-upload-automation)
 - [x] 개발 환경 IDE 설정 (PyCharm + VS Code 모두 설정 완료)
 
@@ -19,7 +19,7 @@
 - [x] YouTube Data API v3 활성화
 - [x] OAuth 2.0 클라이언트 ID 생성
 - [x] credentials.json 파일 다운로드
-- [x] YouTube 채널 연동 테스트 (채널명: "소망의 등불", ID: UCSLS6pkO1kaz9I9dJMahN6w)
+- [x] YouTube 채널 연동 테스트 (채널명: "사랑과 전쟁", ID: UC9Ng3G-y6A-PtPuIddjIcMg) ✅
 
 ---
 

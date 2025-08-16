@@ -7,7 +7,8 @@ from .core.logging import configure_logging, get_logger
 from .database import SessionLocal, engine, get_db
 from .middleware.error_handler import ErrorHandlerMiddleware
 from .models import script
-from .routers import scripts, upload, websocket
+from .routers import scripts, upload, websocket, schedules, scheduler
+from .services.scheduler_service import initialize_scheduler
 
 # 로깅 시스템 초기화
 configure_logging()
@@ -41,6 +42,16 @@ app.add_middleware(
 app.include_router(scripts.router)
 app.include_router(upload.router)
 app.include_router(websocket.router)
+app.include_router(schedules.router)
+app.include_router(scheduler.router)
+
+# 스케줄러 초기화
+try:
+    initialize_scheduler()
+    logger.info("스케줄러 초기화 완료")
+except Exception as e:
+    logger.error(f"스케줄러 초기화 실패: {e}")
+    # 스케줄러 실패가 앱 시작을 막지 않도록 함
 
 
 @app.get("/")

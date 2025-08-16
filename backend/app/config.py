@@ -81,16 +81,26 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", validation_alias="LOG_LEVEL")
 
     # ===========================================
-    # File Upload Limits
+    # File Upload Limits (YouTube FHD 최적화 권장사항)
     # ===========================================
-    max_video_size_mb: int = Field(default=2048, validation_alias="MAX_VIDEO_SIZE_MB")
+    max_video_size_mb: int = Field(default=8192, validation_alias="MAX_VIDEO_SIZE_MB")  # 8GB (FHD 1시간: 8Mbps × 3600초 ≈ 3.6GB + 여유분)
     allowed_video_extensions: List[str] = Field(
-        default=[".mp4", ".avi", ".mov", ".wmv", ".flv", ".webm"],
+        default=[".mp4"],  # MP4 H.264 + AAC-LC 48kHz (YouTube FHD 최적화)
         validation_alias="ALLOWED_VIDEO_EXTENSIONS",
     )
     allowed_script_extensions: List[str] = Field(
         default=[".txt", ".md"], validation_alias="ALLOWED_SCRIPT_EXTENSIONS"
     )
+
+    # ===========================================
+    # YouTube FHD 최적화 권장사항 (2025)
+    # ===========================================
+    # Video: H.264, 1920×1080, 8Mbps@30fps/12Mbps@60fps
+    # Audio: AAC-LC, 48kHz, 128kbps, Stereo
+    # GOP: 2초 간격, VBR 2-Pass 권장
+    recommended_video_bitrate_mbps: int = Field(default=8, validation_alias="RECOMMENDED_VIDEO_BITRATE_MBPS")
+    recommended_audio_bitrate_kbps: int = Field(default=128, validation_alias="RECOMMENDED_AUDIO_BITRATE_KBPS")
+    max_video_duration_hours: int = Field(default=12, validation_alias="MAX_VIDEO_DURATION_HOURS")
 
     # ===========================================
     # Computed Properties

@@ -239,6 +239,58 @@ class UploadService:
         except Exception as e:
             raise FileUploadError(f"파일 삭제 실패: {str(e)}")
 
+    def get_upload_progress(self, script_id: int) -> dict:
+        """업로드 진행률 조회"""
+        script = self.repository.get_by_id(script_id)
+        if not script:
+            raise ScriptNotFoundError(script_id)
+
+        # 기본 진행률 정보
+        progress = {
+            "script_id": script.id,
+            "title": script.title,
+            "status": script.status,
+            "progress_percentage": 0,
+            "current_step": "",
+            "total_steps": 3,  # script_ready -> video_ready -> uploaded
+            "estimated_time_remaining": None,
+            "created_at": script.created_at,
+            "updated_at": script.updated_at
+        }
+
+        # 상태별 진행률 계산
+        if script.status == "script_ready":
+            progress["progress_percentage"] = 33
+            progress["current_step"] = "대본 준비 완료 - 비디오 업로드 대기 중"
+        elif script.status == "video_ready":
+            progress["progress_percentage"] = 66
+            progress["current_step"] = "비디오 업로드 완료 - YouTube 업로드 대기 중"
+        elif script.status in ["uploaded", "scheduled"]:
+            progress["progress_percentage"] = 100
+            progress["current_step"] = "YouTube 업로드 완료"
+        elif script.status == "error":
+            progress["progress_percentage"] = 0
+            progress["current_step"] = "오류 발생 - 재시도 필요"
+
+        # 파일 정보 추가
+        if script.video_file_path and os.path.exists(script.video_file_path):
+            file_size = os.path.getsize(script.video_file_path)
+            progress["video_file_info"] = {
+                "file_size": file_size,
+                "file_size_mb": round(file_size / (1024 * 1024), 2),
+                "filename": os.path.basename(script.video_file_path)
+            }
+
+        # YouTube 정보 추가
+        if script.youtube_video_id:
+            progress["youtube_info"] = {
+                "video_id": script.youtube_video_id,
+                "url": f"https://www.youtube.com/watch?v={script.youtube_video_id}",
+                "scheduled_time": script.scheduled_time
+            }
+
+        return progress
+
     def _validate_video_file(self, video_file: UploadFile) -> None:
         """비디오 파일 검증"""
         if not video_file.filename:
@@ -253,8 +305,27 @@ class UploadService:
 
         if file_extension not in self.settings.allowed_video_extensions:
             raise FileValidationError(
-                f"지원되지 않는 비디오 형식입니다. 지원 형식: {', '.join(self.settings.allowed_video_extensions)}"
+                f"YouTube FHD 최적화 권장 형식만 지원됩니다. "
+                f"MP4 (H.264 1920×1080, AAC-LC 48kHz) 형식을 사용해주세요."
             )
+
+        # 파일 크기 검증 
+        if hasattr(video_file, 'size') and video_file.size:
+            if video_file.size > self.settings.max_video_size_bytes:
+                size_mb = video_file.size / (1024 * 1024)
+                raise FileValidationError(
+                    f"파일 크기가 너무 큽니다. 최대 {self.settings.max_video_size_mb}MB까지 업로드 가능합니다. "
+                    f"현재 파일 크기: {size_mb:.1f}MB"
+                )
+        
+        # 파일 내용 검증 (첫 바이트를 읽어서 파일이 비어있지 않은지 확인)
+        current_position = video_file.file.tell()
+        try:
+            first_bytes = video_file.file.read(1024)  # 첫 1KB 읽기
+            if not first_bytes:
+                raise FileValidationError("업로드된 파일이 비어있습니다.")
+        finally:
+            video_file.file.seek(current_position)  # 파일 포인터 원위치
 
     def _save_video_file(self, script_id: int, video_file: UploadFile) -> str:
         """비디오 파일 저장"""
@@ -267,10 +338,23 @@ class UploadService:
         file_path = os.path.join(upload_dir, safe_filename)
 
         try:
+            # 청크 단위로 파일 저장 (진행률 추적 가능)
+            chunk_size = 1024 * 1024  # 1MB 청크
+            total_size = 0
+            
             with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(video_file.file, buffer)
+                while True:
+                    chunk = video_file.file.read(chunk_size)
+                    if not chunk:
+                        break
+                    buffer.write(chunk)
+                    total_size += len(chunk)
+                    
             return file_path
         except Exception as e:
+            # 실패시 부분 파일 정리
+            if os.path.exists(file_path):
+                os.remove(file_path)
             raise FileUploadError(f"파일 저장 실패: {str(e)}")
 
     def _validate_privacy_status(self, privacy_status: str) -> None:

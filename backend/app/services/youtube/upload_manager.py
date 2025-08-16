@@ -14,6 +14,8 @@ from ...core.exceptions import (
     VideoFileNotFoundError,
     YouTubeAuthenticationError,
     YouTubeUploadError,
+    UploadProgressError,
+    YouTubeQuotaExceededError,
 )
 from .auth_manager import YouTubeAuthManager
 
@@ -76,9 +78,10 @@ class YouTubeUploadManager:
             print(f"📤 비디오 업로드 시작: {video_path}")
             print(f"📝 제목: {metadata['title']}")
 
-            # 미디어 파일 업로드 객체 생성
+            # 미디어 파일 업로드 객체 생성 (청크 단위 업로드로 진행률 추적)
+            chunk_size = 1024 * 1024 * 10  # 10MB 청크
             media = MediaFileUpload(
-                video_path, chunksize=-1, resumable=True  # 한 번에 전체 파일 업로드
+                video_path, chunksize=chunk_size, resumable=True
             )
 
             # 업로드 요청 실행
@@ -86,7 +89,41 @@ class YouTubeUploadManager:
                 part=",".join(body.keys()), body=body, media_body=media
             )
 
-            response = request.execute()
+            # 재개 가능한 업로드 실행 (진행률 추적)
+            response = None
+            while response is None:
+                try:
+                    status, response = request.next_chunk()
+                    if status:
+                        progress_percent = int(status.progress() * 100)
+                        print(f"📊 업로드 진행률: {progress_percent}%")
+                except Exception as chunk_error:
+                    error_str = str(chunk_error)
+                    
+                    # YouTube API 할당량 초과 확인
+                    if "quotaExceeded" in error_str or "quota" in error_str.lower():
+                        raise YouTubeQuotaExceededError()
+                    
+                    # 네트워크 관련 오류 처리
+                    if any(keyword in error_str.lower() for keyword in ["network", "timeout", "connection"]):
+                        print(f"🌐 네트워크 오류 발생: {chunk_error}")
+                        # 작은 청크로 재시도
+                        if chunk_size > 1024 * 1024:  # 1MB보다 큰 경우
+                            chunk_size = chunk_size // 2
+                            print(f"🔄 청크 크기를 {chunk_size // (1024*1024)}MB로 줄여서 재시도...")
+                            media = MediaFileUpload(
+                                video_path, chunksize=chunk_size, resumable=True
+                            )
+                            request = self.youtube.videos().insert(
+                                part=",".join(body.keys()), body=body, media_body=media
+                            )
+                        else:
+                            current_progress = int(status.progress() * 100) if status else 0
+                            raise UploadProgressError(f"네트워크 오류: {chunk_error}", current_progress)
+                    else:
+                        # 기타 오류
+                        current_progress = int(status.progress() * 100) if status else 0
+                        raise UploadProgressError(f"업로드 오류: {chunk_error}", current_progress)
             video_id = response["id"]
 
             print(f"✅ 업로드 성공! 비디오 ID: {video_id}")

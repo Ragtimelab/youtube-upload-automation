@@ -34,18 +34,56 @@ backend/app/
 │   └── upload.py         # Upload API
 └── middleware/           # Custom middleware
     └── error_handler.py  # Global error handling
+
+frontend/src/
+├── main.tsx               # React app entry point
+├── App.tsx               # Root React component
+├── components/           # React components
+│   ├── layout/          # Layout components
+│   │   ├── Layout.tsx   # Main app layout with sidebar/header
+│   │   ├── Sidebar.tsx  # Navigation sidebar (glassmorphism)
+│   │   └── Header.tsx   # Page header with search/profile
+│   └── ui/              # Reusable UI components (shadcn/ui)
+│       ├── Button.tsx   # Button component
+│       ├── Card.tsx     # Card container component
+│       └── Input.tsx    # Input form component
+├── pages/               # Page components
+│   ├── Dashboard.tsx    # Main dashboard with stats
+│   ├── ScriptUpload.tsx # Script file upload page
+│   ├── ManagePage.tsx   # Content management page
+│   └── SettingsPage.tsx # System settings page
+├── services/            # API service layer
+│   ├── scripts.ts       # Script API calls
+│   └── uploads.ts       # Upload API calls
+├── hooks/               # Custom React hooks
+│   ├── useScripts.ts    # Script data management
+│   └── useUploads.ts    # Upload state management
+├── types/               # TypeScript type definitions
+│   └── index.ts         # All shared types
+├── utils/               # Utility functions
+│   └── api.ts           # API client with error handling
+└── routes.tsx           # React Router configuration
 ```
 
 ### 🎨 Architecture Patterns
+
+**Backend:**
 - **Repository Pattern**: Data access abstraction
 - **Service Layer**: Business logic encapsulation
 - **Dependency Injection**: FastAPI Depends for testable code
 - **Custom Exceptions**: Structured error handling
 - **Structured Logging**: Component-based logging with daily rotation
 
+**Frontend:**
+- **Component-Based Architecture**: Modular React components
+- **Service Layer Pattern**: API abstraction in services/
+- **Custom Hooks Pattern**: Reusable state logic
+- **TypeScript Strict Mode**: Type safety throughout
+- **Modern CSS Architecture**: Tailwind + shadcn/ui components
+
 ## 🛠️ Essential Development Commands
 
-### Poetry Environment Management
+### Backend (Poetry Environment Management)
 ```bash
 # Install dependencies
 poetry install
@@ -57,7 +95,7 @@ poetry install --with dev,test
 poetry shell
 ```
 
-### Development Commands (Makefile based)
+### Backend Commands (Makefile based)
 ```bash
 # Server management
 make run                # uvicorn app.main:app --reload
@@ -72,6 +110,22 @@ make test-cov          # Coverage testing
 # Database operations
 make migrate           # alembic upgrade head
 make migrate-auto      # Auto-generate migration
+```
+
+### Frontend Development
+```bash
+# Install dependencies
+cd frontend && npm install
+
+# Development server
+npm run dev            # Vite dev server (http://localhost:5173)
+
+# Build and deployment
+npm run build          # TypeScript compilation + Vite build
+npm run preview        # Preview production build
+
+# Code quality
+npm run lint           # ESLint TypeScript checking
 ```
 
 ### Environment Configuration (.env)
@@ -95,7 +149,16 @@ YOUTUBE_PROJECT_CREATED_AFTER_2020_07_28=false
 # Logging
 DEBUG=true
 LOG_LEVEL=INFO
+
+# Frontend (development)
+VITE_API_BASE_URL=http://localhost:8000   # Backend API URL for frontend
 ```
+
+### Frontend Configuration
+- **Vite Config**: `vite.config.ts` with path aliases (`@` -> `./src`)
+- **TypeScript**: Strict mode enabled with project references
+- **Tailwind**: Modern v4 with custom color variables and animations
+- **PostCSS**: Configured for Tailwind processing
 
 ## 📊 Core Data Models
 
@@ -273,12 +336,22 @@ poetry run pre-commit run --all-files  # Manual run
 
 ## 📦 Core Dependencies
 
-### Core Dependencies
+### Backend Dependencies
 - **FastAPI 0.104.1+**: Web framework
 - **SQLAlchemy 2.0+**: ORM
 - **Alembic 1.12+**: Database migrations
 - **Pydantic 2.5+**: Data validation
 - **Uvicorn**: ASGI server
+
+### Frontend Dependencies
+- **React 19.1.1+**: Modern React with concurrent features
+- **TypeScript 5.8+**: Type safety and modern JS features
+- **Vite 7.1.2+**: Fast build tool and dev server
+- **Tailwind CSS 4.1.12+**: Utility-first CSS framework
+- **@tanstack/react-query 5.85+**: Server state management
+- **React Router DOM 7.8+**: Client-side routing
+- **Lucide React**: Modern icon library
+- **shadcn/ui**: High-quality component library
 
 ### YouTube Integration
 - **google-api-python-client**: YouTube Data API v3
@@ -293,22 +366,33 @@ poetry run pre-commit run --all-files  # Manual run
 - **isort**: Import sorting
 - **flake8**: Linting
 - **mypy**: Type checking
+- **ESLint**: TypeScript/React linting
+- **TypeScript ESLint**: Advanced TS analysis
 
 ## 🔄 Development Workflow
 
 ### Standard Development Process
-1. **Create data model** (models/)
-2. **Implement repository** (repositories/)
-3. **Add service logic** (services/)
-4. **Create API endpoints** (routers/)
-5. **Write tests** (tests/)
-6. **Check API documentation** (/docs)
+1. **Create data model** (backend/models/)
+2. **Implement repository** (backend/repositories/)
+3. **Add service logic** (backend/services/)
+4. **Create API endpoints** (backend/routers/)
+5. **Add frontend types** (frontend/src/types/)
+6. **Create frontend service** (frontend/src/services/)
+7. **Build React components** (frontend/src/components/)
+8. **Write tests** (backend/tests/ + frontend/)
+9. **Check API documentation** (/docs)
 
 ### Code Quality Process
 ```bash
-make format                        # Format code
-make lint                         # Check code quality
+# Backend
+make format                        # Format Python code
+make lint                         # Check Python code quality
 make test-cov                     # Test with coverage
+
+# Frontend
+cd frontend
+npm run lint                      # ESLint TypeScript checking
+npm run build                     # Type checking + build
 ```
 
 ### Database Management
@@ -317,6 +401,12 @@ make test-cov                     # Test with coverage
 make migrate-auto                 # Generate migration
 make migrate                      # Apply migration
 ```
+
+### Frontend Styling Architecture
+- **Base Styles**: Direct CSS properties for core styling (background, colors)
+- **Component Styles**: Inline React styles for glassmorphism effects
+- **Tailwind Classes**: Utility classes where Tailwind is properly configured
+- **Design System**: Dark theme with modern gradients and animations
 
 ## 🚀 Production Deployment
 
@@ -353,7 +443,7 @@ make docker-run                   # Run container
 
 ## 🐛 Common Troubleshooting
 
-### Frequent Issues
+### Backend Issues
 - **Database Lock**: SQLite concurrent access → consider PostgreSQL
 - **File Upload Limit**: Check `MAX_VIDEO_SIZE_MB` setting
 - **YouTube API Quota**: Daily 10,000 units limit (업로드당 1,600 units)
@@ -361,13 +451,22 @@ make docker-run                   # Run container
 - **미인증 프로젝트**: public/unlisted 업로드 불가 (private만 가능)
 - **필드 제한**: 제목 100자, 설명 5000바이트, 태그 500자
 
+### Frontend Issues
+- **Tailwind CSS Not Working**: Use inline styles as fallback for critical styling
+- **API Connection Issues**: Check VITE_API_BASE_URL environment variable
+- **Build Errors**: Run `npm run lint` to check TypeScript errors
+- **Styling Problems**: Ensure Tailwind config matches component usage
+- **Development Server**: Use `npm run dev -- --host 0.0.0.0 --port 3000` for custom host/port
+
 ### Debug Log Access
 ```bash
-# Today's logs
+# Backend logs
 tail -f logs/app-$(date +%Y-%m-%d).log
-
-# Error logs only
 tail -f logs/error-$(date +%Y-%m-%d).log
+
+# Frontend development
+# Check browser console for React/TypeScript errors
+# Use React DevTools for component debugging
 ```
 
 ---

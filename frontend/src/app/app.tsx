@@ -1,9 +1,9 @@
-import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { BrowserRouter } from 'react-router-dom'
-import { Layout } from './components/layout/Layout'
+import { Layout } from '@/components/layout/layout'
 import { AppRoutes } from './routes'
-import './index.css'
+import './globals.css'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,10 +18,13 @@ const queryClient = new QueryClient({
         return failureCount < 3
       },
     },
+    mutations: {
+      retry: false,
+    },
   },
 })
 
-function App() {
+export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
@@ -29,8 +32,7 @@ function App() {
           <AppRoutes />
         </Layout>
       </BrowserRouter>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   )
 }
-
-export default App

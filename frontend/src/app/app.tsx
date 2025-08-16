@@ -3,6 +3,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { BrowserRouter } from 'react-router-dom'
 import { Layout } from '@/components/layout/layout'
 import { AppRoutes } from './routes'
+import { WebSocketProvider } from '@/components/WebSocketProvider'
+import NotificationPanel from '@/components/NotificationPanel'
 import './globals.css'
 
 const queryClient = new QueryClient({
@@ -25,14 +27,20 @@ const queryClient = new QueryClient({
 })
 
 export function App() {
+  // WebSocket URL 설정 (환경변수에서 가져오거나 기본값 사용)
+  const wsUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws'
+  
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Layout>
-          <AppRoutes />
-        </Layout>
-      </BrowserRouter>
-      <ReactQueryDevtools initialIsOpen={false} />
+      <WebSocketProvider wsUrl={wsUrl} debug={import.meta.env.DEV}>
+        <BrowserRouter>
+          <Layout>
+            <AppRoutes />
+          </Layout>
+          <NotificationPanel position="top-right" maxNotifications={5} />
+        </BrowserRouter>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </WebSocketProvider>
     </QueryClientProvider>
   )
 }

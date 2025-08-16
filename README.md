@@ -125,10 +125,11 @@ youtube-upload-automation/
 ### Backend
 - **Python 3.13**: 최신 Python 버전
 - **Poetry**: 의존성 및 패키지 관리 도구
-- **FastAPI 0.104.1+**: 고성능 API 프레임워크
+- **FastAPI 0.104.1+**: 고성능 API 프레임워크 + WebSocket 지원
 - **SQLAlchemy 2.0+**: ORM 및 데이터베이스 관리
 - **SQLite**: 경량 데이터베이스
 - **Google APIs**: YouTube Data API v3 연동
+- **WebSocket**: 실시간 양방향 통신
 
 ### Frontend
 - **React 18.2+**: 모던 프론트엔드 프레임워크
@@ -136,6 +137,7 @@ youtube-upload-automation/
 - **Tailwind CSS 3.4+**: 유틸리티 CSS 프레임워크
 - **shadcn/ui**: 고품질 UI 컴포넌트 라이브러리
 - **Vite 5.0+**: 빠른 빌드 도구
+- **WebSocket Client**: 실시간 알림 및 상태 동기화
 
 ### DevOps
 - **Git/GitHub**: 버전 관리 및 협업
@@ -223,6 +225,10 @@ DEFAULT_CATEGORY_ID=22         # 기본 카테고리 ID (22 = People & Blogs)
 
 # 업로드 제한
 MAX_VIDEO_SIZE_MB=2048        # 최대 비디오 파일 크기 (MB)
+
+# WebSocket 설정 (프론트엔드)
+VITE_API_BASE_URL=http://localhost:8000   # Backend API URL
+VITE_WS_URL=ws://localhost:8000/ws        # WebSocket URL for real-time features
 ```
 
 ### 프로덕션 환경 설정
@@ -301,11 +307,16 @@ npm run test
 
 ## 📈 로드맵
 
-### ✅ Phase 1: MVP (완료)
+### ✅ Phase 1: Core System (완료)
 - [x] 대본 파일 파싱 시스템
 - [x] YouTube API 연동
 - [x] 기본 웹 인터페이스
 - [x] 실시간 모니터링
+- [x] **WebSocket 실시간 기능 (Week 7 완료)**
+  - [x] 실시간 업로드 진행률 추적
+  - [x] 시스템 알림 및 상태 변화 알림
+  - [x] 자동 재연결 및 연결 상태 관리
+  - [x] 스크립트별 구독 시스템
 
 ### 🚧 Phase 2: 확장 기능 (진행 중)
 - [ ] 배치 업로드 스케줄링

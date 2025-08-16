@@ -3,6 +3,7 @@ import { Search, Bell, User, Moon, Sun, Monitor } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { useAppStore } from '@/app/store/app-store'
+import ConnectionStatus from '@/components/ConnectionStatus'
 
 const PAGE_TITLES: Record<string, string> = {
   '/': '대시보드',
@@ -62,6 +63,9 @@ export function Header() {
 
         {/* Right: Actions */}
         <div className="flex items-center space-x-3">
+          {/* WebSocket Connection Status */}
+          <ConnectionStatus className="mr-2" showDetails={false} />
+          
           {/* Theme Toggle */}
           <Button
             variant="ghost"

@@ -28,10 +28,12 @@ backend/app/
 │   ├── script_service.py  # Script management business logic
 │   ├── script_parser.py   # Script parsing logic
 │   ├── upload_service.py  # Upload business logic
+│   ├── websocket_manager.py # WebSocket 연결 및 알림 관리
 │   └── youtube/          # YouTube API service managers
 ├── routers/              # FastAPI routers (API endpoints)
 │   ├── scripts.py        # Script management API
-│   └── upload.py         # Upload API
+│   ├── upload.py         # Upload API
+│   └── websocket.py      # WebSocket 실시간 통신 API
 └── middleware/           # Custom middleware
     └── error_handler.py  # Global error handling
 
@@ -43,6 +45,9 @@ frontend/src/
 │   │   ├── Layout.tsx   # Main app layout with sidebar/header
 │   │   ├── Sidebar.tsx  # Navigation sidebar (glassmorphism)
 │   │   └── Header.tsx   # Page header with search/profile
+│   ├── WebSocketProvider.tsx  # WebSocket 연결 상태 관리
+│   ├── NotificationPanel.tsx  # 실시간 알림 UI
+│   ├── ConnectionStatus.tsx   # WebSocket 연결 상태 표시
 │   └── ui/              # Reusable UI components (shadcn/ui)
 │       ├── Button.tsx   # Button component
 │       ├── Card.tsx     # Card container component
@@ -54,10 +59,12 @@ frontend/src/
 │   └── SettingsPage.tsx # System settings page
 ├── services/            # API service layer
 │   ├── scripts.ts       # Script API calls
-│   └── uploads.ts       # Upload API calls
+│   ├── uploads.ts       # Upload API calls
+│   └── websocket.ts     # WebSocket 메시지 처리 서비스
 ├── hooks/               # Custom React hooks
 │   ├── useScripts.ts    # Script data management
-│   └── useUploads.ts    # Upload state management
+│   ├── useUploads.ts    # Upload state management
+│   └── useWebSocket.ts  # WebSocket 연결 및 실시간 통신
 ├── types/               # TypeScript type definitions
 │   └── index.ts         # All shared types
 ├── utils/               # Utility functions
@@ -78,6 +85,7 @@ frontend/src/
 - **Component-Based Architecture**: Modular React components
 - **Service Layer Pattern**: API abstraction in services/
 - **Custom Hooks Pattern**: Reusable state logic
+- **WebSocket Real-time**: 실시간 통신 및 알림 시스템
 - **TypeScript Strict Mode**: Type safety throughout
 - **Modern CSS Architecture**: Tailwind + shadcn/ui components
 
@@ -152,6 +160,7 @@ LOG_LEVEL=INFO
 
 # Frontend (development)
 VITE_API_BASE_URL=http://localhost:8000   # Backend API URL for frontend
+VITE_WS_URL=ws://localhost:8000/ws        # WebSocket URL for real-time features
 ```
 
 ### Frontend Configuration
@@ -159,6 +168,7 @@ VITE_API_BASE_URL=http://localhost:8000   # Backend API URL for frontend
 - **TypeScript**: Strict mode enabled with project references
 - **Tailwind**: Modern v4 with custom color variables and animations
 - **PostCSS**: Configured for Tailwind processing
+- **WebSocket**: Real-time communication for notifications and progress tracking
 
 ## 📊 Core Data Models
 
@@ -231,6 +241,24 @@ class ScriptService:
     def get_statistics(self) -> dict
 ```
 
+### 4. WebSocket Real-time System
+**Location**: `app/services/websocket_manager.py`
+
+```python
+class ConnectionManager:
+    # WebSocket 연결 풀링 및 사용자/스크립트 구독 관리
+    def connect(self, websocket: WebSocket, user_id: str) -> str
+    def disconnect(self, connection_id: str, user_id: str)
+    def subscribe_to_script(self, connection_id: str, script_id: int)
+    def broadcast_upload_progress(self, script_id: int, progress_data: dict)
+
+class WebSocketNotificationService:
+    # 실시간 알림 브로드캐스트
+    def notify_video_uploaded(self, script_id: int, script_data: dict)
+    def notify_youtube_upload_completed(self, script_id: int, script_data: dict, youtube_url: str)
+    def notify_upload_error(self, script_id: int, error_message: str, script_data: dict)
+```
+
 ## 🌐 API Endpoints
 
 ### Script Management API
@@ -248,7 +276,16 @@ GET    /api/scripts/stats/summary    # Statistics
 POST   /api/upload/video/{script_id} # Video file upload
 POST   /api/upload/youtube/{script_id} # YouTube upload
 GET    /api/upload/status/{script_id}   # Upload status
+GET    /api/upload/progress/{script_id} # Upload progress (real-time)
 DELETE /api/upload/video/{script_id}    # Delete video file
+```
+
+### WebSocket API
+```
+WS     /ws                          # WebSocket connection endpoint
+GET    /ws/stats                    # WebSocket connection statistics
+POST   /ws/broadcast                # Admin broadcast API
+POST   /ws/notify/script/{script_id} # Script-specific notification API
 ```
 
 ### System API
@@ -454,9 +491,11 @@ make docker-run                   # Run container
 ### Frontend Issues
 - **Tailwind CSS Not Working**: Use inline styles as fallback for critical styling
 - **API Connection Issues**: Check VITE_API_BASE_URL environment variable
+- **WebSocket Connection Issues**: Check VITE_WS_URL environment variable and WebSocket server status
 - **Build Errors**: Run `npm run lint` to check TypeScript errors
 - **Styling Problems**: Ensure Tailwind config matches component usage
 - **Development Server**: Use `npm run dev -- --host 0.0.0.0 --port 3000` for custom host/port
+- **Real-time Features Not Working**: Check WebSocket connection status and browser console for errors
 
 ### Debug Log Access
 ```bash
@@ -469,6 +508,44 @@ tail -f logs/error-$(date +%Y-%m-%d).log
 # Use React DevTools for component debugging
 ```
 
+## 🔄 Week 7: WebSocket 실시간 기능 (완료)
+
+### 구현된 실시간 기능
+- ✅ **WebSocket 연결 관리**: 자동 재연결, 하트비트, 연결 풀링
+- ✅ **실시간 알림 시스템**: 업로드 상태 변화, 성공/실패 알림
+- ✅ **업로드 진행률 추적**: 실시간 진행률 브로드캐스트
+- ✅ **스크립트 구독 시스템**: 특정 스크립트 업데이트 구독
+- ✅ **사용자 인터페이스**: 알림 패널, 연결 상태 표시
+- ✅ **오류 처리**: WebSocket 연결 실패시 재연결 로직
+
+### 실시간 알림 타입
+```typescript
+- system_notification: 시스템 전체 알림
+- script_update: 스크립트 상태 변경 알림  
+- upload_progress: 업로드 진행률 알림
+- script_status: 스크립트 상태 조회 응답
+- connection_established: 연결 설정 확인
+- subscription_confirmed: 구독 확인
+```
+
+### WebSocket 메시지 프로토콜
+```typescript
+// 클라이언트 → 서버
+{
+  type: 'subscribe_script' | 'unsubscribe_script' | 'get_script_status' | 'ping',
+  script_id?: number,
+  timestamp?: string
+}
+
+// 서버 → 클라이언트  
+{
+  type: string,
+  script_id?: number,
+  data?: any,
+  timestamp: string
+}
+```
+
 ---
 
-**Important Note**: This system is designed specifically for **Korean seniors** using **simplified automation** processes. Keep the user interface **simple** and **intuitive** while maintaining **robust** backend functionality.
+**Important Note**: This system is designed specifically for **Korean seniors** using **simplified automation** processes. Keep the user interface **simple** and **intuitive** while maintaining **robust** backend functionality including **real-time progress tracking** and **instant notifications**.

@@ -23,6 +23,7 @@ from ..core.exceptions import (
 from ..models.script import Script
 from ..repositories.script_repository import ScriptRepository
 from .youtube_client import YouTubeClient
+from .websocket_manager import websocket_notification_service
 
 
 class UploadService:
@@ -33,7 +34,7 @@ class UploadService:
         self.repository = ScriptRepository(db)
         self.settings = get_settings()
 
-    def upload_video_file(self, script_id: int, video_file: UploadFile) -> dict:
+    async def upload_video_file(self, script_id: int, video_file: UploadFile) -> dict:
         """영상 파일 업로드 및 대본과 매칭"""
         # 대본 존재 확인
         script = self.repository.get_by_id(script_id)
@@ -57,6 +58,26 @@ class UploadService:
 
             updated_script = self.repository.update(script)
 
+            # WebSocket 알림 전송
+            script_data = {
+                "id": updated_script.id,
+                "title": updated_script.title,
+                "status": updated_script.status,
+                "video_file_path": file_path,
+                "file_size": os.path.getsize(file_path),
+                "uploaded_filename": video_file.filename,
+                "saved_filename": os.path.basename(file_path),
+            }
+            
+            # 비디오 업로드 완료 알림
+            try:
+                await websocket_notification_service.notify_video_uploaded(
+                    script_id, script_data
+                )
+            except Exception as e:
+                # WebSocket 알림 실패는 메인 프로세스에 영향주지 않음
+                print(f"WebSocket 알림 전송 실패: {e}")
+
             return {
                 "id": updated_script.id,
                 "title": updated_script.title,
@@ -74,7 +95,7 @@ class UploadService:
                 os.remove(file_path)
             raise DatabaseError(f"데이터베이스 업데이트 실패: {str(e)}")
 
-    def upload_to_youtube(
+    async def upload_to_youtube(
         self,
         script_id: int,
         scheduled_time: Optional[str] = None,
@@ -103,6 +124,20 @@ class UploadService:
         self._validate_privacy_status(privacy_status)
 
         try:
+            # YouTube 업로드 시작 알림
+            script_data = {
+                "id": script.id,
+                "title": script.title,
+                "status": script.status,
+            }
+            
+            try:
+                await websocket_notification_service.notify_youtube_upload_started(
+                    script_id, script_data
+                )
+            except Exception as e:
+                print(f"WebSocket 알림 전송 실패: {e}")
+
             # YouTube 클라이언트 초기화 및 인증
             youtube_client = YouTubeClient()
 
@@ -131,29 +166,64 @@ class UploadService:
 
             updated_script = self.repository.update(script)
 
+            # YouTube 업로드 완료 알림
+            youtube_url = f"https://www.youtube.com/watch?v={video_id}"
+            final_script_data = {
+                "id": updated_script.id,
+                "title": updated_script.title,
+                "status": updated_script.status,
+                "youtube_video_id": video_id,
+                "youtube_url": youtube_url,
+            }
+            
+            try:
+                await websocket_notification_service.notify_youtube_upload_completed(
+                    script_id, final_script_data, youtube_url
+                )
+            except Exception as e:
+                print(f"WebSocket 알림 전송 실패: {e}")
+
             return {
                 "id": updated_script.id,
                 "title": updated_script.title,
                 "status": updated_script.status,
                 "youtube_video_id": video_id,
-                "youtube_url": f"https://www.youtube.com/watch?v={video_id}",
+                "youtube_url": youtube_url,
                 "privacy_status": metadata["privacy_status"],
                 "scheduled_time": updated_script.scheduled_time,
                 "message": "YouTube 업로드 성공",
                 "upload_timestamp": updated_script.updated_at,
             }
 
-        except YouTubeUploadError:
+        except YouTubeUploadError as e:
             # YouTube 업로드 실패 시 상태 업데이트
             script.status = "error"
             script.updated_at = datetime.utcnow()
             self.repository.update(script)
+            
+            # 에러 알림 전송
+            try:
+                await websocket_notification_service.notify_upload_error(
+                    script_id, str(e), {"id": script.id, "title": script.title}
+                )
+            except Exception as notify_error:
+                print(f"WebSocket 에러 알림 전송 실패: {notify_error}")
+            
             raise
         except Exception as e:
             # 기타 예외 처리
             script.status = "error"
             script.updated_at = datetime.utcnow()
             self.repository.update(script)
+            
+            # 에러 알림 전송
+            try:
+                await websocket_notification_service.notify_upload_error(
+                    script_id, str(e), {"id": script.id, "title": script.title}
+                )
+            except Exception as notify_error:
+                print(f"WebSocket 에러 알림 전송 실패: {notify_error}")
+            
             raise YouTubeUploadError(str(e))
 
     def get_upload_status(self, script_id: int) -> dict:
@@ -239,7 +309,7 @@ class UploadService:
         except Exception as e:
             raise FileUploadError(f"파일 삭제 실패: {str(e)}")
 
-    def get_upload_progress(self, script_id: int) -> dict:
+    async def get_upload_progress(self, script_id: int) -> dict:
         """업로드 진행률 조회"""
         script = self.repository.get_by_id(script_id)
         if not script:
@@ -288,6 +358,12 @@ class UploadService:
                 "url": f"https://www.youtube.com/watch?v={script.youtube_video_id}",
                 "scheduled_time": script.scheduled_time
             }
+
+        # WebSocket으로 진행률 브로드캐스트
+        try:
+            await websocket_notification_service.send_upload_progress(script_id, progress)
+        except Exception as e:
+            print(f"WebSocket 진행률 브로드캐스트 실패: {e}")
 
         return progress
 

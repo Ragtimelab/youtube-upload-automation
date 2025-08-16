@@ -7,7 +7,7 @@ from .core.logging import configure_logging, get_logger
 from .database import SessionLocal, engine, get_db
 from .middleware.error_handler import ErrorHandlerMiddleware
 from .models import script
-from .routers import scripts
+from .routers import scripts, upload, websocket
 
 # 로깅 시스템 초기화
 configure_logging()
@@ -39,10 +39,8 @@ app.add_middleware(
 
 # 라우터 등록
 app.include_router(scripts.router)
-
-from .routers import upload
-
 app.include_router(upload.router)
+app.include_router(websocket.router)
 
 
 @app.get("/")

@@ -21,6 +21,7 @@ function LoadingSpinner() {
 
 // 지연 로딩 컴포넌트들
 const Dashboard = lazy(() => import('@/pages/dashboard').then(m => ({ default: m.Dashboard })))
+const VideoUpload = lazy(() => import('@/pages/video-upload').then(m => ({ default: m.VideoUploadPage })))
 
 // 임시 페이지 컴포넌트들 (추후 구현 예정)
 function ScriptUpload() {
@@ -62,6 +63,7 @@ export function AppRoutes() {
       <Routes>
         <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
         <Route path={ROUTES.SCRIPT_UPLOAD} element={<ScriptUpload />} />
+        <Route path={ROUTES.VIDEO_UPLOAD} element={<VideoUpload />} />
         <Route path={ROUTES.SCRIPT_MANAGEMENT} element={<ScriptManagement />} />
         <Route path={ROUTES.SETTINGS} element={<Settings />} />
         <Route path="*" element={<Navigate to={ROUTES.DASHBOARD} replace />} />

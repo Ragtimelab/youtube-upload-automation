@@ -11,6 +11,8 @@ import {
   PlayCircle,
   Calendar,
   BarChart3,
+  FileVideo,
+  Youtube,
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/shared/ui/card'
 import { Button } from '@/shared/ui/button'
@@ -30,16 +32,16 @@ export function Dashboard() {
       trend: 'up' as const,
       icon: PlayCircle,
       color: 'from-blue-500 to-blue-600',
-      description: 'Ready for processing'
+      description: 'Ready for video upload'
     },
     {
-      title: 'Processing',
-      value: 3,
-      change: '+2',
+      title: 'Video Ready',
+      value: stats?.data?.video_ready || 5,
+      change: '+3',
       trend: 'up' as const,
-      icon: Clock,
+      icon: FileVideo,
       color: 'from-yellow-500 to-orange-500',
-      description: 'Currently uploading'
+      description: 'Ready for YouTube upload'
     },
     {
       title: 'Published',
@@ -64,24 +66,33 @@ export function Dashboard() {
   const recentActivities = [
     {
       id: 1,
-      type: 'upload',
+      type: 'youtube_upload',
       title: '건강한 아침 운동법',
-      status: 'completed',
+      status: 'uploaded',
       time: '2분 전',
-      views: '1.2K'
+      views: '1.2K',
+      youtubeUrl: 'https://youtube.com/watch?v=abc123'
     },
     {
       id: 2,
-      type: 'processing',
+      type: 'video_upload',
       title: '맛있는 김치찌개 레시피',
-      status: 'processing',
+      status: 'video_ready',
       time: '15분 전',
-      progress: 75
+      fileSize: '245MB'
     },
     {
       id: 3,
-      type: 'scheduled',
+      type: 'processing',
       title: '시니어를 위한 스마트폰 사용법',
+      status: 'processing',
+      time: '30분 전',
+      progress: 85
+    },
+    {
+      id: 4,
+      type: 'scheduled',
+      title: '겨울철 건강관리 비법',
       status: 'scheduled',
       time: '오늘 18:00',
       scheduledTime: '2024-01-16 18:00'
@@ -90,9 +101,11 @@ export function Dashboard() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="w-4 h-4 text-green-500" />
+      case 'uploaded': return <CheckCircle className="w-4 h-4 text-green-500" />
+      case 'video_ready': return <FileVideo className="w-4 h-4 text-yellow-500" />
       case 'processing': return <Clock className="w-4 h-4 text-yellow-500 animate-spin" />
       case 'scheduled': return <Calendar className="w-4 h-4 text-blue-500" />
+      case 'script_ready': return <PlayCircle className="w-4 h-4 text-blue-500" />
       default: return <AlertCircle className="w-4 h-4 text-red-500" />
     }
   }
@@ -206,10 +219,33 @@ export function Dashboard() {
                     </div>
 
                     <div className="flex items-center space-x-2">
-                      {activity.status === 'completed' && activity.views && (
+                      {activity.status === 'uploaded' && activity.views && (
                         <div className="flex items-center text-sm text-green-500">
                           <Eye className="w-4 h-4 mr-1" />
                           {activity.views}
+                        </div>
+                      )}
+
+                      {activity.status === 'uploaded' && activity.youtubeUrl && (
+                        <Button variant="outline" size="sm" asChild>
+                          <a href={activity.youtubeUrl} target="_blank" rel="noopener noreferrer">
+                            <Youtube className="w-4 h-4 mr-1" />
+                            View
+                          </a>
+                        </Button>
+                      )}
+
+                      {activity.status === 'video_ready' && activity.fileSize && (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm text-muted-foreground">
+                            {activity.fileSize}
+                          </span>
+                          <Button variant="outline" size="sm" asChild>
+                            <Link to={`${ROUTES.VIDEO_UPLOAD}?script=${activity.id}`}>
+                              <Youtube className="w-4 h-4 mr-1" />
+                              Upload
+                            </Link>
+                          </Button>
                         </div>
                       )}
 
@@ -250,6 +286,12 @@ export function Dashboard() {
                 <Link to={ROUTES.SCRIPT_UPLOAD}>
                   <Upload className="w-4 h-4 mr-2" />
                   Upload New Script
+                </Link>
+              </Button>
+              <Button variant="outline" className="w-full justify-start bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30" asChild>
+                <Link to={ROUTES.VIDEO_UPLOAD}>
+                  <FileVideo className="w-4 h-4 mr-2" />
+                  Upload Video
                 </Link>
               </Button>
               <Button variant="outline" className="w-full justify-start">

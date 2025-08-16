@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { 
   LayoutDashboard, 
   Upload, 
+  FileVideo,
   List, 
   Settings,
   Youtube,
@@ -21,10 +22,16 @@ const navigation = [
     description: '전체 현황'
   },
   { 
-    name: 'Upload', 
+    name: 'Upload Script', 
     href: ROUTES.SCRIPT_UPLOAD, 
     icon: Upload,
     description: '대본 업로드'
+  },
+  { 
+    name: 'Upload Video', 
+    href: ROUTES.VIDEO_UPLOAD, 
+    icon: FileVideo,
+    description: '비디오 업로드'
   },
   { 
     name: 'Manage', 

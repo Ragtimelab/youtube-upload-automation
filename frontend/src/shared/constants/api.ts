@@ -13,7 +13,9 @@ export const API_ENDPOINTS = {
   VIDEO_UPLOAD: (id: string | number) => `/api/upload/video/${id}`,
   YOUTUBE_UPLOAD: (id: string | number) => `/api/upload/youtube/${id}`,
   UPLOAD_STATUS: (id: string | number) => `/api/upload/status/${id}`,
+  UPLOAD_PROGRESS: (id: string | number) => `/api/upload/progress/${id}`,
   VIDEO_DELETE: (id: string | number) => `/api/upload/video/${id}`,
+  UPLOAD_HEALTH: '/api/upload/health',
   
   // 시스템
   HEALTH: '/health',

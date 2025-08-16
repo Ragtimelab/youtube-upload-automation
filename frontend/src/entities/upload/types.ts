@@ -6,9 +6,23 @@ export type UploadPhase = 'video' | 'youtube' | 'completed'
 // 업로드 진행 상태
 export interface UploadProgress extends Progress {
   script_id: ID
-  phase: UploadPhase
-  started_at: DateString
-  estimated_completion?: DateString
+  title: string
+  status: string
+  progress_percentage: number
+  current_step: string
+  total_steps: number
+  created_at: DateString
+  updated_at: DateString
+  video_file_info?: {
+    filename: string
+    file_size: number
+    file_size_mb: number
+  }
+  youtube_info?: {
+    video_id: string
+    url: string
+    scheduled_time?: DateString
+  }
 }
 
 // 비디오 업로드 요청

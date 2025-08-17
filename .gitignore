@@ -45,6 +45,7 @@ credentials.json
 token.json
 token.pickle
 client_secret*.json
+backend/secrets/
 
 # Uploads Directory
 uploads/

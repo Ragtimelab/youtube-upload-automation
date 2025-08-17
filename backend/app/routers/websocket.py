@@ -57,10 +57,8 @@ async def websocket_endpoint(
                 })
             except Exception as e:
                 logger.error(f"메시지 처리 중 오류: {e}")
-                await connection_manager.send_personal_message(connection_id, {
-                    "type": "error",
-                    "message": f"메시지 처리 오류: {str(e)}"
-                })
+                # 연결 무한 루프 방지 - 오류 메시지 전송 안함
+                break
     
     except Exception as e:
         logger.error(f"WebSocket 연결 오류: {e}")
@@ -78,10 +76,20 @@ async def send_initial_data(connection_id: str, db: Session):
         
         # 스크립트 통계 전송
         stats = script_repository.get_statistics()
+        
+        # datetime 객체가 있을 수 있으므로 안전하게 처리
+        safe_stats = {}
+        if stats:
+            for key, value in stats.items():
+                if isinstance(value, dict):
+                    safe_stats[key] = {k: (v.isoformat() if hasattr(v, 'isoformat') else v) for k, v in value.items()}
+                else:
+                    safe_stats[key] = value.isoformat() if hasattr(value, 'isoformat') else value
+        
         await connection_manager.send_personal_message(connection_id, {
             "type": "initial_data",
             "data": {
-                "script_stats": stats,
+                "script_stats": safe_stats,
                 "connection_stats": connection_manager.get_connection_stats()
             }
         })
@@ -90,6 +98,17 @@ async def send_initial_data(connection_id: str, db: Session):
         
     except Exception as e:
         logger.error(f"초기 데이터 전송 실패: {e}")
+        # 초기 데이터 전송 실패시 간단한 연결 확인 메시지만 전송
+        try:
+            await connection_manager.send_personal_message(connection_id, {
+                "type": "initial_data",
+                "data": {
+                    "script_stats": {"total_scripts": 0, "by_status": {}},
+                    "connection_stats": connection_manager.get_connection_stats()
+                }
+            })
+        except Exception as fallback_error:
+            logger.error(f"폴백 초기 데이터 전송도 실패: {fallback_error}")
 
 
 async def handle_client_message(connection_id: str, message: dict, user_id: Optional[str], db: Session):

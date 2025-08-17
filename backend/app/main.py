@@ -7,8 +7,7 @@ from .core.logging import configure_logging, get_logger
 from .database import SessionLocal, engine, get_db
 from .middleware.error_handler import ErrorHandlerMiddleware
 from .models import script
-from .routers import scripts, upload, websocket, schedules, scheduler
-from .services.scheduler_service import initialize_scheduler
+from .routers import scripts, upload, websocket
 
 # 로깅 시스템 초기화
 configure_logging()
@@ -42,16 +41,6 @@ app.add_middleware(
 app.include_router(scripts.router)
 app.include_router(upload.router)
 app.include_router(websocket.router)
-app.include_router(schedules.router)
-app.include_router(scheduler.router)
-
-# 스케줄러 초기화
-try:
-    initialize_scheduler()
-    logger.info("스케줄러 초기화 완료")
-except Exception as e:
-    logger.error(f"스케줄러 초기화 실패: {e}")
-    # 스케줄러 실패가 앱 시작을 막지 않도록 함
 
 
 @app.get("/")
@@ -83,19 +72,20 @@ def health_check(db: Session = Depends(get_db)):
         )
 
 
-@app.get("/api/scripts")
-def get_scripts(db: Session = Depends(get_db)):
-    """등록된 대본 목록 조회 (레거시 엔드포인트)"""
-    try:
-        from .models.script import Script
-
-        scripts = db.query(Script).all()
-        logger.info(f"레거시 대본 목록 조회: {len(scripts)}개")
-
-        return {"scripts": scripts, "count": len(scripts)}
-    except Exception as e:
-        logger.error(f"레거시 대본 목록 조회 실패: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
+# 레거시 엔드포인트 비활성화 - scripts 라우터 사용
+# @app.get("/api/scripts")
+# def get_scripts(db: Session = Depends(get_db)):
+#     """등록된 대본 목록 조회 (레거시 엔드포인트)"""
+#     try:
+#         from .models.script import Script
+#
+#         scripts = db.query(Script).all()
+#         logger.info(f"레거시 대본 목록 조회: {len(scripts)}개")
+#
+#         return {"scripts": scripts, "count": len(scripts)}
+#     except Exception as e:
+#         logger.error(f"레거시 대본 목록 조회 실패: {str(e)}")
+#         raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Streamlit 대시보드 실행 스크립트
+
+echo "🎬 YouTube 업로드 자동화 - Streamlit 대시보드 시작"
+echo "🌐 웹 브라우저에서 http://localhost:8501 로 접속하세요"
+echo "⚠️  백엔드 서버가 실행 중인지 확인하세요 (http://localhost:8000)"
+echo "=============================================="
+
+cd "$(dirname "$0")"
+
+# 필요한 Python 패키지 확인
+echo "📦 패키지 확인 중..."
+poetry run python -c "import streamlit, pandas, plotly" 2>/dev/null
+
+if [ $? -ne 0 ]; then
+    echo "❌ 필요한 패키지가 설치되지 않았습니다."
+    echo "💡 다음 명령어로 설치하세요:"
+    echo "   poetry install"
+    exit 1
+fi
+
+echo "✅ 패키지 확인 완료"
+
+# Streamlit 앱 실행
+echo "🚀 Streamlit 대시보드 시작..."
+poetry run python streamlit_app.py

@@ -39,25 +39,38 @@ class ScriptParser:
         sections = {}
 
         try:
+            # 제목 섹션 추출 (새로운 형식 지원)
+            title_section = self._extract_section(
+                content, "제목", ["메타데이터", "썸네일 정보", "대본"]
+            )
+            if title_section:
+                sections["title"] = title_section.strip()
+
             # 대본 내용 추출
             script_section = self._extract_section(
-                content, "대본", ["메타데이터", "썸네일 제작"]
+                content, "대본", ["메타데이터", "썸네일 제작", "썸네일 정보"]
             )
             if script_section:
                 sections["content"] = script_section.strip()
 
             # 메타데이터 섹션 추출 및 파싱
             metadata_section = self._extract_section(
-                content, "메타데이터", ["썸네일 제작"]
+                content, "메타데이터", ["썸네일 제작", "썸네일 정보", "대본"]
             )
             if metadata_section:
                 metadata = self._parse_metadata(metadata_section)
                 sections.update(metadata)
 
-            # 썸네일 제작 섹션 추출 및 파싱
+            # 썸네일 제작 섹션 추출 및 파싱 (기존 형식)
             thumbnail_section = self._extract_section(content, "썸네일 제작", [])
             if thumbnail_section:
                 thumbnail_data = self._parse_thumbnail_section(thumbnail_section)
+                sections.update(thumbnail_data)
+            
+            # 썸네일 정보 섹션 추출 및 파싱 (새로운 형식)
+            thumbnail_info_section = self._extract_section(content, "썸네일 정보", ["대본"])
+            if thumbnail_info_section:
+                thumbnail_data = self._parse_thumbnail_section(thumbnail_info_section)
                 sections.update(thumbnail_data)
 
         except Exception as e:

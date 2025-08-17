@@ -12,6 +12,9 @@ from typing import List
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
 
+# 프로젝트 루트 디렉토리 계산 (app/config.py -> 프로젝트 루트)
+PROJECT_ROOT = Path(__file__).parent.parent.parent
+
 
 class Settings(BaseSettings):
     """애플리케이션 설정 클래스
@@ -36,8 +39,8 @@ class Settings(BaseSettings):
     # File Paths & Storage
     # ===========================================
     upload_dir: str = Field(default="uploads/videos", validation_alias="UPLOAD_DIR")
-    credentials_path: str = Field(default="credentials.json", validation_alias="CREDENTIALS_PATH")
-    token_path: str = Field(default="token.pickle", validation_alias="TOKEN_PATH")
+    credentials_path: str = Field(default=str(PROJECT_ROOT / "backend/secrets/credentials.json"), validation_alias="CREDENTIALS_PATH")
+    token_path: str = Field(default=str(PROJECT_ROOT / "backend/secrets/token.pickle"), validation_alias="TOKEN_PATH")
 
     # ===========================================
     # YouTube API Configuration
@@ -216,10 +219,16 @@ def validate_required_files():
     """필수 파일들의 존재 여부를 확인합니다."""
     required_files = []
 
-    if not settings.credentials_file_path.exists():
-        required_files.append(str(settings.credentials_file_path))
+    credentials_path = settings.credentials_file_path
+    if not credentials_path.exists():
+        required_files.append(f"{credentials_path} (절대경로: {credentials_path.absolute()})")
 
     if required_files:
+        print(f"🔍 프로젝트 루트: {PROJECT_ROOT}")
+        print(f"🔍 백엔드 secrets 디렉토리: {PROJECT_ROOT / 'backend/secrets'}")
+        print(f"🔍 credentials.json 경로: {credentials_path}")
+        print(f"🔍 파일 존재 여부: {credentials_path.exists()}")
+        
         raise FileNotFoundError(
             f"Required files not found: {', '.join(required_files)}. "
             f"Please check your configuration and ensure these files exist."

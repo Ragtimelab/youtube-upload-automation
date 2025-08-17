@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# YouTube 자동화 CLI 실행 스크립트
+
+cd "$(dirname "$0")"
+poetry run python -m cli.main "$@"

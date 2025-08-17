@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# 빠른 전체 워크플로우 래퍼
+
+if [ $# -lt 2 ]; then
+    echo "사용법: ./quick-upload <script_id> <video_file> [privacy]"
+    echo "예시: ./quick-upload 1 video.mp4 private"
+    exit 1
+fi
+
+SCRIPT_ID=$1
+VIDEO_FILE=$2
+PRIVACY=${3:-private}
+
+echo "🚀 빠른 업로드 워크플로우 시작..."
+echo "📝 스크립트 ID: $SCRIPT_ID"
+echo "🎥 비디오 파일: $VIDEO_FILE"
+echo "🔒 공개 설정: $PRIVACY"
+echo ""
+
+# 1단계: 비디오 업로드
+echo "1️⃣ 비디오 업로드 중..."
+./youtube-cli video upload "$SCRIPT_ID" "$VIDEO_FILE"
+
+if [ $? -eq 0 ]; then
+    echo ""
+    echo "2️⃣ YouTube 업로드 중..."
+    ./youtube-cli youtube upload "$SCRIPT_ID" --privacy "$PRIVACY"
+    
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo "✅ 전체 업로드 워크플로우 완료!"
+    else
+        echo "❌ YouTube 업로드 실패"
+        exit 1
+    fi
+else
+    echo "❌ 비디오 업로드 실패"
+    exit 1
+fi

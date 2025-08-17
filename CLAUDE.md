@@ -4,12 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🎯 Project Overview
 
-**YouTube Upload Automation for Korean Seniors** - A FastAPI backend system that automates YouTube content upload for senior Korean content creators, with a focus on simplicity and complete automation.
+**YouTube Upload Automation for Korean Seniors** - A comprehensive system with FastAPI backend, Streamlit web interface, and CLI tools that automates YouTube content upload for senior Korean content creators, focusing on simplicity and complete automation.
 
-## 🏗️ Clean Architecture Implementation
+## 🏗️ Complete System Architecture
 
-This system follows **Clean Architecture** principles with a well-structured FastAPI application:
+This system consists of **three main interfaces** with shared backend:
 
+```
+youtube-upload-automation/
+├── backend/app/              # FastAPI API server + WebSocket
+├── streamlit_app/           # Streamlit web interface
+├── cli/                     # Command-line interface
+└── frontend/               # React frontend (deprecated/legacy)
+```
+
+### Backend Architecture (Clean Architecture)
 ```
 backend/app/
 ├── main.py                 # FastAPI application entry point
@@ -36,40 +45,36 @@ backend/app/
 │   └── websocket.py      # WebSocket 실시간 통신 API
 └── middleware/           # Custom middleware
     └── error_handler.py  # Global error handling
+```
 
-frontend/src/
-├── main.tsx               # React app entry point
-├── App.tsx               # Root React component
-├── components/           # React components
-│   ├── layout/          # Layout components
-│   │   ├── Layout.tsx   # Main app layout with sidebar/header
-│   │   ├── Sidebar.tsx  # Navigation sidebar (glassmorphism)
-│   │   └── Header.tsx   # Page header with search/profile
-│   ├── WebSocketProvider.tsx  # WebSocket 연결 상태 관리
-│   ├── NotificationPanel.tsx  # 실시간 알림 UI
-│   ├── ConnectionStatus.tsx   # WebSocket 연결 상태 표시
-│   └── ui/              # Reusable UI components (shadcn/ui)
-│       ├── Button.tsx   # Button component
-│       ├── Card.tsx     # Card container component
-│       └── Input.tsx    # Input form component
-├── pages/               # Page components
-│   ├── Dashboard.tsx    # Main dashboard with stats
-│   ├── ScriptUpload.tsx # Script file upload page
-│   ├── ManagePage.tsx   # Content management page
-│   └── SettingsPage.tsx # System settings page
-├── services/            # API service layer
-│   ├── scripts.ts       # Script API calls
-│   ├── uploads.ts       # Upload API calls
-│   └── websocket.ts     # WebSocket 메시지 처리 서비스
-├── hooks/               # Custom React hooks
-│   ├── useScripts.ts    # Script data management
-│   ├── useUploads.ts    # Upload state management
-│   └── useWebSocket.ts  # WebSocket 연결 및 실시간 통신
-├── types/               # TypeScript type definitions
-│   └── index.ts         # All shared types
-├── utils/               # Utility functions
-│   └── api.ts           # API client with error handling
-└── routes.tsx           # React Router configuration
+### Streamlit Application Architecture
+```
+streamlit_app/
+├── main.py               # Streamlit app entry point with CSS styling
+├── api/
+│   └── client.py         # Complete API client for backend integration
+├── pages/                # Multi-page Streamlit app
+│   ├── dashboard.py      # Main dashboard with stats and charts
+│   ├── scripts.py        # Script management (upload, edit, delete)
+│   ├── uploads.py        # Video/YouTube upload management
+│   ├── monitoring.py     # System monitoring and logs
+│   └── settings.py       # System configuration
+└── components/           # Reusable components
+```
+
+### CLI Architecture
+```
+cli/
+├── main.py               # CLI entry point
+├── commands/             # Command modules
+│   ├── script.py         # Script management commands
+│   ├── video.py          # Video upload commands
+│   ├── youtube.py        # YouTube upload commands
+│   └── status.py         # Status checking commands
+└── utils/                # CLI utilities
+    ├── api_client.py     # CLI-specific API client
+    ├── config.py         # CLI configuration
+    └── validators.py     # Input validation
 ```
 
 ### 🎨 Architecture Patterns
@@ -81,13 +86,17 @@ frontend/src/
 - **Custom Exceptions**: Structured error handling
 - **Structured Logging**: Component-based logging with daily rotation
 
-**Frontend:**
-- **Component-Based Architecture**: Modular React components
-- **Service Layer Pattern**: API abstraction in services/
-- **Custom Hooks Pattern**: Reusable state logic
-- **WebSocket Real-time**: 실시간 통신 및 알림 시스템
-- **TypeScript Strict Mode**: Type safety throughout
-- **Modern CSS Architecture**: Tailwind + shadcn/ui components
+**Streamlit App:**
+- **Multi-page Architecture**: Page-based navigation with st.navigation
+- **Unified API Client**: Single client class for all backend communication
+- **Component Isolation**: Each page handles specific functionality
+- **CSS Customization**: Compact, professional styling optimized for productivity
+- **Real-time Updates**: Integration with backend WebSocket for live monitoring
+
+**CLI:**
+- **Command Pattern**: Structured command organization
+- **Rich Console Output**: Beautiful terminal interface with progress bars
+- **Configuration Management**: YAML/JSON config file support
 
 ## 🛠️ Essential Development Commands
 
@@ -120,25 +129,35 @@ make migrate           # alembic upgrade head
 make migrate-auto      # Auto-generate migration
 ```
 
-### Frontend Development
+### Streamlit Application
 ```bash
-# Install dependencies
-cd frontend && npm install
+# Run Streamlit app (from project root)
+streamlit run streamlit_app/main.py
 
-# Development server
-npm run dev            # Vite dev server (http://localhost:5173)
+# Run on custom port
+streamlit run streamlit_app/main.py --server.port 8501
 
-# Build and deployment
-npm run build          # TypeScript compilation + Vite build
-npm run preview        # Preview production build
-
-# Code quality
-npm run lint           # ESLint TypeScript checking
+# Run with development options
+streamlit run streamlit_app/main.py --browser.gatherUsageStats false
 ```
 
-### Environment Configuration (.env)
+### CLI Usage
 ```bash
-# Server config
+# Make CLI executable
+chmod +x youtube-cli
+
+# Quick commands (executable scripts in root)
+./quick-script          # Quick script upload
+./quick-upload          # Quick video upload
+./youtube-cli           # Full CLI interface
+
+# Direct Python execution
+python cli/main.py --help
+```
+
+### Environment Configuration
+```bash
+# Backend server config
 BACKEND_HOST=0.0.0.0
 BACKEND_PORT=8000
 BACKEND_RELOAD=true
@@ -157,18 +176,7 @@ YOUTUBE_PROJECT_CREATED_AFTER_2020_07_28=false
 # Logging
 DEBUG=true
 LOG_LEVEL=INFO
-
-# Frontend (development)
-VITE_API_BASE_URL=http://localhost:8000   # Backend API URL for frontend
-VITE_WS_URL=ws://localhost:8000/ws        # WebSocket URL for real-time features
 ```
-
-### Frontend Configuration
-- **Vite Config**: `vite.config.ts` with path aliases (`@` -> `./src`)
-- **TypeScript**: Strict mode enabled with project references
-- **Tailwind**: Modern v4 with custom color variables and animations
-- **PostCSS**: Configured for Tailwind processing
-- **WebSocket**: Real-time communication for notifications and progress tracking
 
 ## 📊 Core Data Models
 
@@ -218,30 +226,21 @@ ImageFX 프롬프트: [AI generation prompt]
 - Metadata extraction and validation
 - Error handling for malformed scripts
 
-### 2. Repository Pattern
-**Location**: `app/repositories/script_repository.py`
+### 2. Streamlit API Integration
+**Location**: `streamlit_app/api/client.py`
 
 ```python
-class ScriptRepository(BaseSQLAlchemyRepository[Script]):
-    # Basic CRUD plus domain-specific queries
-    def get_by_status(self, status: str) -> List[Script]
-    def get_ready_for_video_upload(self) -> List[Script]
-    def get_statistics(self) -> dict
-    def search_by_title(self, title_query: str) -> List[Script]
+class YouTubeAutomationAPI:
+    # Complete API client supporting all backend endpoints
+    def health_check(self) -> Dict[str, Any]
+    def get_scripts(self, skip: int = 0, limit: int = 100, status: str = None) -> Dict
+    def upload_script(self, file_content: io.BytesIO, filename: str) -> Dict
+    def upload_video_file(self, script_id: int, file_content: io.BytesIO, filename: str) -> Dict
+    def upload_to_youtube(self, script_id: int, **kwargs) -> Dict
+    def get_websocket_stats(self) -> Dict
 ```
 
-### 3. Service Layer
-**Location**: `app/services/script_service.py`
-
-```python
-class ScriptService:
-    def create_script_from_file(self, content: str, filename: str) -> Script
-    def get_scripts(self, skip: int, limit: int, status: str) -> dict
-    def update_script_status(self, script_id: int, new_status: str) -> Script
-    def get_statistics(self) -> dict
-```
-
-### 4. WebSocket Real-time System
+### 3. WebSocket Real-time System
 **Location**: `app/services/websocket_manager.py`
 
 ```python
@@ -374,21 +373,18 @@ poetry run pre-commit run --all-files  # Manual run
 ## 📦 Core Dependencies
 
 ### Backend Dependencies
-- **FastAPI 0.104.1+**: Web framework
+- **FastAPI 0.116.0+**: Web framework
 - **SQLAlchemy 2.0+**: ORM
 - **Alembic 1.12+**: Database migrations
 - **Pydantic 2.5+**: Data validation
 - **Uvicorn**: ASGI server
+- **WebSockets 15.0+**: Real-time communication
 
-### Frontend Dependencies
-- **React 19.1.1+**: Modern React with concurrent features
-- **TypeScript 5.8+**: Type safety and modern JS features
-- **Vite 7.1.2+**: Fast build tool and dev server
-- **Tailwind CSS 4.1.12+**: Utility-first CSS framework
-- **@tanstack/react-query 5.85+**: Server state management
-- **React Router DOM 7.8+**: Client-side routing
-- **Lucide React**: Modern icon library
-- **shadcn/ui**: High-quality component library
+### Streamlit Dependencies
+- **Streamlit 1.48.1+**: Web interface framework
+- **Plotly 6.3.0+**: Interactive charts and visualizations
+- **Pandas 2.3.1+**: Data manipulation for statistics
+- **Requests**: HTTP client for API communication
 
 ### YouTube Integration
 - **google-api-python-client**: YouTube Data API v3
@@ -403,47 +399,43 @@ poetry run pre-commit run --all-files  # Manual run
 - **isort**: Import sorting
 - **flake8**: Linting
 - **mypy**: Type checking
-- **ESLint**: TypeScript/React linting
-- **TypeScript ESLint**: Advanced TS analysis
 
 ## 🔄 Development Workflow
 
 ### Standard Development Process
-1. **Create data model** (backend/models/)
-2. **Implement repository** (backend/repositories/)
-3. **Add service logic** (backend/services/)
-4. **Create API endpoints** (backend/routers/)
-5. **Add frontend types** (frontend/src/types/)
-6. **Create frontend service** (frontend/src/services/)
-7. **Build React components** (frontend/src/components/)
-8. **Write tests** (backend/tests/ + frontend/)
+1. **Start backend server** (`make run` from backend/)
+2. **Start interface** (Streamlit: `streamlit run streamlit_app/main.py`)
+3. **Create data model** (backend/models/)
+4. **Implement repository** (backend/repositories/)
+5. **Add service logic** (backend/services/)
+6. **Create API endpoints** (backend/routers/)
+7. **Update Streamlit pages** (streamlit_app/pages/)
+8. **Write tests** (backend/tests/)
 9. **Check API documentation** (/docs)
 
 ### Code Quality Process
 ```bash
-# Backend
+# Backend (from backend/)
 make format                        # Format Python code
 make lint                         # Check Python code quality
 make test-cov                     # Test with coverage
 
-# Frontend
-cd frontend
-npm run lint                      # ESLint TypeScript checking
-npm run build                     # Type checking + build
+# Full system check
+poetry run pytest                 # Run all tests
 ```
 
 ### Database Management
 ```bash
-# Model changes workflow
+# Model changes workflow (from backend/)
 make migrate-auto                 # Generate migration
 make migrate                      # Apply migration
 ```
 
-### Frontend Styling Architecture
-- **Base Styles**: Direct CSS properties for core styling (background, colors)
-- **Component Styles**: Inline React styles for glassmorphism effects
-- **Tailwind Classes**: Utility classes where Tailwind is properly configured
-- **Design System**: Dark theme with modern gradients and animations
+### Streamlit Development Tips
+- **Auto-reload**: Streamlit automatically reloads on file changes
+- **CSS Debugging**: Use browser dev tools to inspect custom CSS
+- **Session State**: Use `st.session_state` for cross-page data persistence
+- **Error Handling**: Wrap API calls in try-catch for user-friendly errors
 
 ## 🚀 Production Deployment
 
@@ -463,20 +455,26 @@ make docker-run                   # Run container
 - Upload success/failure rates
 - Database connection health
 
-## 🔧 Extension Patterns
+## 🔧 Interface-Specific Patterns
 
-### Adding New Entity
-1. **Data Model**: `models/new_entity.py`
-2. **Repository**: `repositories/new_entity_repository.py`
-3. **Service**: `services/new_entity_service.py`
-4. **API Router**: `routers/new_entity.py`
-5. **Migration**: `make migrate-auto`
+### Adding New Streamlit Page
+1. **Create page file**: `streamlit_app/pages/new_page.py`
+2. **Follow naming pattern**: `show_page_name()` function
+3. **Use API client**: Import and use `get_api_client()`
+4. **Add navigation**: Update main.py navigation structure
+5. **Apply consistent styling**: Follow existing CSS patterns
 
-### Adding External Service Integration
-1. **Service Manager**: `services/external_service/`
-2. **Auth/Client**: `auth_manager.py`, `api_client.py`
-3. **Configuration**: Add to `config.py`
-4. **Custom Exceptions**: Add to `core/exceptions.py`
+### Adding CLI Command
+1. **Create command file**: `cli/commands/new_command.py`
+2. **Follow Click patterns**: Use decorators for options/arguments
+3. **Use Rich output**: For beautiful terminal formatting
+4. **Add to main CLI**: Register in `cli/main.py`
+
+### Extending API
+1. **Backend**: Add router → service → repository
+2. **Streamlit**: Add method to `YouTubeAutomationAPI` class
+3. **CLI**: Add command using new API endpoint
+4. **Test**: Add integration tests
 
 ## 🐛 Common Troubleshooting
 
@@ -488,14 +486,17 @@ make docker-run                   # Run container
 - **미인증 프로젝트**: public/unlisted 업로드 불가 (private만 가능)
 - **필드 제한**: 제목 100자, 설명 5000바이트, 태그 500자
 
-### Frontend Issues
-- **Tailwind CSS Not Working**: Use inline styles as fallback for critical styling
-- **API Connection Issues**: Check VITE_API_BASE_URL environment variable
-- **WebSocket Connection Issues**: Check VITE_WS_URL environment variable and WebSocket server status
-- **Build Errors**: Run `npm run lint` to check TypeScript errors
-- **Styling Problems**: Ensure Tailwind config matches component usage
-- **Development Server**: Use `npm run dev -- --host 0.0.0.0 --port 3000` for custom host/port
-- **Real-time Features Not Working**: Check WebSocket connection status and browser console for errors
+### Streamlit Issues
+- **Port Conflicts**: Use `--server.port` to specify different port
+- **API Connection**: Check backend server is running on correct port
+- **CSS Not Applied**: Clear browser cache or use incognito mode
+- **Session State Issues**: Use unique keys for widgets
+- **Memory Issues**: Restart Streamlit if data gets corrupted
+
+### CLI Issues
+- **Permissions**: Make sure scripts are executable (`chmod +x`)
+- **Python Path**: Ensure virtual environment is activated
+- **API Connectivity**: Check backend server status
 
 ### Debug Log Access
 ```bash
@@ -503,30 +504,20 @@ make docker-run                   # Run container
 tail -f logs/app-$(date +%Y-%m-%d).log
 tail -f logs/error-$(date +%Y-%m-%d).log
 
-# Frontend development
-# Check browser console for React/TypeScript errors
-# Use React DevTools for component debugging
+# Streamlit debugging
+# Check terminal output where Streamlit is running
+# Use st.write() for debugging in Streamlit app
 ```
 
-## 🔄 Week 7: WebSocket 실시간 기능 (완료)
+## 🔄 WebSocket Real-time Features (Completed)
 
 ### 구현된 실시간 기능
 - ✅ **WebSocket 연결 관리**: 자동 재연결, 하트비트, 연결 풀링
 - ✅ **실시간 알림 시스템**: 업로드 상태 변화, 성공/실패 알림
 - ✅ **업로드 진행률 추적**: 실시간 진행률 브로드캐스트
 - ✅ **스크립트 구독 시스템**: 특정 스크립트 업데이트 구독
-- ✅ **사용자 인터페이스**: 알림 패널, 연결 상태 표시
+- ✅ **Streamlit 통합**: 모니터링 페이지에서 실시간 상태 확인
 - ✅ **오류 처리**: WebSocket 연결 실패시 재연결 로직
-
-### 실시간 알림 타입
-```typescript
-- system_notification: 시스템 전체 알림
-- script_update: 스크립트 상태 변경 알림  
-- upload_progress: 업로드 진행률 알림
-- script_status: 스크립트 상태 조회 응답
-- connection_established: 연결 설정 확인
-- subscription_confirmed: 구독 확인
-```
 
 ### WebSocket 메시지 프로토콜
 ```typescript
@@ -548,4 +539,4 @@ tail -f logs/error-$(date +%Y-%m-%d).log
 
 ---
 
-**Important Note**: This system is designed specifically for **Korean seniors** using **simplified automation** processes. Keep the user interface **simple** and **intuitive** while maintaining **robust** backend functionality including **real-time progress tracking** and **instant notifications**.
+**Important Note**: This system is designed specifically for **Korean seniors** using **simplified automation** processes. The **Streamlit interface** is the primary production interface, while CLI provides power-user functionality. Keep interfaces **simple** and **intuitive** while maintaining **robust** backend functionality including **real-time progress tracking** and **instant notifications**.

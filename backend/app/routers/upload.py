@@ -45,26 +45,28 @@ async def upload_video_file(
 @router.post("/youtube/{script_id}")
 async def upload_to_youtube(
     script_id: int,
-    scheduled_time: Optional[str] = Form(None),
+    publish_at: Optional[str] = Form(None),
     privacy_status: Optional[str] = Form(None),
     category_id: Optional[int] = Form(None),
     db: Session = Depends(get_db),
 ):
-    """YouTube에 비디오 업로드
+    """YouTube에 비디오 업로드 (네이티브 예약 발행 지원)
 
     Args:
         script_id: 업로드할 대본 ID
-        scheduled_time: 예약 발행 시간 (ISO 8601 형식, 선택사항)
+        publish_at: YouTube 네이티브 예약 발행 시간 (ISO 8601 형식, 선택사항)
+                    예: "2025-08-17T09:00:00.000Z"
         privacy_status: 공개 설정 (private, unlisted, public)
+                       - 예약 발행시 자동으로 private로 설정됨
         category_id: YouTube 카테고리 ID (기본: 22 - People & Blogs)
     """
     try:
-        logger.info(f"YouTube 업로드 시작: script_id={script_id}")
+        logger.info(f"YouTube 업로드 시작: script_id={script_id}, 예약발행={bool(publish_at)}")
 
         upload_service = UploadService(db)
         result = await upload_service.upload_to_youtube(
             script_id=script_id,
-            scheduled_time=scheduled_time,
+            publish_at=publish_at,
             privacy_status=privacy_status,
             category_id=category_id,
         )

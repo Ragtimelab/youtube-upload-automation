@@ -23,8 +23,6 @@ class Script(Base):
     youtube_video_id = Column(String(50))
     scheduled_time = Column(DateTime)
 
-    # 관계 설정
-    schedules = relationship("Schedule", back_populates="script", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Script(id={self.id}, title='{self.title}', status='{self.status}')>"

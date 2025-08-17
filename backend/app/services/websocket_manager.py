@@ -12,6 +12,18 @@ from ..core.logging import get_service_logger
 logger = get_service_logger("websocket_manager")
 
 
+def serialize_for_json(obj):
+    """JSON 직렬화를 위한 헬퍼 함수"""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    elif isinstance(obj, dict):
+        return {key: serialize_for_json(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [serialize_for_json(item) for item in obj]
+    else:
+        return obj
+
+
 class ConnectionManager:
     """WebSocket 연결 관리자"""
 
@@ -81,12 +93,16 @@ class ConnectionManager:
         if connection_id in self.active_connections:
             websocket = self.active_connections[connection_id]
             try:
-                await websocket.send_text(json.dumps(message, ensure_ascii=False))
+                # 메시지를 JSON 직렬화 가능한 형태로 변환
+                serialized_message = serialize_for_json(message)
+                await websocket.send_text(json.dumps(serialized_message, ensure_ascii=False))
                 logger.debug(f"메시지 전송 성공: {connection_id} - {message.get('type', 'unknown')}")
             except Exception as e:
                 logger.error(f"메시지 전송 실패: {connection_id} - {e}")
                 # 연결이 끊어진 경우 정리
                 self.disconnect(connection_id)
+        else:
+            logger.warning(f"존재하지 않는 연결 ID: {connection_id}")
 
     async def send_user_message(self, user_id: str, message: dict):
         """특정 사용자의 모든 연결에 메시지 전송"""

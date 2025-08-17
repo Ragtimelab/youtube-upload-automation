@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# 빠른 스크립트 업로드용 래퍼
+
+if [ $# -eq 0 ]; then
+    echo "사용법: ./quick-script <script_file>"
+    echo "예시: ./quick-script my_script.txt"
+    exit 1
+fi
+
+./youtube-cli script upload "$1"

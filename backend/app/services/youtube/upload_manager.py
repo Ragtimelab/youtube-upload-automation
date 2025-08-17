@@ -91,6 +91,7 @@ class YouTubeUploadManager:
 
             # 재개 가능한 업로드 실행 (진행률 추적)
             response = None
+            status = None  # status 변수 초기화
             while response is None:
                 try:
                     status, response = request.next_chunk()
@@ -251,10 +252,12 @@ class YouTubeUploadManager:
             "status": {"privacyStatus": metadata.get("privacy_status", "private")},
         }
 
-        # 예약 발행 시간 설정
-        if metadata.get("scheduled_time"):
-            body["status"]["publishAt"] = metadata["scheduled_time"]
-            body["status"]["privacyStatus"] = "private"  # 예약 발행시 일단 private
+        # YouTube 네이티브 예약 발행 시간 설정
+        publish_at_time = metadata.get("publish_at") or metadata.get("scheduled_time")
+        if publish_at_time:
+            body["status"]["publishAt"] = publish_at_time
+            # 예약 발행시 privacy_status는 반드시 private이어야 함
+            body["status"]["privacyStatus"] = "private"
 
         return body
 

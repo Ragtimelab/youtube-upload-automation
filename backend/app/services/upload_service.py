@@ -4,7 +4,7 @@
 
 import os
 import shutil
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import UploadFile
@@ -98,11 +98,11 @@ class UploadService:
     async def upload_to_youtube(
         self,
         script_id: int,
-        scheduled_time: Optional[str] = None,
+        publish_at: Optional[str] = None,
         privacy_status: Optional[str] = None,
         category_id: Optional[int] = None,
     ) -> dict:
-        """YouTube에 비디오 업로드"""
+        """YouTube에 비디오 업로드 (네이티브 예약 발행 지원)"""
         # 대본 및 비디오 파일 확인
         script = self.repository.get_by_id(script_id)
         if not script:
@@ -113,6 +113,17 @@ class UploadService:
 
         if not script.video_file_path or not os.path.exists(script.video_file_path):
             raise VideoFileNotFoundError(script.video_file_path or "Unknown")
+
+        # 예약 발행 설정 검증
+        if publish_at:
+            privacy_status = "private"  # 예약 발행시 강제로 private 설정
+            try:
+                # ISO 8601 형식 검증
+                scheduled_datetime = datetime.fromisoformat(publish_at.replace('Z', '+00:00'))
+                if scheduled_datetime <= datetime.now(timezone.utc):
+                    raise ValueError("예약 시간은 현재 시간보다 미래여야 합니다")
+            except ValueError as e:
+                raise YouTubeUploadError(f"잘못된 예약 시간 형식: {str(e)}")
 
         # 기본값 설정
         if privacy_status is None:
@@ -129,6 +140,7 @@ class UploadService:
                 "id": script.id,
                 "title": script.title,
                 "status": script.status,
+                "scheduled_publish": publish_at is not None
             }
             
             try:
@@ -144,9 +156,9 @@ class UploadService:
             if not youtube_client.authenticate():
                 raise YouTubeUploadError("YouTube API 인증에 실패했습니다.")
 
-            # 업로드 메타데이터 구성
+            # 업로드 메타데이터 구성 (publishAt 포함)
             metadata = self._build_upload_metadata(
-                script, privacy_status, category_id, scheduled_time
+                script, privacy_status, category_id, publish_at
             )
 
             # YouTube 업로드 실행
@@ -157,10 +169,10 @@ class UploadService:
 
             # DB 업데이트
             script.youtube_video_id = video_id
-            script.status = "scheduled" if scheduled_time else "uploaded"
-            if scheduled_time:
+            script.status = "scheduled" if publish_at else "uploaded"
+            if publish_at:
                 script.scheduled_time = datetime.fromisoformat(
-                    scheduled_time.replace("Z", "+00:00")
+                    publish_at.replace("Z", "+00:00")
                 )
             script.updated_at = datetime.utcnow()
 
@@ -446,7 +458,7 @@ class UploadService:
         script: Script,
         privacy_status: str,
         category_id: int,
-        scheduled_time: Optional[str],
+        publish_at: Optional[str],
     ) -> dict:
         """업로드 메타데이터 구성"""
         metadata = {
@@ -457,17 +469,9 @@ class UploadService:
             "privacy_status": privacy_status,
         }
 
-        # 예약 발행 시간 설정
-        if scheduled_time:
-            try:
-                scheduled_datetime = datetime.fromisoformat(
-                    scheduled_time.replace("Z", "+00:00")
-                )
-                metadata["scheduled_time"] = scheduled_datetime.isoformat()
-                metadata["privacy_status"] = "private"  # 예약 발행시 일단 private
-            except ValueError:
-                raise FileValidationError(
-                    "잘못된 날짜 형식입니다. ISO 8601 형식을 사용하세요 (예: 2025-01-20T14:00:00)"
-                )
+        # YouTube 네이티브 예약 발행 설정
+        if publish_at:
+            # publishAt은 YouTube API에서 직접 처리
+            metadata["publish_at"] = publish_at
 
         return metadata

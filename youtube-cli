@@ -2,4 +2,11 @@
 # YouTube 자동화 CLI 실행 스크립트
 
 cd "$(dirname "$0")"
-poetry run python -m cli.main "$@"
+
+# Poetry 환경에서 실행 시도 (우선)
+if command -v poetry > /dev/null && poetry env info > /dev/null 2>&1; then
+    poetry run python cli/main.py "$@"
+else
+    # Poetry가 없거나 환경이 활성화되지 않은 경우 직접 실행
+    python cli/main.py "$@"
+fi

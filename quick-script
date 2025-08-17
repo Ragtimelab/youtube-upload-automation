@@ -7,4 +7,4 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-./youtube-cli script upload "$1"
+python cli/main.py script upload "$1"

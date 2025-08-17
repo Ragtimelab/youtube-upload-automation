@@ -5,17 +5,22 @@ YouTube 자동화 CLI 도구
 
 import click
 import sys
+import os
 from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
 
-# CLI 명령어 그룹들 import
-from .commands.script import script
-from .commands.video import video
-from .commands.youtube import youtube
-from .commands.status import status
-from .utils.api_client import api, APIError
-from .utils.validators import file_validator
+# 프로젝트 루트 디렉토리를 sys.path에 추가
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
+# CLI 명령어 그룹들 import (절대 임포트)
+from cli.commands.script import script
+from cli.commands.video import video
+from cli.commands.youtube import youtube
+from cli.commands.status import status
+from cli.utils.api_client import api, APIError
+from cli.utils.validators import file_validator
 
 
 console = Console()

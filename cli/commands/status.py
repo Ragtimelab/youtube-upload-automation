@@ -3,13 +3,20 @@
 """
 
 import click
+import sys
+from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.progress import Progress, BarColumn, TextColumn
 import time
 
-from ..utils.api_client import api, APIError
+# 프로젝트 루트 디렉토리를 sys.path에 추가
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from cli.utils.api_client import api, APIError
 
 
 console = Console()

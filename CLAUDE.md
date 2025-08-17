@@ -143,16 +143,18 @@ streamlit run streamlit_app/main.py --browser.gatherUsageStats false
 
 ### CLI Usage
 ```bash
-# Make CLI executable
-chmod +x youtube-cli
+# Direct execution (recommended)
+python cli/main.py --help
+
+# Executable script (automatic Poetry detection)
+./youtube-cli --help
+
+# Module execution
+python -m cli.main --help
 
 # Quick commands (executable scripts in root)
 ./quick-script          # Quick script upload
 ./quick-upload          # Quick video upload
-./youtube-cli           # Full CLI interface
-
-# Direct Python execution
-python cli/main.py --help
 ```
 
 ### Environment Configuration

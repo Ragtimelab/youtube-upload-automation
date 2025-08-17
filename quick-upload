@@ -19,12 +19,12 @@ echo ""
 
 # 1단계: 비디오 업로드
 echo "1️⃣ 비디오 업로드 중..."
-./youtube-cli video upload "$SCRIPT_ID" "$VIDEO_FILE"
+python cli/main.py video upload "$SCRIPT_ID" "$VIDEO_FILE"
 
 if [ $? -eq 0 ]; then
     echo ""
     echo "2️⃣ YouTube 업로드 중..."
-    ./youtube-cli youtube upload "$SCRIPT_ID" --privacy "$PRIVACY"
+    python cli/main.py youtube upload "$SCRIPT_ID" --privacy "$PRIVACY"
     
     if [ $? -eq 0 ]; then
         echo ""

@@ -43,11 +43,18 @@ poetry shell
 
 ### CLI 실행 방법
 ```bash
-# 메인 CLI 실행
+# 방법 1: 직접 실행 (권장)
 python cli/main.py
+
+# 방법 2: 실행 스크립트 사용
+./youtube-cli
+
+# 방법 3: 모듈로 실행
+python -m cli.main
 
 # 도움말 확인
 python cli/main.py --help
+./youtube-cli --help
 
 # 버전 정보
 python cli/main.py --version

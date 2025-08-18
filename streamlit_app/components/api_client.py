@@ -144,6 +144,7 @@ class APIClient:
     def get_ready_for_youtube_upload(self) -> List[Dict[str, Any]]:
         """YouTube 업로드 준비된 스크립트"""
         return self.get_scripts_by_status("video_ready")
+    
 
 
 @st.cache_resource

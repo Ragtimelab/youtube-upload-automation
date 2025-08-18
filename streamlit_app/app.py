@@ -497,6 +497,8 @@ def show_upload_management():
             show_error_message(f"데이터 로드 실패: {e.message}")
 
 
+
+
 def main():
     """메인 애플리케이션"""
     

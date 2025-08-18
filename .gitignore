@@ -40,12 +40,14 @@ dist/
 *.sqlite3
 youtube_automation.db
 
-# Google API Credentials
-credentials.json
+# Secrets & Credentials (SECURITY)
+.secrets/
+*.json
 token.json
 token.pickle
 client_secret*.json
-backend/secrets/
+*-credentials.json
+service-account*.json
 
 # Uploads Directory
 uploads/

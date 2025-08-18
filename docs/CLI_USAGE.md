@@ -272,6 +272,41 @@ python cli/main.py status monitor --interval 10
 
 ## 🔄 실제 워크플로우
 
+### 🗓️ 날짜 기반 워크플로우 (권장!)
+```bash
+# 1단계: 파일명을 날짜 형식으로 준비
+scripts/
+├── 20250817_01_story.txt
+├── 20250817_02_story.txt
+└── 20250817_03_story.txt
+
+videos/
+├── 20250817_01_story.mp4
+├── 20250817_02_story.mp4
+└── 20250817_03_story.mp4
+
+# 2단계: 완전 자동화 실행 (대본→영상→YouTube)
+python cli/main.py date-upload scripts/ videos/
+# → 확인 후 Enter: 모든 단계 자동 처리
+
+# 3단계: 결과 확인
+python cli/main.py status pipeline
+```
+
+### 🔍 시뮬레이션 워크플로우
+```bash
+# 1단계: 매핑 시뮬레이션
+python cli/main.py video auto-mapping scripts/ videos/ --dry-run
+# → 어떤 파일들이 매칭되는지 확인
+
+# 2단계: 완전 자동화 시뮬레이션  
+python cli/main.py date-upload scripts/ videos/ --dry-run
+# → 전체 과정 시뮬레이션
+
+# 3단계: 확인 후 실제 실행
+python cli/main.py date-upload scripts/ videos/
+```
+
 ### 기본 워크플로우 (1개 비디오)
 ```bash
 # 1단계: 스크립트 업로드
@@ -309,6 +344,40 @@ python cli/main.py status pipeline
 ```
 
 ---
+
+## 🗓️ 날짜 기반 자동 매핑 (신기능!)
+
+### 파일명 규칙
+```bash
+# 대본과 영상 파일명을 날짜_순번_이름 형식으로 통일
+20250817_01_story.txt ↔ 20250817_01_story.mp4
+20250817_02_story.txt ↔ 20250817_02_story.mp4
+20250817_03_story.txt ↔ 20250817_03_story.mp4
+```
+
+### 자동 매핑 명령어
+```bash
+# 오늘 날짜 파일들 자동 매핑
+python cli/main.py video auto-mapping scripts/ videos/
+
+# 특정 날짜 파일들 매핑
+python cli/main.py video auto-mapping scripts/ videos/ --date 20250817
+
+# 매핑 시뮬레이션 (실제 업로드 없이 확인)
+python cli/main.py video auto-mapping scripts/ videos/ --dry-run
+```
+
+### 완전 자동화 명령어
+```bash
+# 대본→영상→YouTube 한 번에 처리
+python cli/main.py date-upload scripts/ videos/
+
+# 특정 날짜 + 공개 설정
+python cli/main.py date-upload scripts/ videos/ --date 20250817 --privacy unlisted
+
+# 시뮬레이션으로 먼저 확인
+python cli/main.py date-upload scripts/ videos/ --dry-run
+```
 
 ## 🚀 빠른 명령어
 
@@ -376,8 +445,8 @@ python cli/main.py script upload ./scripts/my_script.txt  # 상대경로 사용
 ❌ YouTube API 인증에 실패했습니다
 
 # 해결책:
-ls backend/secrets/credentials.json  # 인증 파일 확인
-rm backend/secrets/token.pickle      # 토큰 재생성 (필요시)
+ls .secrets/credentials.json  # 인증 파일 확인
+rm .secrets/token.pickle      # 토큰 재생성 (필요시)
 python cli/main.py youtube health    # 재인증 확인
 ```
 
@@ -477,8 +546,8 @@ ImageFX 프롬프트: AI 이미지 생성용 프롬프트
 # .env 파일
 BACKEND_HOST=0.0.0.0
 BACKEND_PORT=8000
-CREDENTIALS_PATH=backend/secrets/credentials.json
-TOKEN_PATH=backend/secrets/token.pickle
+CREDENTIALS_PATH=.secrets/credentials.json
+TOKEN_PATH=.secrets/token.pickle
 DEFAULT_PRIVACY_STATUS=private
 DEFAULT_CATEGORY_ID=22
 ```

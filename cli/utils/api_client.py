@@ -163,6 +163,7 @@ class YouTubeAutomationAPI:
     def delete_video_file(self, script_id: int) -> Dict[str, Any]:
         """비디오 파일 삭제"""
         return self._make_request('DELETE', f'/api/upload/video/{script_id}')
+    
 
 
 class APIError(Exception):

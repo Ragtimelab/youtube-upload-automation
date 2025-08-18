@@ -39,8 +39,8 @@ class Settings(BaseSettings):
     # File Paths & Storage
     # ===========================================
     upload_dir: str = Field(default="uploads/videos", validation_alias="UPLOAD_DIR")
-    credentials_path: str = Field(default=str(PROJECT_ROOT / "backend/secrets/credentials.json"), validation_alias="CREDENTIALS_PATH")
-    token_path: str = Field(default=str(PROJECT_ROOT / "backend/secrets/token.pickle"), validation_alias="TOKEN_PATH")
+    credentials_path: str = Field(default=str(PROJECT_ROOT / ".secrets/youtube-oauth2.json"), validation_alias="CREDENTIALS_PATH")
+    token_path: str = Field(default=str(PROJECT_ROOT / ".secrets/youtube-token.pickle"), validation_alias="TOKEN_PATH")
 
     # ===========================================
     # YouTube API Configuration

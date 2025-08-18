@@ -53,7 +53,7 @@ poetry run alembic upgrade head
 1. [Google Cloud Console](https://console.cloud.google.com/)에서 프로젝트 생성
 2. YouTube Data API v3 활성화
 3. OAuth 2.0 클라이언트 ID 생성
-4. `credentials.json` 파일을 `backend/secrets/` 디렉토리에 배치
+4. `credentials.json` 파일을 `.secrets/` 디렉토리에 배치
 
 ### 5. 시스템 실행
 
@@ -96,7 +96,7 @@ youtube-upload-automation/
 │   │   ├── routers/        # API 라우터 (scripts, upload, websocket)
 │   │   ├── services/       # 비즈니스 로직 (YouTube, WebSocket)
 │   │   └── core/           # 예외처리, 로깅, 검증
-│   ├── secrets/            # Google OAuth 인증 파일
+│   ├── .secrets/           # Google OAuth 인증 파일
 │   └── uploads/            # 업로드된 비디오 파일
 ├── streamlit_app/          # Streamlit 웹 대시보드 (메인 UI)
 │   ├── app.py             # Streamlit 메인 애플리케이션
@@ -241,8 +241,8 @@ BACKEND_RELOAD=true
 
 # 파일 경로
 UPLOAD_DIR=uploads/videos
-CREDENTIALS_PATH=backend/secrets/credentials.json
-TOKEN_PATH=backend/secrets/token.pickle
+CREDENTIALS_PATH=.secrets/youtube-oauth2.json
+TOKEN_PATH=.secrets/youtube-token.pickle
 
 # YouTube API 기본값
 DEFAULT_PRIVACY_STATUS=private
@@ -364,8 +364,9 @@ GitHub Issues를 통해 버그를 신고해주세요:
 ## 🔐 보안 고려사항
 
 ### 중요 파일 보호
-- `backend/secrets/credentials.json` - Google OAuth 인증 정보
-- `backend/secrets/token.pickle` - YouTube API 액세스 토큰
+- `.secrets/youtube-oauth2.json` - YouTube OAuth2 클라이언트 인증 정보
+- `.secrets/youtube-token.pickle` - YouTube API 액세스 토큰
+- `.secrets/google-tts-service.json` - Google TTS 서비스 계정 키
 - `.env` - 환경변수 설정
 - `*.db` - 데이터베이스 파일
 

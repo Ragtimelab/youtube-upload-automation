@@ -5,6 +5,7 @@ CLI 입력 검증 유틸리티
 import os
 from pathlib import Path
 from typing import List, Optional
+from .date_mapping import date_mapper
 
 
 class FileValidator:
@@ -69,6 +70,31 @@ class FileValidator:
             files.extend(dir_path.glob(f"*{ext.upper()}"))
         
         return sorted(files)
+    
+    @staticmethod
+    def find_date_files_in_directory(directory: str, extensions: List[str]) -> List[Path]:
+        """디렉토리에서 날짜 형식 파일들 찾기 (YYYYMMDD_NN_name.ext)"""
+        dir_path = Path(directory)
+        
+        if not dir_path.exists():
+            raise FileNotFoundError(f"디렉토리를 찾을 수 없습니다: {directory}")
+        
+        if not dir_path.is_dir():
+            raise ValueError(f"파일이 아닌 디렉토리를 지정해주세요: {directory}")
+        
+        date_files = date_mapper.find_date_files(directory, extensions)
+        return [date_file.path / date_file.full_filename for date_file in date_files]
+    
+    @staticmethod
+    def validate_date_filename(filename: str) -> bool:
+        """날짜 형식 파일명 검증 (YYYYMMDD_NN_name.ext)"""
+        date_file = date_mapper.parse_filename(filename)
+        return date_file is not None
+    
+    @staticmethod
+    def validate_date_format(date_str: str) -> bool:
+        """날짜 형식 검증 (YYYYMMDD)"""
+        return date_mapper.validate_date_format(date_str)
 
 
 class InputValidator:

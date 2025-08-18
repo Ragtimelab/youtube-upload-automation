@@ -65,16 +65,17 @@ streamlit_app/
 ### CLI Architecture
 ```
 cli/
-├── main.py               # CLI entry point
+├── main.py               # CLI entry point with date-upload command
 ├── commands/             # Command modules
 │   ├── script.py         # Script management commands
-│   ├── video.py          # Video upload commands
+│   ├── video.py          # Video upload + auto-mapping commands
 │   ├── youtube.py        # YouTube upload commands
 │   └── status.py         # Status checking commands
 └── utils/                # CLI utilities
     ├── api_client.py     # CLI-specific API client
     ├── config.py         # CLI configuration
-    └── validators.py     # Input validation
+    ├── validators.py     # Input validation + date file validation
+    └── date_mapping.py   # Date-based auto-mapping system
 ```
 
 ### 🎨 Architecture Patterns
@@ -112,33 +113,36 @@ poetry install --with dev,test
 poetry shell
 ```
 
-### Backend Commands (Makefile based)
+### Backend Commands (Makefile based - Run from backend/ directory)
 ```bash
-# Server management
-make run                # uvicorn app.main:app --reload
-make run-prod          # Production server
+# Server management (essential for development)
+make run                # uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+make run-prod          # Production server without reload
 
-# Code quality
-make format            # black + isort
-make lint              # flake8 + mypy
-make test              # pytest
-make test-cov          # Coverage testing
+# Code quality (run before commits)
+make format            # black + isort (Python formatting)
+make lint              # flake8 + mypy (linting + type checking)
+make test              # pytest tests/ -v
+make test-cov          # pytest --cov=app tests/ --cov-report=html
 
 # Database operations
 make migrate           # alembic upgrade head
-make migrate-auto      # Auto-generate migration
+make migrate-auto      # alembic revision --autogenerate -m "Auto migration"
+
+# Development workflow
+make clean             # Remove cache and temp files
 ```
 
 ### Streamlit Application
 ```bash
 # Run Streamlit app (from project root)
-streamlit run streamlit_app/main.py
+streamlit run streamlit_app/app.py
 
 # Run on custom port
-streamlit run streamlit_app/main.py --server.port 8501
+streamlit run streamlit_app/app.py --server.port 8503
 
 # Run with development options
-streamlit run streamlit_app/main.py --browser.gatherUsageStats false
+streamlit run streamlit_app/app.py --browser.gatherUsageStats false
 ```
 
 ### CLI Usage
@@ -152,9 +156,19 @@ python cli/main.py --help
 # Module execution
 python -m cli.main --help
 
+# Date-based auto-mapping (NEW!)
+python cli/main.py video auto-mapping scripts/ videos/
+python cli/main.py date-upload scripts/ videos/ --date 20250817
+python cli/main.py date-upload scripts/ videos/ --dry-run
+
 # Quick commands (executable scripts in root)
-./quick-script          # Quick script upload
-./quick-upload          # Quick video upload
+./quick-script script.txt           # Quick script upload
+./quick-upload                      # Interactive quick video upload
+
+# Common workflows
+python cli/main.py health           # System health check
+python cli/main.py ls --status video_ready  # List scripts by status
+python cli/main.py examples         # Show usage examples
 ```
 
 ### Environment Configuration
@@ -207,11 +221,31 @@ script_ready → video_ready → uploaded/scheduled → error
 
 ## 🔧 Core Business Logic
 
-### 1. Script Parsing (ScriptParser)
+### 1. Date-Based Auto-Mapping System (NEW!)
+**Location**: `cli/utils/date_mapping.py`
+
+```python
+# File naming convention: YYYYMMDD_NN_story.txt/mp4
+class DateBasedMapper:
+    DATE_PATTERN = re.compile(r'^(\d{8})_(\d{1,2})_(.+)\.(txt|md|mp4)$')
+    
+    def match_script_video_files(self, script_dir: str, video_dir: str, 
+                                target_date: str = None) -> List[Tuple[DateFile, DateFile]]
+    def parse_filename(self, filename: str) -> Optional[DateFile]
+    def generate_next_filename(self, directory: str, date: str, name: str = "story") -> str
+```
+
+- **Automatic file matching**: Pairs script and video files based on date, sequence, and name
+- **Date validation**: Ensures YYYYMMDD format compliance
+- **Sequence management**: Handles multiple files per day (01, 02, 03...)
+- **Complete workflow automation**: Script upload → Video mapping → YouTube upload
+- **Rich console output**: Uses Rich library for beautiful terminal interface when available
+
+### 2. Script Parsing (ScriptParser)
 **Location**: `app/services/script_parser.py`
 
 ```python
-# Script file format
+# Script file format (supports both 썸네일 제작 and 썸네일 정보)
 === 제목 ===
 [Video Title]
 
@@ -222,13 +256,18 @@ script_ready → video_ready → uploaded/scheduled → error
 === 썸네일 정보 ===
 텍스트: [Thumbnail text]
 ImageFX 프롬프트: [AI generation prompt]
+
+=== 대본 ===
+[Script content]
 ```
 
-- Regex-based section parsing
-- Metadata extraction and validation
-- Error handling for malformed scripts
+- **Flexible section parsing**: Supports both legacy and new format
+- **Regex-based extraction**: Uses `_extract_section()` with multiple end patterns
+- **Metadata validation**: YouTube field limits (title 100chars, description 5000bytes)
+- **Error handling**: Custom ScriptParsingError with detailed messages
+- **Required field validation**: Ensures title and content exist
 
-### 2. Streamlit API Integration
+### 3. Streamlit API Integration
 **Location**: `streamlit_app/api/client.py`
 
 ```python
@@ -242,7 +281,7 @@ class YouTubeAutomationAPI:
     def get_websocket_stats(self) -> Dict
 ```
 
-### 3. WebSocket Real-time System
+### 4. WebSocket Real-time System
 **Location**: `app/services/websocket_manager.py`
 
 ```python
@@ -265,20 +304,23 @@ class WebSocketNotificationService:
 ### Script Management API
 ```
 POST   /api/scripts/upload           # Script file upload
-GET    /api/scripts/                 # List scripts
+GET    /api/scripts/                 # List scripts with pagination
 GET    /api/scripts/{id}             # Get single script
 PUT    /api/scripts/{id}             # Update script
 DELETE /api/scripts/{id}             # Delete script
-GET    /api/scripts/stats/summary    # Statistics
+GET    /api/scripts/stats/summary    # Statistics summary
+GET    /api/scripts/ready-for-video  # Scripts ready for video upload
+GET    /api/scripts/ready-for-youtube # Scripts ready for YouTube upload
 ```
 
 ### Upload API
 ```
-POST   /api/upload/video/{script_id} # Video file upload
-POST   /api/upload/youtube/{script_id} # YouTube upload
+POST   /api/upload/video/{script_id} # Video file upload (supports large files)
+POST   /api/upload/youtube/{script_id} # YouTube upload with privacy/category
 GET    /api/upload/status/{script_id}   # Upload status
 GET    /api/upload/progress/{script_id} # Upload progress (real-time)
 DELETE /api/upload/video/{script_id}    # Delete video file
+GET    /api/upload/health            # Upload service health
 ```
 
 ### WebSocket API
@@ -292,8 +334,23 @@ POST   /ws/notify/script/{script_id} # Script-specific notification API
 ### System API
 ```
 GET    /                            # API status check
-GET    /health                      # Health check
-GET    /docs                        # Swagger documentation
+GET    /health                      # Health check with DB connection test
+GET    /docs                        # Swagger API documentation
+GET    /redoc                       # ReDoc API documentation
+```
+
+### CLI Commands (New Date-Based Features)
+```bash
+# Date-based auto-mapping
+video auto-mapping scripts/ videos/                    # Auto-match today's files
+video auto-mapping scripts/ videos/ --date 20250817    # Auto-match specific date
+video auto-mapping scripts/ videos/ --dry-run          # Simulation mode
+
+# Complete workflow automation
+date-upload scripts/ videos/                           # Full automation (today)
+date-upload scripts/ videos/ --date 20250817          # Full automation (specific date)
+date-upload scripts/ videos/ --privacy unlisted       # With privacy setting
+date-upload scripts/ videos/ --dry-run                # Simulation mode
 ```
 
 ## 🚨 Custom Exception System
@@ -349,6 +406,21 @@ tests/
     ├── test_youtube_auth.py       # YouTube authentication tests
     └── test_youtube_client.py     # YouTube API tests
 ```
+
+### Running Tests
+```bash
+# From backend/ directory
+make test              # Basic test run
+make test-cov          # With coverage report
+poetry run pytest tests/unit/test_script_parser.py -v  # Single test file
+poetry run pytest tests/ -k "test_parse" -v           # Specific test pattern
+```
+
+### Testing Patterns
+- **Script Parser Tests**: Test all script formats including edge cases
+- **YouTube Integration**: Mock YouTube API responses for reliable testing  
+- **FastAPI Testing**: Use TestClient with dependency overrides
+- **SQLAlchemy Testing**: Use in-memory SQLite for fast database tests
 
 ## ⚙️ Development Tools Configuration
 
@@ -406,7 +478,7 @@ poetry run pre-commit run --all-files  # Manual run
 
 ### Standard Development Process
 1. **Start backend server** (`make run` from backend/)
-2. **Start interface** (Streamlit: `streamlit run streamlit_app/main.py`)
+2. **Start interface** (Streamlit: `streamlit run streamlit_app/app.py`)
 3. **Create data model** (backend/models/)
 4. **Implement repository** (backend/repositories/)
 5. **Add service logic** (backend/services/)
@@ -438,6 +510,47 @@ make migrate                      # Apply migration
 - **CSS Debugging**: Use browser dev tools to inspect custom CSS
 - **Session State**: Use `st.session_state` for cross-page data persistence
 - **Error Handling**: Wrap API calls in try-catch for user-friendly errors
+- **Component Structure**: Main app is `streamlit_app/app.py`, components in `streamlit_app/components/`
+- **Development Port**: Default port 8503 (differs from standard 8501)
+
+### Common Debugging Workflows
+
+#### Backend API Issues
+```bash
+# 1. Check if backend is running
+curl http://localhost:8000/health
+
+# 2. Check logs
+tail -f backend/logs/app-$(date +%Y-%m-%d).log
+
+# 3. Test specific endpoint
+curl -X POST http://localhost:8000/api/scripts/upload \
+  -F "file=@test_script.txt"
+
+# 4. API documentation
+open http://localhost:8000/docs
+```
+
+#### CLI Date-Mapping Debug
+```bash
+# Test file parsing without upload
+python cli/main.py video auto-mapping scripts/ videos/ --dry-run
+
+# Check file naming patterns
+python -c "from cli.utils.date_mapping import date_mapper; print(date_mapper.parse_filename('20250817_01_story.txt'))"
+
+# Validate date format
+python cli/main.py date-upload scripts/ videos/ --date 20250817 --dry-run
+```
+
+#### Streamlit Component Issues
+```bash
+# Run with debug mode
+streamlit run streamlit_app/app.py --logger.level debug
+
+# Check API client connection
+python -c "from streamlit_app.components.api_client import get_api_client; print(get_api_client().health_check())"
+```
 
 ## 🚀 Production Deployment
 
@@ -499,6 +612,9 @@ make docker-run                   # Run container
 - **Permissions**: Make sure scripts are executable (`chmod +x`)
 - **Python Path**: Ensure virtual environment is activated
 - **API Connectivity**: Check backend server status
+- **Date File Naming**: Files must follow YYYYMMDD_NN_story.txt/mp4 pattern
+- **Auto-Mapping No Matches**: Check file naming convention and date format
+- **Import Errors**: Use absolute paths and verify sys.path configuration
 
 ### Debug Log Access
 ```bash
@@ -509,6 +625,9 @@ tail -f logs/error-$(date +%Y-%m-%d).log
 # Streamlit debugging
 # Check terminal output where Streamlit is running
 # Use st.write() for debugging in Streamlit app
+
+# Check Streamlit app logs
+streamlit run streamlit_app/app.py --logger.level debug
 ```
 
 ## 🔄 WebSocket Real-time Features (Completed)
@@ -541,4 +660,49 @@ tail -f logs/error-$(date +%Y-%m-%d).log
 
 ---
 
-**Important Note**: This system is designed specifically for **Korean seniors** using **simplified automation** processes. The **Streamlit interface** is the primary production interface, while CLI provides power-user functionality. Keep interfaces **simple** and **intuitive** while maintaining **robust** backend functionality including **real-time progress tracking** and **instant notifications**.
+## 🔍 Key Architectural Insights
+
+### Design Philosophy
+- **Korean Senior-Focused**: All interfaces prioritize simplicity and intuitive workflows
+- **Three-Interface Strategy**: Web (primary), CLI (power users), API (automation)
+- **Complete Automation**: Script → Video → YouTube with minimal manual intervention
+- **Real-time Feedback**: WebSocket integration provides immediate status updates
+
+### Critical Implementation Details
+
+#### 1. Script Status Workflow
+```
+script_ready → video_ready → uploaded → error
+```
+- Status transitions are enforced at the service layer
+- Each status has specific API endpoints for next valid actions
+- Failed uploads transition to 'error' status with detailed error messages
+
+#### 2. File Naming Convention (CLI)
+```
+YYYYMMDD_NN_story.txt    # Script files
+YYYYMMDD_NN_story.mp4    # Video files
+```
+- Date validation prevents invalid file processing
+- Sequence numbers (NN) allow multiple files per day
+- Name matching ensures script-video pairs are correctly associated
+
+#### 3. YouTube API Integration Constraints
+- **Daily quota**: 10,000 units (upload = 1,600 units)
+- **Unverified projects**: Limited to private uploads only
+- **Field limits**: Title 100 chars, description 5000 bytes, tags 500 chars
+- **Error handling**: Comprehensive retry logic with exponential backoff
+
+#### 4. Database Architecture
+- **Single SQLite database**: Simplifies deployment and backup
+- **Script-centric design**: All operations revolve around Script entity
+- **Status-driven workflows**: Database constraints prevent invalid state transitions
+- **Audit timestamps**: created_at/updated_at for all entities
+
+### Integration Points
+- **FastAPI ↔ Streamlit**: HTTP API with error boundary handling
+- **FastAPI ↔ CLI**: Same HTTP API with Rich terminal formatting
+- **WebSocket ↔ Frontend**: Real-time progress updates and notifications
+- **YouTube API ↔ Services**: OAuth flow with token persistence
+
+**Important Note**: This system is designed specifically for **Korean seniors** using **simplified automation** processes. The **Streamlit interface** is the primary production interface, while CLI provides power-user functionality with **date-based auto-mapping** for batch processing. Keep interfaces **simple** and **intuitive** while maintaining **robust** backend functionality including **real-time progress tracking**, **instant notifications**, and **intelligent file matching**.

@@ -278,5 +278,6 @@ class WebSocketNotificationService:
         await self.manager.broadcast_upload_progress(script_id, progress_data)
 
 
+
 # 전역 알림 서비스 인스턴스
 websocket_notification_service = WebSocketNotificationService(connection_manager)

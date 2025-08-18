@@ -4,16 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🎯 Project Overview
 
-**YouTube Upload Automation for Korean Seniors** - A comprehensive system with FastAPI backend, Streamlit web interface, and CLI tools that automates YouTube content upload for senior Korean content creators, focusing on simplicity and complete automation.
+**YouTube Upload Automation for Korean Seniors** - A comprehensive system with FastAPI backend and CLI tools that automates YouTube content upload for senior Korean content creators, focusing on simplicity and complete automation.
 
 ## 🏗️ Complete System Architecture
 
-This system consists of **three main interfaces** with shared backend:
+This system consists of **two main interfaces** with shared backend:
 
 ```
 youtube-upload-automation/
 ├── backend/app/              # FastAPI API server + WebSocket
-├── streamlit_app/           # Streamlit web interface
 ├── cli/                     # Command-line interface
 └── frontend/               # React frontend (deprecated/legacy)
 ```
@@ -47,21 +46,6 @@ backend/app/
     └── error_handler.py  # Global error handling
 ```
 
-### Streamlit Application Architecture
-```
-streamlit_app/
-├── main.py               # Streamlit app entry point with CSS styling
-├── api/
-│   └── client.py         # Complete API client for backend integration
-├── pages/                # Multi-page Streamlit app
-│   ├── dashboard.py      # Main dashboard with stats and charts
-│   ├── scripts.py        # Script management (upload, edit, delete)
-│   ├── uploads.py        # Video/YouTube upload management
-│   ├── monitoring.py     # System monitoring and logs
-│   └── settings.py       # System configuration
-└── components/           # Reusable components
-```
-
 ### CLI Architecture
 ```
 cli/
@@ -86,13 +70,6 @@ cli/
 - **Dependency Injection**: FastAPI Depends for testable code
 - **Custom Exceptions**: Structured error handling
 - **Structured Logging**: Component-based logging with daily rotation
-
-**Streamlit App:**
-- **Multi-page Architecture**: Page-based navigation with st.navigation
-- **Unified API Client**: Single client class for all backend communication
-- **Component Isolation**: Each page handles specific functionality
-- **CSS Customization**: Compact, professional styling optimized for productivity
-- **Real-time Updates**: Integration with backend WebSocket for live monitoring
 
 **CLI:**
 - **Command Pattern**: Structured command organization
@@ -131,18 +108,6 @@ make migrate-auto      # alembic revision --autogenerate -m "Auto migration"
 
 # Development workflow
 make clean             # Remove cache and temp files
-```
-
-### Streamlit Application
-```bash
-# Run Streamlit app (from project root)
-streamlit run streamlit_app/app.py
-
-# Run on custom port
-streamlit run streamlit_app/app.py --server.port 8503
-
-# Run with development options
-streamlit run streamlit_app/app.py --browser.gatherUsageStats false
 ```
 
 ### CLI Usage
@@ -221,7 +186,7 @@ script_ready → video_ready → uploaded/scheduled → error
 
 ## 🔧 Core Business Logic
 
-### 1. Date-Based Auto-Mapping System (NEW!)
+### 1. Date-Based Auto-Mapping System
 **Location**: `cli/utils/date_mapping.py`
 
 ```python
@@ -267,21 +232,7 @@ ImageFX 프롬프트: [AI generation prompt]
 - **Error handling**: Custom ScriptParsingError with detailed messages
 - **Required field validation**: Ensures title and content exist
 
-### 3. Streamlit API Integration
-**Location**: `streamlit_app/api/client.py`
-
-```python
-class YouTubeAutomationAPI:
-    # Complete API client supporting all backend endpoints
-    def health_check(self) -> Dict[str, Any]
-    def get_scripts(self, skip: int = 0, limit: int = 100, status: str = None) -> Dict
-    def upload_script(self, file_content: io.BytesIO, filename: str) -> Dict
-    def upload_video_file(self, script_id: int, file_content: io.BytesIO, filename: str) -> Dict
-    def upload_to_youtube(self, script_id: int, **kwargs) -> Dict
-    def get_websocket_stats(self) -> Dict
-```
-
-### 4. WebSocket Real-time System
+### 3. WebSocket Real-time System
 **Location**: `app/services/websocket_manager.py`
 
 ```python
@@ -339,7 +290,7 @@ GET    /docs                        # Swagger API documentation
 GET    /redoc                       # ReDoc API documentation
 ```
 
-### CLI Commands (New Date-Based Features)
+### CLI Commands (Date-Based Features)
 ```bash
 # Date-based auto-mapping
 video auto-mapping scripts/ videos/                    # Auto-match today's files
@@ -454,12 +405,6 @@ poetry run pre-commit run --all-files  # Manual run
 - **Uvicorn**: ASGI server
 - **WebSockets 15.0+**: Real-time communication
 
-### Streamlit Dependencies
-- **Streamlit 1.48.1+**: Web interface framework
-- **Plotly 6.3.0+**: Interactive charts and visualizations
-- **Pandas 2.3.1+**: Data manipulation for statistics
-- **Requests**: HTTP client for API communication
-
 ### YouTube Integration
 - **google-api-python-client**: YouTube Data API v3
 - **google-auth**: OAuth 2.0 authentication
@@ -478,14 +423,13 @@ poetry run pre-commit run --all-files  # Manual run
 
 ### Standard Development Process
 1. **Start backend server** (`make run` from backend/)
-2. **Start interface** (Streamlit: `streamlit run streamlit_app/app.py`)
+2. **Use CLI interface** (`./youtube-cli` or `python cli/main.py`)
 3. **Create data model** (backend/models/)
 4. **Implement repository** (backend/repositories/)
 5. **Add service logic** (backend/services/)
 6. **Create API endpoints** (backend/routers/)
-7. **Update Streamlit pages** (streamlit_app/pages/)
-8. **Write tests** (backend/tests/)
-9. **Check API documentation** (/docs)
+7. **Write tests** (backend/tests/)
+8. **Check API documentation** (/docs)
 
 ### Code Quality Process
 ```bash
@@ -504,14 +448,6 @@ poetry run pytest                 # Run all tests
 make migrate-auto                 # Generate migration
 make migrate                      # Apply migration
 ```
-
-### Streamlit Development Tips
-- **Auto-reload**: Streamlit automatically reloads on file changes
-- **CSS Debugging**: Use browser dev tools to inspect custom CSS
-- **Session State**: Use `st.session_state` for cross-page data persistence
-- **Error Handling**: Wrap API calls in try-catch for user-friendly errors
-- **Component Structure**: Main app is `streamlit_app/app.py`, components in `streamlit_app/components/`
-- **Development Port**: Default port 8503 (differs from standard 8501)
 
 ### Common Debugging Workflows
 
@@ -543,15 +479,6 @@ python -c "from cli.utils.date_mapping import date_mapper; print(date_mapper.par
 python cli/main.py date-upload scripts/ videos/ --date 20250817 --dry-run
 ```
 
-#### Streamlit Component Issues
-```bash
-# Run with debug mode
-streamlit run streamlit_app/app.py --logger.level debug
-
-# Check API client connection
-python -c "from streamlit_app.components.api_client import get_api_client; print(get_api_client().health_check())"
-```
-
 ## 🚀 Production Deployment
 
 ### Docker Support
@@ -572,13 +499,6 @@ make docker-run                   # Run container
 
 ## 🔧 Interface-Specific Patterns
 
-### Adding New Streamlit Page
-1. **Create page file**: `streamlit_app/pages/new_page.py`
-2. **Follow naming pattern**: `show_page_name()` function
-3. **Use API client**: Import and use `get_api_client()`
-4. **Add navigation**: Update main.py navigation structure
-5. **Apply consistent styling**: Follow existing CSS patterns
-
 ### Adding CLI Command
 1. **Create command file**: `cli/commands/new_command.py`
 2. **Follow Click patterns**: Use decorators for options/arguments
@@ -587,9 +507,8 @@ make docker-run                   # Run container
 
 ### Extending API
 1. **Backend**: Add router → service → repository
-2. **Streamlit**: Add method to `YouTubeAutomationAPI` class
-3. **CLI**: Add command using new API endpoint
-4. **Test**: Add integration tests
+2. **CLI**: Add command using new API endpoint
+3. **Test**: Add integration tests
 
 ## 🐛 Common Troubleshooting
 
@@ -600,13 +519,6 @@ make docker-run                   # Run container
 - **Token Expiry**: OAuth token refresh required
 - **미인증 프로젝트**: public/unlisted 업로드 불가 (private만 가능)
 - **필드 제한**: 제목 100자, 설명 5000바이트, 태그 500자
-
-### Streamlit Issues
-- **Port Conflicts**: Use `--server.port` to specify different port
-- **API Connection**: Check backend server is running on correct port
-- **CSS Not Applied**: Clear browser cache or use incognito mode
-- **Session State Issues**: Use unique keys for widgets
-- **Memory Issues**: Restart Streamlit if data gets corrupted
 
 ### CLI Issues
 - **Permissions**: Make sure scripts are executable (`chmod +x`)
@@ -621,13 +533,6 @@ make docker-run                   # Run container
 # Backend logs
 tail -f logs/app-$(date +%Y-%m-%d).log
 tail -f logs/error-$(date +%Y-%m-%d).log
-
-# Streamlit debugging
-# Check terminal output where Streamlit is running
-# Use st.write() for debugging in Streamlit app
-
-# Check Streamlit app logs
-streamlit run streamlit_app/app.py --logger.level debug
 ```
 
 ## 🔄 WebSocket Real-time Features (Completed)
@@ -637,7 +542,6 @@ streamlit run streamlit_app/app.py --logger.level debug
 - ✅ **실시간 알림 시스템**: 업로드 상태 변화, 성공/실패 알림
 - ✅ **업로드 진행률 추적**: 실시간 진행률 브로드캐스트
 - ✅ **스크립트 구독 시스템**: 특정 스크립트 업데이트 구독
-- ✅ **Streamlit 통합**: 모니터링 페이지에서 실시간 상태 확인
 - ✅ **오류 처리**: WebSocket 연결 실패시 재연결 로직
 
 ### WebSocket 메시지 프로토콜
@@ -663,8 +567,8 @@ streamlit run streamlit_app/app.py --logger.level debug
 ## 🔍 Key Architectural Insights
 
 ### Design Philosophy
-- **Korean Senior-Focused**: All interfaces prioritize simplicity and intuitive workflows
-- **Three-Interface Strategy**: Web (primary), CLI (power users), API (automation)
+- **Korean Senior-Focused**: CLI interface prioritizes simplicity and intuitive workflows
+- **Two-Interface Strategy**: CLI (primary), API (automation)
 - **Complete Automation**: Script → Video → YouTube with minimal manual intervention
 - **Real-time Feedback**: WebSocket integration provides immediate status updates
 
@@ -700,9 +604,8 @@ YYYYMMDD_NN_story.mp4    # Video files
 - **Audit timestamps**: created_at/updated_at for all entities
 
 ### Integration Points
-- **FastAPI ↔ Streamlit**: HTTP API with error boundary handling
-- **FastAPI ↔ CLI**: Same HTTP API with Rich terminal formatting
-- **WebSocket ↔ Frontend**: Real-time progress updates and notifications
+- **FastAPI ↔ CLI**: HTTP API with Rich terminal formatting
+- **WebSocket ↔ Backend**: Real-time progress updates and notifications
 - **YouTube API ↔ Services**: OAuth flow with token persistence
 
-**Important Note**: This system is designed specifically for **Korean seniors** using **simplified automation** processes. The **Streamlit interface** is the primary production interface, while CLI provides power-user functionality with **date-based auto-mapping** for batch processing. Keep interfaces **simple** and **intuitive** while maintaining **robust** backend functionality including **real-time progress tracking**, **instant notifications**, and **intelligent file matching**.
+**Important Note**: This system is designed specifically for **Korean seniors** using **simplified automation** processes. The **CLI interface** is the primary production interface providing **date-based auto-mapping** for batch processing. Keep interfaces **simple** and **intuitive** while maintaining **robust** backend functionality including **real-time progress tracking**, **instant notifications**, and **intelligent file matching**.

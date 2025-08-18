@@ -5,7 +5,6 @@
 [![GitHub Stars](https://img.shields.io/github/stars/Ragtimelab/youtube-upload-automation)](https://github.com/Ragtimelab/youtube-upload-automation)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
-[![Streamlit](https://img.shields.io/badge/streamlit-1.48-red.svg)](https://streamlit.io/)
 
 ## 📋 프로젝트 개요
 
@@ -13,7 +12,7 @@ YouTube 업로드 자동화 시스템은 콘텐츠 제작자가 스크립트 작
 
 ### 🎯 핵심 기능
 - ✅ **스크립트 파일 기반 자동 등록**: 표준화된 형식의 스크립트 파일 업로드로 메타데이터 자동 추출
-- ✅ **Streamlit 웹 대시보드**: 직관적인 웹 인터페이스로 전체 워크플로우 관리
+- ✅ **CLI 기반 자동화**: 명령줄 인터페이스로 빠른 업로드 워크플로우
 - ✅ **비디오-스크립트 스마트 매칭**: 드롭다운 인터페이스로 실수 없는 매칭
 - ✅ **YouTube 자동 업로드**: YouTube Data API v3 연동으로 완전 자동화
 - ✅ **실시간 모니터링**: WebSocket 기반 업로드 상태 실시간 추적
@@ -24,7 +23,7 @@ YouTube 업로드 자동화 시스템은 콘텐츠 제작자가 스크립트 작
 - **80% 작업 시간 단축**: 기존 60분/일 → 10분/일
 - **99% 업로드 성공률**: 안정적인 자동화 시스템
 - **완전 자동 워크플로우**: 스크립트 → 비디오 → YouTube
-- **3가지 인터페이스**: 웹 대시보드, CLI 도구, API
+- **2가지 인터페이스**: CLI 도구, REST API
 
 ---
 
@@ -57,17 +56,7 @@ poetry run alembic upgrade head
 
 ### 5. 시스템 실행
 
-#### **방법 1: 웹 대시보드 (권장)**
-```bash
-# 터미널 1: 백엔드 서버
-cd backend
-make run
-
-# 터미널 2: Streamlit 대시보드
-streamlit run streamlit_app/app.py
-```
-
-#### **방법 2: CLI 도구**
+#### **방법 1: CLI 도구 (권장)**
 ```bash
 # 빠른 스크립트 업로드
 ./quick-script script.txt
@@ -80,8 +69,8 @@ streamlit run streamlit_app/app.py
 ```
 
 ### 6. 시스템 접속
-- **웹 대시보드**: http://localhost:8503
 - **API 문서**: http://localhost:8000/docs
+- **CLI 인터페이스**: `./youtube-cli`
 
 ---
 
@@ -98,10 +87,6 @@ youtube-upload-automation/
 │   │   └── core/           # 예외처리, 로깅, 검증
 │   ├── .secrets/           # Google OAuth 인증 파일
 │   └── uploads/            # 업로드된 비디오 파일
-├── streamlit_app/          # Streamlit 웹 대시보드 (메인 UI)
-│   ├── app.py             # Streamlit 메인 애플리케이션
-│   ├── components/        # 재사용 가능한 UI 컴포넌트
-│   └── assets/            # CSS 스타일시트
 ├── cli/                    # 명령줄 도구
 │   ├── commands/          # CLI 명령어 (script, video, youtube)
 │   └── utils/             # CLI 유틸리티
@@ -126,10 +111,6 @@ youtube-upload-automation/
 - **Google APIs**: YouTube Data API v3 연동
 - **WebSocket**: 실시간 양방향 통신
 
-### Web Interface
-- **Streamlit 1.48+**: 웹 대시보드 프레임워크
-- **Plotly 6.3+**: 차트 및 시각화
-- **Pandas 2.3+**: 데이터 처리 및 분석
 
 ### CLI Tools
 - **Click 8.2+**: 명령줄 인터페이스 프레임워크
@@ -145,7 +126,7 @@ youtube-upload-automation/
 
 ## 📖 사용법
 
-### 🌐 웹 대시보드 (권장)
+### ⌨️ CLI 도구 (권장)
 
 #### 1. 스크립트 업로드
 1. 웹 대시보드 접속 → "📝 스크립트 관리" 탭

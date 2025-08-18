@@ -13,8 +13,8 @@ This system consists of **two main interfaces** with shared backend:
 ```
 youtube-upload-automation/
 ├── backend/app/              # FastAPI API server + WebSocket
-├── cli/                     # Command-line interface
-└── frontend/               # React frontend (deprecated/legacy)
+├── cli/                     # Command-line interface (primary)
+└── docs/                    # Comprehensive documentation
 ```
 
 ### Backend Architecture (Clean Architecture)
@@ -118,12 +118,12 @@ python cli/main.py --help
 # Executable script (automatic Poetry detection)
 ./youtube-cli --help
 
-# Module execution
+# Module execution  
 python -m cli.main --help
 
-# Date-based auto-mapping (NEW!)
+# Date-based auto-mapping (PRIMARY WORKFLOW)
 python cli/main.py video auto-mapping scripts/ videos/
-python cli/main.py date-upload scripts/ videos/ --date 20250817
+python cli/main.py date-upload scripts/ videos/ --date $(date +%Y%m%d)
 python cli/main.py date-upload scripts/ videos/ --dry-run
 
 # Quick commands (executable scripts in root)
@@ -294,12 +294,12 @@ GET    /redoc                       # ReDoc API documentation
 ```bash
 # Date-based auto-mapping
 video auto-mapping scripts/ videos/                    # Auto-match today's files
-video auto-mapping scripts/ videos/ --date 20250817    # Auto-match specific date
+video auto-mapping scripts/ videos/ --date 20250819    # Auto-match specific date
 video auto-mapping scripts/ videos/ --dry-run          # Simulation mode
 
 # Complete workflow automation
 date-upload scripts/ videos/                           # Full automation (today)
-date-upload scripts/ videos/ --date 20250817          # Full automation (specific date)
+date-upload scripts/ videos/ --date 20250819          # Full automation (specific date)
 date-upload scripts/ videos/ --privacy unlisted       # With privacy setting
 date-upload scripts/ videos/ --dry-run                # Simulation mode
 ```
@@ -404,6 +404,7 @@ poetry run pre-commit run --all-files  # Manual run
 - **Pydantic 2.5+**: Data validation
 - **Uvicorn**: ASGI server
 - **WebSockets 15.0+**: Real-time communication
+- **Python 3.13**: Latest Python version
 
 ### YouTube Integration
 - **google-api-python-client**: YouTube Data API v3
@@ -473,10 +474,10 @@ open http://localhost:8000/docs
 python cli/main.py video auto-mapping scripts/ videos/ --dry-run
 
 # Check file naming patterns
-python -c "from cli.utils.date_mapping import date_mapper; print(date_mapper.parse_filename('20250817_01_story.txt'))"
+python -c "from cli.utils.date_mapping import date_mapper; print(date_mapper.parse_filename('20250819_01_story.txt'))"
 
 # Validate date format
-python cli/main.py date-upload scripts/ videos/ --date 20250817 --dry-run
+python cli/main.py date-upload scripts/ videos/ --date 20250819 --dry-run
 ```
 
 ## 🚀 Production Deployment
@@ -609,3 +610,31 @@ YYYYMMDD_NN_story.mp4    # Video files
 - **YouTube API ↔ Services**: OAuth flow with token persistence
 
 **Important Note**: This system is designed specifically for **Korean seniors** using **simplified automation** processes. The **CLI interface** is the primary production interface providing **date-based auto-mapping** for batch processing. Keep interfaces **simple** and **intuitive** while maintaining **robust** backend functionality including **real-time progress tracking**, **instant notifications**, and **intelligent file matching**.
+
+## 📋 Key Development Practices
+
+### Adding New CLI Commands
+1. Create command module in `cli/commands/`
+2. Use Click decorators for consistent CLI interface
+3. Integrate with Rich for beautiful terminal output
+4. Add error handling with structured logging
+5. Register in `cli/main.py` main group
+
+### Backend Service Development
+1. Follow Clean Architecture: Repository → Service → Router pattern
+2. Use dependency injection with FastAPI Depends()
+3. Implement custom exceptions in `app/core/exceptions.py`
+4. Add structured logging with component-specific loggers
+5. Write tests for both unit and integration levels
+
+### Database Changes
+1. Always use Alembic for migrations: `make migrate-auto`
+2. Review generated migrations before applying
+3. Test migrations with sample data
+4. Update repository and service layers accordingly
+
+### WebSocket Integration
+1. Use `WebSocketManager` for connection handling
+2. Implement proper error handling and reconnection
+3. Use structured message protocol for client-server communication
+4. Test with multiple concurrent connections

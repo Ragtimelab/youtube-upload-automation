@@ -37,7 +37,11 @@ backend/app/
 │   ├── script_parser.py   # Script parsing logic
 │   ├── upload_service.py  # Upload business logic
 │   ├── websocket_manager.py # WebSocket 연결 및 알림 관리
+│   ├── youtube_client.py  # YouTube API client wrapper
 │   └── youtube/          # YouTube API service managers
+│       ├── auth_manager.py      # OAuth 인증 관리
+│       ├── channel_manager.py   # 채널 정보 관리
+│       └── upload_manager.py    # 업로드 처리
 ├── routers/              # FastAPI routers (API endpoints)
 │   ├── scripts.py        # Script management API
 │   ├── upload.py         # Upload API
@@ -126,6 +130,11 @@ python cli/main.py video auto-mapping scripts/ videos/
 python cli/main.py date-upload scripts/ videos/ --date $(date +%Y%m%d)
 python cli/main.py date-upload scripts/ videos/ --dry-run
 
+# Advanced batch operations
+python cli/main.py batch-upload-scripts scripts/  # Batch script upload from directory
+python cli/main.py date-upload scripts/ videos/ --privacy unlisted  # With custom privacy
+python cli/main.py pipeline         # Full pipeline status and recommendations
+
 # Quick commands (executable scripts in root)
 ./quick-script script.txt           # Quick script upload
 ./quick-upload                      # Interactive quick video upload
@@ -133,7 +142,7 @@ python cli/main.py date-upload scripts/ videos/ --dry-run
 # Common workflows
 python cli/main.py health           # System health check
 python cli/main.py ls --status video_ready  # List scripts by status
-python cli/main.py examples         # Show usage examples
+python cli/main.py examples         # Show detailed usage examples and workflows
 ```
 
 ### Environment Configuration
@@ -210,7 +219,7 @@ class DateBasedMapper:
 **Location**: `app/services/script_parser.py`
 
 ```python
-# Script file format (supports both 썸네일 제작 and 썸네일 정보)
+# Script file format (지원되는 섹션 형식들)
 === 제목 ===
 [Video Title]
 
@@ -218,7 +227,7 @@ class DateBasedMapper:
 설명: [Description]
 태그: [tag1, tag2, ...]
 
-=== 썸네일 정보 ===
+=== 썸네일 정보 ===  또는  === 썸네일 제작 ===
 텍스트: [Thumbnail text]
 ImageFX 프롬프트: [AI generation prompt]
 
@@ -226,7 +235,7 @@ ImageFX 프롬프트: [AI generation prompt]
 [Script content]
 ```
 
-- **Flexible section parsing**: Supports both legacy and new format
+- **Flexible section parsing**: `썸네일 정보`와 `썸네일 제작` 섹션 모두 지원
 - **Regex-based extraction**: Uses `_extract_section()` with multiple end patterns
 - **Metadata validation**: YouTube field limits (title 100chars, description 5000bytes)
 - **Error handling**: Custom ScriptParsingError with detailed messages
@@ -254,40 +263,40 @@ class WebSocketNotificationService:
 
 ### Script Management API
 ```
-POST   /api/scripts/upload           # Script file upload
-GET    /api/scripts/                 # List scripts with pagination
-GET    /api/scripts/{id}             # Get single script
-PUT    /api/scripts/{id}             # Update script
-DELETE /api/scripts/{id}             # Delete script
-GET    /api/scripts/stats/summary    # Statistics summary
-GET    /api/scripts/ready-for-video  # Scripts ready for video upload
-GET    /api/scripts/ready-for-youtube # Scripts ready for YouTube upload
+POST   /api/scripts/upload           # Script file upload (.txt, .md 지원)
+GET    /api/scripts/                 # List scripts with pagination & status filter
+GET    /api/scripts/{id}             # Get single script details
+PUT    /api/scripts/{id}             # Update script metadata (title, description, tags, etc.)
+DELETE /api/scripts/{id}             # Delete script and associated files
+GET    /api/scripts/stats/summary    # Statistics summary (counts by status)
+GET    /api/scripts/ready-for-video  # Scripts ready for video upload (status=script_ready)
+GET    /api/scripts/ready-for-youtube # Scripts ready for YouTube upload (status=video_ready)
 ```
 
 ### Upload API
 ```
-POST   /api/upload/video/{script_id} # Video file upload (supports large files)
-POST   /api/upload/youtube/{script_id} # YouTube upload with privacy/category
-GET    /api/upload/status/{script_id}   # Upload status
-GET    /api/upload/progress/{script_id} # Upload progress (real-time)
-DELETE /api/upload/video/{script_id}    # Delete video file
-GET    /api/upload/health            # Upload service health
+POST   /api/upload/video/{script_id}    # Video file upload (mp4, avi, mov 등 지원)
+POST   /api/upload/youtube/{script_id}  # YouTube upload (privacy, category, schedule 설정)
+GET    /api/upload/status/{script_id}   # Upload status and current state
+GET    /api/upload/progress/{script_id} # Real-time upload progress (WebSocket 연계)
+DELETE /api/upload/video/{script_id}    # Delete video file from storage
+GET    /api/upload/health               # Upload service health check
 ```
 
 ### WebSocket API
 ```
-WS     /ws                          # WebSocket connection endpoint
+WS     /ws                          # WebSocket connection (?user_id= 선택사항)
 GET    /ws/stats                    # WebSocket connection statistics
-POST   /ws/broadcast                # Admin broadcast API
+POST   /ws/broadcast                # Admin broadcast API (전체 알림)
 POST   /ws/notify/script/{script_id} # Script-specific notification API
 ```
 
 ### System API
 ```
-GET    /                            # API status check
+GET    /                            # API status check (app name, version, status)
 GET    /health                      # Health check with DB connection test
-GET    /docs                        # Swagger API documentation
-GET    /redoc                       # ReDoc API documentation
+GET    /docs                        # Swagger API documentation (FastAPI auto-generated)
+GET    /redoc                       # ReDoc API documentation (alternative UI)
 ```
 
 ### CLI Commands (Date-Based Features)
@@ -302,6 +311,13 @@ date-upload scripts/ videos/                           # Full automation (today)
 date-upload scripts/ videos/ --date 20250819          # Full automation (specific date)
 date-upload scripts/ videos/ --privacy unlisted       # With privacy setting
 date-upload scripts/ videos/ --dry-run                # Simulation mode
+
+# Advanced CLI operations
+batch-upload-scripts ./scripts/                       # Batch script upload from directory
+pipeline                                             # Pipeline status and recommendations
+examples                                              # Show detailed usage examples
+health                                               # Quick system health check
+ls --status video_ready --limit 5                   # List scripts with filters
 ```
 
 ## 🚨 Custom Exception System
@@ -395,16 +411,28 @@ poetry run pre-commit install      # Setup
 poetry run pre-commit run --all-files  # Manual run
 ```
 
-## 📦 Core Dependencies
+## 📦 Core Dependencies & Poetry Management
 
-### Backend Dependencies
+### Poetry-Based Dependency Management
+**전체 프로젝트는 Poetry로 관리됩니다.**
+
+```bash
+# Poetry 가상환경 활성화 및 의존성 설치
+poetry shell
+poetry install                    # 기본 의존성만 설치  
+poetry install --with dev,test   # 개발/테스트 의존성 포함
+```
+
+### Backend Dependencies (pyproject.toml 기준)
 - **FastAPI 0.116.0+**: Web framework
-- **SQLAlchemy 2.0+**: ORM
+- **SQLAlchemy 2.0+**: ORM  
 - **Alembic 1.12+**: Database migrations
 - **Pydantic 2.5+**: Data validation
 - **Uvicorn**: ASGI server
 - **WebSockets 15.0+**: Real-time communication
 - **Python 3.13**: Latest Python version
+- **Click 8.2+**: CLI framework
+- **Rich 14.1+**: Terminal formatting
 
 ### YouTube Integration
 - **google-api-python-client**: YouTube Data API v3
@@ -413,12 +441,13 @@ poetry run pre-commit run --all-files  # Manual run
 - **API 할당량**: 일일 10,000 units (비디오 업로드 1,600 units)
 - **미인증 프로젝트**: 2020년 7월 28일 이후 생성시 private 모드만 가능
 
-### Development Tools
+### Development Tools (Poetry Groups)
 - **pytest**: Testing framework
 - **black**: Code formatting
 - **isort**: Import sorting
 - **flake8**: Linting
 - **mypy**: Type checking
+- **pre-commit**: Git hooks
 
 ## 🔄 Development Workflow
 

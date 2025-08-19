@@ -58,7 +58,7 @@ async def upload_to_youtube(
                     예: "2025-08-17T09:00:00.000Z"
         privacy_status: 공개 설정 (private, unlisted, public)
                        - 예약 발행시 자동으로 private로 설정됨
-        category_id: YouTube 카테고리 ID (기본: 22 - People & Blogs)
+        category_id: YouTube 카테고리 ID (기본: 24 - Entertainment)
     """
     try:
         logger.info(f"YouTube 업로드 시작: script_id={script_id}, 예약발행={bool(publish_at)}")

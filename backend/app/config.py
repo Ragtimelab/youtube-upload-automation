@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     # YouTube API Configuration
     # ===========================================
     default_privacy_status: str = Field(default="private", validation_alias="DEFAULT_PRIVACY_STATUS")
-    default_category_id: int = Field(default=22, validation_alias="DEFAULT_CATEGORY_ID")
+    default_category_id: int = Field(default=24, validation_alias="DEFAULT_CATEGORY_ID")
     youtube_api_scope_upload: str = Field(
         default="https://www.googleapis.com/auth/youtube.upload", validation_alias="YOUTUBE_API_SCOPE_UPLOAD"
     )

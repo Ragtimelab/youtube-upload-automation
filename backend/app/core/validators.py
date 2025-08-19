@@ -144,7 +144,7 @@ class YouTubeDataValidator:
         YouTubeDataValidator.validate_privacy_status(privacy_status)
 
         # 카테고리 ID 검증
-        category_id = metadata.get("category_id", 22)
+        category_id = metadata.get("category_id", 24)
         YouTubeDataValidator.validate_category_id(category_id)
 
     @staticmethod

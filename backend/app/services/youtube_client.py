@@ -47,7 +47,7 @@ class YouTubeClient:
                 - title: 제목 (필수)
                 - description: 설명
                 - tags: 태그 (문자열 또는 리스트)
-                - category_id: 카테고리 ID (기본: 22 - People & Blogs)
+                - category_id: 카테고리 ID (기본: 24 - Entertainment)
                 - privacy_status: 공개 설정 (private, unlisted, public)
                 - scheduled_time: 예약 발행 시간 (ISO 8601 형식)
 

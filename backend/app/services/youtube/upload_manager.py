@@ -9,7 +9,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
 from ...config import get_settings
-from ...core.constants import YouTubeConstants, FileConstants
+from ...core.constants import YouTubeConstants, FileConstants, ChannelConstants
 from ...core.exceptions import (
     UnverifiedProjectRestrictionError,
     VideoFileNotFoundError,
@@ -223,28 +223,27 @@ class YouTubeUploadManager:
             return False
 
     def _build_upload_body(self, metadata: dict) -> dict:
-        """업로드용 메타데이터 구성"""
-        # 태그 처리 (최대 제한 적용)
-        tags = metadata.get("tags", "")
-        if isinstance(tags, str):
-            # 태그 문자열 전체 길이 제한
-            if len(tags) > YouTubeConstants.TAGS_MAX_LENGTH:
-                tags = tags[:YouTubeConstants.TAGS_MAX_LENGTH]
-            tags = [tag.strip() for tag in tags.split(",") if tag.strip()]
-        elif not isinstance(tags, list):
+        """업로드용 메타데이터 구성 (채널 기본 정보 자동 추가)"""
+        # 원본 설명에 채널 기본 설명 추가
+        original_description = metadata.get("description", "")
+        combined_description = ChannelConstants.combine_description(original_description)
+        
+        # 원본 태그에 채널 기본 태그 추가
+        original_tags = metadata.get("tags", "")
+        combined_tags = ChannelConstants.combine_tags(original_tags)
+        
+        # 태그를 리스트로 변환 (YouTube API 요구사항)
+        if isinstance(combined_tags, str):
+            tags = [tag.strip() for tag in combined_tags.split(",") if tag.strip()]
+        elif isinstance(combined_tags, list):
+            tags = combined_tags
+        else:
             tags = []
-
-        # 설명 바이트 단위 제한
-        description = metadata.get("description", "")
-        description_bytes = description.encode("utf-8")
-        if len(description_bytes) > YouTubeConstants.DESCRIPTION_MAX_BYTES:
-            # 바이트 단위로 자른 후 디코딩
-            description = description_bytes[:YouTubeConstants.DESCRIPTION_MAX_BYTES].decode("utf-8", errors="ignore")
 
         body = {
             "snippet": {
                 "title": metadata["title"][:YouTubeConstants.TITLE_MAX_LENGTH],
-                "description": description,
+                "description": combined_description,
                 "tags": tags,
                 "categoryId": str(metadata.get("category_id", YouTubeConstants.DEFAULT_CATEGORY_ID)),
                 "defaultLanguage": YouTubeConstants.DEFAULT_LANGUAGE,

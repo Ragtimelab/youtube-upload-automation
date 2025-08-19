@@ -4,10 +4,18 @@
 
 import re
 import os
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
+
+# 백엔드 constants 임포트
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+    
+from backend.app.core.constants import FileConstants, ValidationConstants
 
 
 @dataclass
@@ -26,7 +34,7 @@ class DateFile:
 class DateBasedMapper:
     """날짜 기반 파일 매핑 유틸리티"""
     
-    DATE_PATTERN = re.compile(r'^(\d{8})_(\d{1,2})_(.+)\.(txt|md|mp4)$')
+    DATE_PATTERN = re.compile(ValidationConstants.DATE_PATTERN_REGEX)
     
     def __init__(self):
         self.console = None
@@ -77,13 +85,13 @@ class DateBasedMapper:
         
         Args:
             directory: 검색할 디렉토리
-            extensions: 찾을 확장자 목록 (기본: ['.txt', '.md', '.mp4'])
+            extensions: 찾을 확장자 목록 (기본: script + video extensions)
             
         Returns:
             DateFile 객체 리스트 (날짜, 순번순 정렬됨)
         """
         if extensions is None:
-            extensions = ['.txt', '.md', '.mp4']
+            extensions = FileConstants.ALLOWED_SCRIPT_EXTENSIONS + FileConstants.ALLOWED_VIDEO_EXTENSIONS
         
         directory_path = Path(directory)
         if not directory_path.exists():
@@ -131,8 +139,8 @@ class DateBasedMapper:
         Returns:
             (대본 DateFile, 영상 DateFile) 튜플 리스트
         """
-        script_files = self.find_date_files(script_dir, ['.txt', '.md'])
-        video_files = self.find_date_files(video_dir, ['.mp4'])
+        script_files = self.find_date_files(script_dir, FileConstants.ALLOWED_SCRIPT_EXTENSIONS)
+        video_files = self.find_date_files(video_dir, ['.mp4'])  # YouTube에는 주로 MP4 사용
         
         # 날짜별 그룹핑
         script_groups = self.group_by_date(script_files)

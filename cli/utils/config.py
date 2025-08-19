@@ -3,18 +3,26 @@ CLI 설정 관리
 """
 
 import os
+import sys
 from pathlib import Path
 from typing import Dict, Any
+
+# 백엔드 constants 임포트
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+    
+from backend.app.core.constants import FileConstants, NetworkConstants
 
 
 class CLIConfig:
     """CLI 설정 관리"""
     
     def __init__(self):
-        self.api_base_url = os.getenv('YOUTUBE_AUTOMATION_API_URL', 'http://localhost:8000')
-        self.default_video_formats = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm']
-        self.default_script_formats = ['.txt', '.md']
-        self.max_file_size_mb = 2048  # 2GB
+        self.api_base_url = os.getenv('YOUTUBE_AUTOMATION_API_URL', NetworkConstants.DEFAULT_API_BASE_URL)
+        self.default_video_formats = FileConstants.ALLOWED_VIDEO_EXTENSIONS
+        self.default_script_formats = FileConstants.ALLOWED_SCRIPT_EXTENSIONS
+        self.max_file_size_mb = FileConstants.MAX_VIDEO_SIZE_MB
     
     @property
     def config_dir(self) -> Path:

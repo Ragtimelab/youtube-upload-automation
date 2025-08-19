@@ -14,6 +14,9 @@ from rich.panel import Panel
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+# 백엔드 constants 임포트
+from backend.app.core.constants import FileConstants, NetworkConstants, MessageConstants
+
 # CLI 명령어 그룹들 import (절대 임포트)
 from cli.commands.script import script
 from cli.commands.video import video
@@ -129,7 +132,8 @@ def health():
             
     except APIError as e:
         console.print(f"❌ API 연결 실패: {e}", style="red")
-        console.print("💡 백엔드 서버가 실행 중인지 확인하세요 (http://localhost:8000)", style="dim")
+        api_url = os.getenv('YOUTUBE_AUTOMATION_API_URL', NetworkConstants.DEFAULT_API_BASE_URL)
+        console.print(MessageConstants.CHECK_SERVER_HELP, style="dim")
         sys.exit(1)
 
 
@@ -141,7 +145,7 @@ def batch_upload_scripts(directory: str):
         console.print(f"📁 디렉토리 스캔 중: {directory}", style="yellow")
         
         # 스크립트 파일 찾기
-        script_files = file_validator.find_files_in_directory(directory, ['.txt', '.md'])
+        script_files = file_validator.find_files_in_directory(directory, FileConstants.ALLOWED_SCRIPT_EXTENSIONS)
         
         if not script_files:
             console.print("📭 업로드할 스크립트 파일이 없습니다.", style="yellow")
@@ -224,7 +228,12 @@ def watch(script_ids: tuple, duration: int):
 @cli.command()
 def examples():
     """사용 예시 및 워크플로우"""
-    examples_text = """
+    
+    # 지원 형식 정보 생성
+    script_formats = ', '.join(FileConstants.ALLOWED_SCRIPT_EXTENSIONS)
+    video_formats = ', '.join(FileConstants.ALLOWED_VIDEO_EXTENSIONS[:3]) + '...'
+    
+    examples_text = f"""
 [bold]🎮 새로운 인터랙티브 모드:[/bold]
 
 • [green]interactive[/green] - 메뉴 기반 작업 선택 (초보자 추천!)
@@ -244,7 +253,7 @@ def examples():
 [bold]📝 기본 워크플로우:[/bold]
 
 1️⃣ 대본 업로드:
-   script upload my_script.txt
+   script upload my_script.md
    
 2️⃣ 비디오 업로드:
    video upload 1 my_video.mp4
@@ -267,8 +276,8 @@ def examples():
 [bold]💡 도움말:[/bold]
 
 • 모든 명령어에 --help 옵션 사용 가능
-• 파일명 형식: YYYYMMDD_NN_story.txt/mp4
-• 지원 형식: .txt, .md (스크립트) / .mp4, .avi, .mov (비디오)
+• 파일명 형식: YYYYMMDD_NN_story.md/mp4
+• 지원 형식: {script_formats} (스크립트) / {video_formats} (비디오)
     """
     
     console.print(Panel(examples_text.strip(), title="사용 예시", border_style="green"))

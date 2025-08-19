@@ -34,7 +34,7 @@ def youtube():
               type=click.Choice(['private', 'unlisted', 'public']), 
               default='private',
               help='공개 설정 (기본: private)')
-@click.option('--category', '-c', type=int, default=22, help='YouTube 카테고리 ID (기본: 22 - People & Blogs)')
+@click.option('--category', '-c', type=int, default=24, help='YouTube 카테고리 ID (기본: 24 - Entertainment)')
 @click.option('--schedule', '-s', help='예약 발행 시간 (ISO 8601 형식, 예: 2025-08-17T09:00:00.000Z)')
 def upload(script_id: int, privacy: str, category: int, schedule: Optional[str]):
     """YouTube에 비디오 업로드
@@ -99,7 +99,7 @@ def upload(script_id: int, privacy: str, category: int, schedule: Optional[str])
               type=click.Choice(['private', 'unlisted', 'public']), 
               default='private',
               help='공개 설정 (기본: private)')
-@click.option('--category', '-c', type=int, default=22, help='YouTube 카테고리 ID (기본: 22)')
+@click.option('--category', '-c', type=int, default=24, help='YouTube 카테고리 ID (기본: 24 - Entertainment)')
 def batch(script_ids: List[int], privacy: str, category: int):
     """여러 스크립트를 YouTube에 배치 업로드
     

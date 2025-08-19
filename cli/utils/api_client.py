@@ -3,15 +3,26 @@ YouTube 자동화 백엔드 API 클라이언트
 """
 
 import json
+import os
+import sys
 from typing import Dict, List, Optional, Any
 import requests
 from pathlib import Path
+
+# 백엔드 constants 임포트
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+    
+from backend.app.core.constants import FileConstants, NetworkConstants
 
 
 class YouTubeAutomationAPI:
     """백엔드 API 클라이언트"""
     
-    def __init__(self, base_url: str = "http://localhost:8000"):
+    def __init__(self, base_url: str = None):
+        if base_url is None:
+            base_url = os.getenv('YOUTUBE_AUTOMATION_API_URL', NetworkConstants.DEFAULT_API_BASE_URL)
         self.base_url = base_url.rstrip('/')
         self.session = requests.Session()
         self.session.headers.update({
@@ -74,8 +85,8 @@ class YouTubeAutomationAPI:
         if not file_path.exists():
             raise FileNotFoundError(f"파일을 찾을 수 없습니다: {file_path}")
         
-        if file_path.suffix not in ['.txt', '.md']:
-            raise ValueError("지원하지 않는 파일 형식입니다. (.txt, .md만 지원)")
+        if file_path.suffix not in FileConstants.ALLOWED_SCRIPT_EXTENSIONS:
+            raise ValueError(f"지원하지 않는 파일 형식입니다. ({', '.join(FileConstants.ALLOWED_SCRIPT_EXTENSIONS)}만 지원)")
         
         with open(file_path, 'rb') as f:
             files = {'file': (file_path.name, f, 'text/plain')}
@@ -143,9 +154,8 @@ class YouTubeAutomationAPI:
         if not video_path.exists():
             raise FileNotFoundError(f"비디오 파일을 찾을 수 없습니다: {video_path}")
         
-        allowed_extensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm']
-        if video_path.suffix.lower() not in allowed_extensions:
-            raise ValueError(f"지원하지 않는 비디오 형식입니다. 지원 형식: {', '.join(allowed_extensions)}")
+        if video_path.suffix.lower() not in FileConstants.ALLOWED_VIDEO_EXTENSIONS:
+            raise ValueError(f"지원하지 않는 비디오 형식입니다. 지원 형식: {', '.join(FileConstants.ALLOWED_VIDEO_EXTENSIONS)}")
         
         with open(video_path, 'rb') as f:
             files = {'video_file': (video_path.name, f, 'video/mp4')}

@@ -53,7 +53,7 @@ class FileConstants:
     
     # 허용 파일 확장자
     ALLOWED_VIDEO_EXTENSIONS = ['.mp4', '.avi', '.mov', '.mkv', '.flv']
-    ALLOWED_SCRIPT_EXTENSIONS = ['.txt', '.md']
+    ALLOWED_SCRIPT_EXTENSIONS = ['.md']  # 마크다운 전용
     
     # 권장 설정 (YouTube FHD 최적화)
     RECOMMENDED_VIDEO_BITRATE_MBPS = 8
@@ -130,7 +130,7 @@ class ValidationConstants:
     
     # 날짜 형식
     DATE_FORMAT_YYYYMMDD = r'^\d{8}$'
-    DATE_PATTERN_REGEX = r'^(\d{8})_(\d{1,2})_(.+)\.(txt|md|mp4)$'
+    DATE_PATTERN_REGEX = r'^(\d{8})_(\d{1,2})_(.+)\.(md|mp4)$'
     
     # 진행률 관련
     PROGRESS_MIN = 0

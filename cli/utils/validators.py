@@ -3,9 +3,17 @@ CLI 입력 검증 유틸리티
 """
 
 import os
+import sys
 from pathlib import Path
 from typing import List, Optional
 from .date_mapping import date_mapper
+
+# 백엔드 constants 임포트
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+    
+from backend.app.core.constants import FileConstants
 
 
 class FileValidator:
@@ -22,12 +30,12 @@ class FileValidator:
         if not path.is_file():
             raise ValueError(f"디렉토리가 아닌 파일을 지정해주세요: {file_path}")
         
-        if path.suffix.lower() not in ['.txt', '.md']:
-            raise ValueError(f"지원하지 않는 파일 형식입니다. (.txt, .md만 지원): {path.suffix}")
+        if path.suffix.lower() not in FileConstants.ALLOWED_SCRIPT_EXTENSIONS:
+            raise ValueError(f"지원하지 않는 파일 형식입니다. ({', '.join(FileConstants.ALLOWED_SCRIPT_EXTENSIONS)}만 지원): {path.suffix}")
         
-        # 파일 크기 체크 (10MB 제한)
-        if path.stat().st_size > 10 * 1024 * 1024:
-            raise ValueError("스크립트 파일은 10MB를 초과할 수 없습니다.")
+        # 파일 크기 체크
+        if path.stat().st_size > FileConstants.MAX_SCRIPT_SIZE_MB * FileConstants.BYTES_PER_MB:
+            raise ValueError(f"스크립트 파일은 {FileConstants.MAX_SCRIPT_SIZE_MB}MB를 초과할 수 없습니다.")
         
         return True
     
@@ -42,14 +50,13 @@ class FileValidator:
         if not path.is_file():
             raise ValueError(f"디렉토리가 아닌 파일을 지정해주세요: {file_path}")
         
-        allowed_extensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm']
-        if path.suffix.lower() not in allowed_extensions:
-            raise ValueError(f"지원하지 않는 비디오 형식입니다. 지원 형식: {', '.join(allowed_extensions)}")
+        if path.suffix.lower() not in FileConstants.ALLOWED_VIDEO_EXTENSIONS:
+            raise ValueError(f"지원하지 않는 비디오 형식입니다. 지원 형식: {', '.join(FileConstants.ALLOWED_VIDEO_EXTENSIONS)}")
         
-        # 파일 크기 체크 (2GB 제한)
-        file_size_mb = path.stat().st_size / (1024 * 1024)
-        if file_size_mb > 2048:
-            raise ValueError(f"비디오 파일은 2GB를 초과할 수 없습니다. 현재 크기: {file_size_mb:.1f}MB")
+        # 파일 크기 체크
+        file_size_mb = path.stat().st_size / FileConstants.BYTES_PER_MB
+        if file_size_mb > FileConstants.MAX_VIDEO_SIZE_MB:
+            raise ValueError(f"비디오 파일은 {FileConstants.MAX_VIDEO_SIZE_MB}MB를 초과할 수 없습니다. 현재 크기: {file_size_mb:.1f}MB")
         
         return True
     

@@ -6,6 +6,13 @@ import sys
 import os
 from typing import List, Dict, Any, Optional, Callable
 from pathlib import Path
+
+# 백엔드 constants 임포트
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+    
+from backend.app.core.constants import FileConstants
 from rich.console import Console
 from rich.prompt import Prompt, IntPrompt, Confirm
 from rich.panel import Panel
@@ -200,7 +207,7 @@ class FileSelector:
     @staticmethod
     def select_file(extensions: List[str] = None, purpose: str = "작업") -> Optional[Path]:
         """Select file interactively"""
-        extensions = extensions or ['.txt', '.md']
+        extensions = extensions or FileConstants.ALLOWED_SCRIPT_EXTENSIONS
         ext_text = ', '.join(extensions)
         
         while True:
@@ -233,7 +240,7 @@ class QuickActions:
         console.print("📝 스크립트 업로드", style="bold cyan")
         
         # Select file
-        script_file = FileSelector.select_file(['.txt', '.md'], "업로드")
+        script_file = FileSelector.select_file(FileConstants.ALLOWED_SCRIPT_EXTENSIONS, "업로드")
         if not script_file:
             return
         
@@ -267,7 +274,7 @@ class QuickActions:
         console.print(f"선택된 스크립트: {script['title']}", style="green")
         
         # Select video file
-        video_file = FileSelector.select_file(['.mp4', '.avi', '.mov', '.wmv'], "업로드")
+        video_file = FileSelector.select_file(FileConstants.ALLOWED_VIDEO_EXTENSIONS, "업로드")
         if not video_file:
             return
         

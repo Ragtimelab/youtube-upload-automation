@@ -34,7 +34,7 @@ def upload(file_path: str):
     """대본 파일 업로드
     
     Args:
-        file_path: 업로드할 대본 파일 경로 (.txt, .md)
+        file_path: 업로드할 대본 파일 경로 (.md)
     """
     try:
         console.print("📝 대본 파일 업로드 중...", style="yellow")

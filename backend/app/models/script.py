@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, Text
 from sqlalchemy.orm import relationship
@@ -17,8 +17,8 @@ class Script(Base):
     thumbnail_text = Column(String(100))
     imagefx_prompt = Column(Text)
     status = Column(String(20), default="script_ready")
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     video_file_path = Column(String(500))
     youtube_video_id = Column(String(50))
     scheduled_time = Column(DateTime)

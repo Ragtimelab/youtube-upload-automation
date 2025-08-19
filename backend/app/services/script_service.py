@@ -3,7 +3,7 @@
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from sqlalchemy.orm import Session
@@ -46,7 +46,7 @@ class ScriptService:
                 thumbnail_text=parsed_data.get("thumbnail_text", ""),
                 imagefx_prompt=parsed_data.get("imagefx_prompt", ""),
                 status="script_ready",
-                created_at=datetime.utcnow(),
+                created_at=datetime.now(timezone.utc),
             )
 
             return self.repository.create(script)
@@ -110,7 +110,7 @@ class ScriptService:
             if imagefx_prompt is not None:
                 script.imagefx_prompt = imagefx_prompt
 
-            script.updated_at = datetime.utcnow()
+            script.updated_at = datetime.now(timezone.utc)
 
             return self.repository.update(script)
 

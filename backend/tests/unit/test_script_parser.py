@@ -1,13 +1,8 @@
-#!/usr/bin/env python3
 """
-대본 파싱 시스템 테스트 스크립트
-TASK.md 예제를 기반으로 ScriptParser 클래스 기능을 테스트합니다.
+ScriptParser 테스트
 """
 
-import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), 'backend'))
-
+import pytest
 from app.services.script_parser import ScriptParser, ScriptParsingError
 
 
@@ -38,127 +33,98 @@ ImageFX 프롬프트: 1960년대 한국의 전통 한옥 마당에서 한복을 
 """
 
 
-def test_basic_parsing():
-    """기본 파싱 기능 테스트"""
-    print("=" * 50)
-    print("🧪 기본 파싱 기능 테스트")
-    print("=" * 50)
+class TestScriptParser:
+    """ScriptParser 테스트 클래스"""
     
-    parser = ScriptParser()
-    test_content = create_test_script_content()
-    
-    try:
-        result = parser.parse_script_file(test_content)
+    def test_basic_parsing(self):
+        """기본 파싱 기능 테스트"""
+        parser = ScriptParser()
+        test_content = create_test_script_content()
         
-        print("✅ 파싱 성공!")
-        print("\n📄 파싱 결과:")
-        for key, value in result.items():
-            print(f"• {key}: {value[:100]}..." if len(str(value)) > 100 else f"• {key}: {value}")
+        result = parser.parse_script_file(test_content)
         
         assert result is not None
         assert 'content' in result
-        print("✅ 기본 파싱 테스트 통과")
-    except ScriptParsingError as e:
-        print(f"❌ 파싱 실패: {e}")
-        assert False, f"파싱 실패: {e}"
+        assert 'title' in result
+        assert 'description' in result
+        assert 'tags' in result
+        assert 'thumbnail_text' in result
+        assert 'imagefx_prompt' in result
+        
+        assert result['title'] == "60년 만에 밝히는 할머니의 비밀 - 시댁살이 고충과 가족 사랑"
+        assert "안녕하세요, 시청자 여러분!" in result['content']
+        assert "시니어, 할머니" in result['tags']
 
 
-def test_validation():
-    """데이터 유효성 검증 테스트"""
-    print("\n" + "=" * 50)
-    print("🔍 데이터 유효성 검증 테스트")
-    print("=" * 50)
-    
-    parser = ScriptParser()
-    
-    # 정상 데이터 테스트
-    valid_data = {
-        'content': '테스트 대본 내용',
-        'title': '테스트 제목',
-        'description': '테스트 설명',
-        'tags': '테스트, 태그'
-    }
-    
-    is_valid = parser.validate_parsed_data(valid_data)
-    print(f"✅ 정상 데이터 검증: {'통과' if is_valid else '실패'}")
-    
-    # 필수 필드 누락 테스트
-    invalid_data = {
-        'description': '설명만 있음',
-        'tags': '태그만, 있음'
-    }
-    
-    is_valid = parser.validate_parsed_data(invalid_data)
-    print(f"❌ 필수 필드 누락 검증: {'통과' if not is_valid else '실패'}")
-    
-    # 제목 길이 초과 테스트
-    long_title_data = {
-        'content': '내용',
-        'title': 'A' * 101,  # 101자 제목
-        'description': '설명'
-    }
-    
-    is_valid = parser.validate_parsed_data(long_title_data)
-    print(f"📏 제목 길이 초과 검증: {'통과' if not is_valid else '실패'}")
+    def test_validation(self):
+        """데이터 유효성 검증 테스트"""
+        parser = ScriptParser()
+        
+        # 정상 데이터 테스트
+        valid_data = {
+            'content': '테스트 대본 내용',
+            'title': '테스트 제목',
+            'description': '테스트 설명',
+            'tags': '테스트, 태그'
+        }
+        
+        assert parser.validate_parsed_data(valid_data) is True
+        
+        # 필수 필드 누락 테스트
+        invalid_data = {
+            'description': '설명만 있음',
+            'tags': '태그만, 있음'
+        }
+        
+        assert parser.validate_parsed_data(invalid_data) is False
+        
+        # 제목 길이 초과 테스트
+        long_title_data = {
+            'content': '내용',
+            'title': 'A' * 101,  # 101자 제목
+            'description': '설명'
+        }
+        
+        assert parser.validate_parsed_data(long_title_data) is False
 
 
-def test_error_handling():
-    """에러 처리 테스트"""
-    print("\n" + "=" * 50)
-    print("⚠️  에러 처리 테스트")
-    print("=" * 50)
-    
-    parser = ScriptParser()
-    
-    # 빈 내용 테스트
-    try:
-        parser.parse_script_file("")
-        print("❌ 빈 내용 에러 처리 실패")
-    except ScriptParsingError:
-        print("✅ 빈 내용 에러 처리 성공")
-    
-    # 대본 섹션 없음 테스트
-    try:
-        parser.parse_script_file("=== 메타데이터 ===\n제목: 테스트")
-        print("❌ 대본 섹션 없음 에러 처리 실패")
-    except ScriptParsingError:
-        print("✅ 대본 섹션 없음 에러 처리 성공")
-    
-    # 제목 없음 테스트
-    try:
-        parser.parse_script_file("=== 대본 ===\n테스트 내용\n=== 메타데이터 ===\n설명: 설명만")
-        print("❌ 제목 없음 에러 처리 실패")
-    except ScriptParsingError:
-        print("✅ 제목 없음 에러 처리 성공")
+    def test_error_handling(self):
+        """에러 처리 테스트"""
+        parser = ScriptParser()
+        
+        # 빈 내용 테스트
+        with pytest.raises(ScriptParsingError):
+            parser.parse_script_file("")
+        
+        # 대본 섹션 없음 테스트
+        with pytest.raises(ScriptParsingError):
+            parser.parse_script_file("=== 메타데이터 ===\n제목: 테스트")
+        
+        # 제목 없음 테스트
+        with pytest.raises(ScriptParsingError):
+            parser.parse_script_file("=== 대본 ===\n테스트 내용\n=== 메타데이터 ===\n설명: 설명만")
 
 
-def test_edge_cases():
-    """경계 케이스 테스트"""
-    print("\n" + "=" * 50)
-    print("🔬 경계 케이스 테스트")
-    print("=" * 50)
-    
-    parser = ScriptParser()
-    
-    # 최소한의 정보만 있는 케이스
-    minimal_content = """
+    def test_edge_cases(self):
+        """경계 케이스 테스트"""
+        parser = ScriptParser()
+        
+        # 최소한의 정보만 있는 케이스
+        minimal_content = """
 === 대본 ===
 최소한의 대본 내용입니다.
 
 === 메타데이터 ===
 제목: 최소 제목
 """
-    
-    try:
+        
         result = parser.parse_script_file(minimal_content)
-        print("✅ 최소한 정보 파싱 성공")
-        print(f"   제목: {result.get('title')}")
-        print(f"   내용: {result.get('content')}")
-    except Exception as e:
-        print(f"❌ 최소한 정보 파싱 실패: {e}")
-    
-    # 공백이 많은 케이스
-    whitespace_content = """
+        assert result is not None
+        assert result['title'] == "최소 제목"
+        assert result['content'] == "최소한의 대본 내용입니다."
+        
+        # 공백이 많은 케이스
+        whitespace_content = """
 
     === 대본 ===
     
@@ -173,42 +139,47 @@ def test_edge_cases():
     태그   :   공백 , 테스트 , 태그   
     
     """
-    
-    try:
+        
         result = parser.parse_script_file(whitespace_content)
-        print("✅ 공백 처리 테스트 성공")
-        print(f"   제목: '{result.get('title')}'")
-        print(f"   태그: '{result.get('tags')}'")
-    except Exception as e:
-        print(f"❌ 공백 처리 테스트 실패: {e}")
+        assert result is not None
+        assert result['title'].strip() == "공백 테스트 제목"
+        assert "공백이 많은 설명입니다" in result.get('description', '')
+        assert "공백" in result.get('tags', '')
+    
+    def test_alternative_thumbnail_section(self):
+        """썸네일 정보/썸네일 제작 섹션 대안 형식 테스트"""
+        parser = ScriptParser()
+        
+        # "썸네일 정보" 섹션
+        content_with_info = """
+=== 대본 ===
+테스트 대본 내용
 
+=== 메타데이터 ===
+제목: 테스트 제목
 
-def main():
-    """메인 테스트 실행"""
-    print("🎬 YouTube Upload Automation - 대본 파싱 시스템 테스트")
-    print("=" * 60)
-    
-    # 기본 파싱 테스트
-    parsed_result = test_basic_parsing()
-    
-    # 유효성 검증 테스트
-    test_validation()
-    
-    # 에러 처리 테스트
-    test_error_handling()
-    
-    # 경계 케이스 테스트
-    test_edge_cases()
-    
-    print("\n" + "=" * 60)
-    print("🏁 모든 테스트 완료!")
-    
-    if parsed_result:
-        print("\n📊 파싱된 데이터 상세:")
-        print("-" * 30)
-        for key, value in parsed_result.items():
-            print(f"{key:20}: {value}")
+=== 썸네일 정보 ===
+텍스트: 정보 섹션 텍스트
+ImageFX 프롬프트: 정보 섹션 프롬프트
+"""
+        
+        result = parser.parse_script_file(content_with_info)
+        assert result['thumbnail_text'] == "정보 섹션 텍스트"
+        assert result['imagefx_prompt'] == "정보 섹션 프롬프트"
+        
+        # "썸네일 제작" 섹션
+        content_with_creation = """
+=== 대본 ===
+테스트 대본 내용
 
+=== 메타데이터 ===
+제목: 테스트 제목
 
-if __name__ == "__main__":
-    main()
+=== 썸네일 제작 ===
+텍스트: 제작 섹션 텍스트
+ImageFX 프롬프트: 제작 섹션 프롬프트
+"""
+        
+        result = parser.parse_script_file(content_with_creation)
+        assert result['thumbnail_text'] == "제작 섹션 텍스트"
+        assert result['imagefx_prompt'] == "제작 섹션 프롬프트"

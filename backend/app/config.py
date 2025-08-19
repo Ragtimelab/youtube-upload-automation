@@ -11,6 +11,13 @@ from typing import List
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
+from .core.constants import (
+    YouTubeConstants, 
+    FileConstants, 
+    NetworkConstants, 
+    PathConstants,
+    ValidationConstants
+)
 
 # 프로젝트 루트 디렉토리 계산 (app/config.py -> 프로젝트 루트)
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -25,8 +32,8 @@ class Settings(BaseSettings):
     # ===========================================
     # Server Configuration
     # ===========================================
-    backend_host: str = Field(default="0.0.0.0", validation_alias="BACKEND_HOST")
-    backend_port: int = Field(default=8000, validation_alias="BACKEND_PORT")
+    backend_host: str = Field(default=NetworkConstants.DEFAULT_API_HOST, validation_alias="BACKEND_HOST")
+    backend_port: int = Field(default=NetworkConstants.DEFAULT_API_PORT, validation_alias="BACKEND_PORT")
     backend_reload: bool = Field(default=True, validation_alias="BACKEND_RELOAD")
 
     # Frontend Configuration
@@ -38,15 +45,15 @@ class Settings(BaseSettings):
     # ===========================================
     # File Paths & Storage
     # ===========================================
-    upload_dir: str = Field(default="uploads/videos", validation_alias="UPLOAD_DIR")
-    credentials_path: str = Field(default=str(PROJECT_ROOT / ".secrets/youtube-oauth2.json"), validation_alias="CREDENTIALS_PATH")
-    token_path: str = Field(default=str(PROJECT_ROOT / ".secrets/youtube-token.pickle"), validation_alias="TOKEN_PATH")
+    upload_dir: str = Field(default=PathConstants.DEFAULT_UPLOAD_DIR, validation_alias="UPLOAD_DIR")
+    credentials_path: str = Field(default=str(PROJECT_ROOT / PathConstants.CREDENTIALS_RELATIVE_PATH), validation_alias="CREDENTIALS_PATH")
+    token_path: str = Field(default=str(PROJECT_ROOT / PathConstants.TOKEN_RELATIVE_PATH), validation_alias="TOKEN_PATH")
 
     # ===========================================
     # YouTube API Configuration
     # ===========================================
-    default_privacy_status: str = Field(default="private", validation_alias="DEFAULT_PRIVACY_STATUS")
-    default_category_id: int = Field(default=24, validation_alias="DEFAULT_CATEGORY_ID")
+    default_privacy_status: str = Field(default=YouTubeConstants.DEFAULT_PRIVACY_STATUS, validation_alias="DEFAULT_PRIVACY_STATUS")
+    default_category_id: int = Field(default=YouTubeConstants.DEFAULT_CATEGORY_ID, validation_alias="DEFAULT_CATEGORY_ID")
     youtube_api_scope_upload: str = Field(
         default="https://www.googleapis.com/auth/youtube.upload", validation_alias="YOUTUBE_API_SCOPE_UPLOAD"
     )
@@ -86,13 +93,13 @@ class Settings(BaseSettings):
     # ===========================================
     # File Upload Limits (YouTube FHD 최적화 권장사항)
     # ===========================================
-    max_video_size_mb: int = Field(default=8192, validation_alias="MAX_VIDEO_SIZE_MB")  # 8GB (FHD 1시간: 8Mbps × 3600초 ≈ 3.6GB + 여유분)
+    max_video_size_mb: int = Field(default=FileConstants.MAX_VIDEO_SIZE_MB, validation_alias="MAX_VIDEO_SIZE_MB")
     allowed_video_extensions: List[str] = Field(
-        default=[".mp4"],  # MP4 H.264 + AAC-LC 48kHz (YouTube FHD 최적화)
+        default=FileConstants.ALLOWED_VIDEO_EXTENSIONS,
         validation_alias="ALLOWED_VIDEO_EXTENSIONS",
     )
     allowed_script_extensions: List[str] = Field(
-        default=[".txt", ".md"], validation_alias="ALLOWED_SCRIPT_EXTENSIONS"
+        default=FileConstants.ALLOWED_SCRIPT_EXTENSIONS, validation_alias="ALLOWED_SCRIPT_EXTENSIONS"
     )
 
     # ===========================================
@@ -101,9 +108,9 @@ class Settings(BaseSettings):
     # Video: H.264, 1920×1080, 8Mbps@30fps/12Mbps@60fps
     # Audio: AAC-LC, 48kHz, 128kbps, Stereo
     # GOP: 2초 간격, VBR 2-Pass 권장
-    recommended_video_bitrate_mbps: int = Field(default=8, validation_alias="RECOMMENDED_VIDEO_BITRATE_MBPS")
-    recommended_audio_bitrate_kbps: int = Field(default=128, validation_alias="RECOMMENDED_AUDIO_BITRATE_KBPS")
-    max_video_duration_hours: int = Field(default=12, validation_alias="MAX_VIDEO_DURATION_HOURS")
+    recommended_video_bitrate_mbps: int = Field(default=FileConstants.RECOMMENDED_VIDEO_BITRATE_MBPS, validation_alias="RECOMMENDED_VIDEO_BITRATE_MBPS")
+    recommended_audio_bitrate_kbps: int = Field(default=FileConstants.RECOMMENDED_AUDIO_BITRATE_KBPS, validation_alias="RECOMMENDED_AUDIO_BITRATE_KBPS")
+    max_video_duration_hours: int = Field(default=FileConstants.MAX_VIDEO_DURATION_HOURS, validation_alias="MAX_VIDEO_DURATION_HOURS")
 
     # ===========================================
     # Computed Properties
@@ -111,7 +118,7 @@ class Settings(BaseSettings):
     @property
     def max_video_size_bytes(self) -> int:
         """비디오 파일 최대 크기를 바이트 단위로 반환"""
-        return self.max_video_size_mb * 1024 * 1024
+        return self.max_video_size_mb * FileConstants.BYTES_PER_MB
 
     @property
     def youtube_api_scopes(self) -> List[str]:
@@ -148,10 +155,9 @@ class Settings(BaseSettings):
     @classmethod
     def validate_privacy_status(cls, v):
         """YouTube 공개 설정 검증"""
-        valid_statuses = ["private", "unlisted", "public"]
-        if v not in valid_statuses:
+        if v not in YouTubeConstants.PRIVACY_STATUSES:
             raise ValueError(
-                f"Invalid privacy status. Must be one of: {valid_statuses}"
+                f"Invalid privacy status. Must be one of: {YouTubeConstants.PRIVACY_STATUSES}"
             )
         return v
 

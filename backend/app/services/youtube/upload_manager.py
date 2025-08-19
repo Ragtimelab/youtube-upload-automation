@@ -9,6 +9,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
 from ...config import get_settings
+from ...core.constants import YouTubeConstants, FileConstants
 from ...core.exceptions import (
     UnverifiedProjectRestrictionError,
     VideoFileNotFoundError,
@@ -46,7 +47,7 @@ class YouTubeUploadManager:
                 - title: 제목 (필수)
                 - description: 설명
                 - tags: 태그 (문자열 또는 리스트)
-                - category_id: 카테고리 ID (기본: 24 - Entertainment)
+                - category_id: 카테고리 ID (기본: {YouTubeConstants.DEFAULT_CATEGORY_ID} - Entertainment)
                 - privacy_status: 공개 설정 (private, unlisted, public)
                 - scheduled_time: 예약 발행 시간 (ISO 8601 형식)
 
@@ -79,7 +80,7 @@ class YouTubeUploadManager:
             print(f"📝 제목: {metadata['title']}")
 
             # 미디어 파일 업로드 객체 생성 (청크 단위 업로드로 진행률 추적)
-            chunk_size = 1024 * 1024 * 10  # 10MB 청크
+            chunk_size = FileConstants.DEFAULT_UPLOAD_CHUNK_SIZE
             media = MediaFileUpload(
                 video_path, chunksize=chunk_size, resumable=True
             )
@@ -109,9 +110,9 @@ class YouTubeUploadManager:
                     if any(keyword in error_str.lower() for keyword in ["network", "timeout", "connection"]):
                         print(f"🌐 네트워크 오류 발생: {chunk_error}")
                         # 작은 청크로 재시도
-                        if chunk_size > 1024 * 1024:  # 1MB보다 큰 경우
+                        if chunk_size > FileConstants.CHUNK_SIZE_1MB:  # 1MB보다 큰 경우
                             chunk_size = chunk_size // 2
-                            print(f"🔄 청크 크기를 {chunk_size // (1024*1024)}MB로 줄여서 재시도...")
+                            print(f"🔄 청크 크기를 {chunk_size // FileConstants.BYTES_PER_MB}MB로 줄여서 재시도...")
                             media = MediaFileUpload(
                                 video_path, chunksize=chunk_size, resumable=True
                             )
@@ -223,33 +224,33 @@ class YouTubeUploadManager:
 
     def _build_upload_body(self, metadata: dict) -> dict:
         """업로드용 메타데이터 구성"""
-        # 태그 처리 (최대 500자 제한)
+        # 태그 처리 (최대 제한 적용)
         tags = metadata.get("tags", "")
         if isinstance(tags, str):
             # 태그 문자열 전체 길이 제한
-            if len(tags) > 500:
-                tags = tags[:500]
+            if len(tags) > YouTubeConstants.TAGS_MAX_LENGTH:
+                tags = tags[:YouTubeConstants.TAGS_MAX_LENGTH]
             tags = [tag.strip() for tag in tags.split(",") if tag.strip()]
         elif not isinstance(tags, list):
             tags = []
 
-        # 설명 바이트 단위 제한 (5000 바이트)
+        # 설명 바이트 단위 제한
         description = metadata.get("description", "")
         description_bytes = description.encode("utf-8")
-        if len(description_bytes) > 5000:
+        if len(description_bytes) > YouTubeConstants.DESCRIPTION_MAX_BYTES:
             # 바이트 단위로 자른 후 디코딩
-            description = description_bytes[:5000].decode("utf-8", errors="ignore")
+            description = description_bytes[:YouTubeConstants.DESCRIPTION_MAX_BYTES].decode("utf-8", errors="ignore")
 
         body = {
             "snippet": {
-                "title": metadata["title"][:100],  # YouTube 제목 길이 제한
-                "description": description,  # YouTube 설명 바이트 제한 적용
-                "tags": tags,  # 태그 문자열 길이 제한 적용
-                "categoryId": str(metadata.get("category_id", 24)),  # Entertainment
-                "defaultLanguage": "ko",
-                "defaultAudioLanguage": "ko",
+                "title": metadata["title"][:YouTubeConstants.TITLE_MAX_LENGTH],
+                "description": description,
+                "tags": tags,
+                "categoryId": str(metadata.get("category_id", YouTubeConstants.DEFAULT_CATEGORY_ID)),
+                "defaultLanguage": YouTubeConstants.DEFAULT_LANGUAGE,
+                "defaultAudioLanguage": YouTubeConstants.DEFAULT_AUDIO_LANGUAGE,
             },
-            "status": {"privacyStatus": metadata.get("privacy_status", "private")},
+            "status": {"privacyStatus": metadata.get("privacy_status", YouTubeConstants.DEFAULT_PRIVACY_STATUS)},
         }
 
         # YouTube 네이티브 예약 발행 시간 설정

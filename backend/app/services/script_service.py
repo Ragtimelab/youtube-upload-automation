@@ -8,6 +8,7 @@ from typing import List, Optional
 
 from sqlalchemy.orm import Session
 
+from ..core.constants import PaginationConstants
 from ..core.exceptions import (
     DatabaseError,
     FileUploadError,
@@ -71,7 +72,7 @@ class ScriptService:
         return script_to_dict(script)
 
     def get_scripts(
-        self, skip: int = 0, limit: int = 100, status: Optional[str] = None
+        self, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT, status: Optional[str] = None
     ) -> dict:
         """대본 목록 조회 (직렬화된 데이터 반환)"""
         try:
@@ -157,7 +158,7 @@ class ScriptService:
             raise DatabaseError(f"통계 조회 중 오류 발생: {str(e)}")
 
     def search_scripts(
-        self, title_query: str, skip: int = 0, limit: int = 100
+        self, title_query: str, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT
     ) -> List[Script]:
         """제목으로 대본 검색"""
         try:
@@ -176,7 +177,7 @@ class ScriptService:
             raise DatabaseError(f"대본 상태 업데이트 중 오류 발생: {str(e)}")
 
     def get_scripts_ready_for_video(
-        self, skip: int = 0, limit: int = 100
+        self, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT
     ) -> List[Script]:
         """비디오 업로드 준비된 대본들 조회"""
         try:
@@ -185,7 +186,7 @@ class ScriptService:
             raise DatabaseError(f"비디오 준비 대본 조회 중 오류 발생: {str(e)}")
 
     def get_scripts_ready_for_youtube(
-        self, skip: int = 0, limit: int = 100
+        self, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT
     ) -> List[Script]:
         """YouTube 업로드 준비된 대본들 조회"""
         try:

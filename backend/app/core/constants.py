@@ -143,6 +143,51 @@ class ValidationConstants:
     SLOW_REFRESH_INTERVAL = 5
 
 
+class LoggingConstants:
+    """로깅 설정 관련 상수"""
+    
+    # 로그 파일 크기 및 백업
+    LOG_FILE_MAX_BYTES = 10485760  # 10MB
+    LOG_BACKUP_COUNT = 5
+    
+    # 로그 레벨
+    DEFAULT_LOG_LEVEL = "INFO"
+    DEBUG_LOG_LEVEL = "DEBUG"
+    ERROR_LOG_LEVEL = "ERROR"
+
+
+class PaginationConstants:
+    """페이지네이션 관련 상수"""
+    
+    # 기본 페이지 크기
+    DEFAULT_PAGE_LIMIT = 100
+    SMALL_PAGE_LIMIT = 20
+    LARGE_PAGE_LIMIT = 50
+    MAX_PAGE_LIMIT = 1000
+    
+    # CLI 전용 기본값
+    CLI_DEFAULT_LIST_LIMIT = 20
+    CLI_SMALL_LIST_LIMIT = 10
+    CLI_PIPELINE_LIMIT = 1000
+
+
+class TimeConstants:
+    """시간 관련 상수"""
+    
+    # 모니터링 시간 (초)
+    DEFAULT_MONITOR_DURATION = 60
+    EXTENDED_MONITOR_DURATION = 300
+    
+    # 새로고침 간격 (초)
+    REALTIME_REFRESH_INTERVAL = 2.0
+    STATUS_REFRESH_INTERVAL = 5.0
+    FAST_REFRESH_INTERVAL = 1.0
+    
+    # 타임아웃 설정 (초)
+    THREAD_JOIN_TIMEOUT = 3.0
+    PROGRESS_MONITOR_TIMEOUT = 1.0
+
+
 # 하위 호환성을 위한 별칭 (필요시)
 YOUTUBE_TITLE_MAX_LENGTH = YouTubeConstants.TITLE_MAX_LENGTH
 YOUTUBE_DESCRIPTION_MAX_BYTES = YouTubeConstants.DESCRIPTION_MAX_BYTES

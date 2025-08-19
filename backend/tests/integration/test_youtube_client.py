@@ -9,6 +9,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'backend'))
 
 from app.services.youtube_client import YouTubeClient
+from app.core.constants import YouTubeConstants
 
 
 def test_authentication():
@@ -131,21 +132,21 @@ def test_video_metadata_validation():
     
     # 제목 길이 검증
     title_length = len(test_metadata['title'])
-    if title_length <= 100:
-        print(f"   ✅ 제목 길이 적절: {title_length}/100자")
-        assert title_length <= 100
+    if title_length <= YouTubeConstants.TITLE_MAX_LENGTH:
+        print(f"   ✅ 제목 길이 적절: {title_length}/{YouTubeConstants.TITLE_MAX_LENGTH}자")
+        assert title_length <= YouTubeConstants.TITLE_MAX_LENGTH
     else:
-        print(f"   ❌ 제목이 너무 김: {title_length}/100자")
-        assert False, f"제목이 너무 깁니다: {title_length}/100자"
+        print(f"   ❌ 제목이 너무 김: {title_length}/{YouTubeConstants.TITLE_MAX_LENGTH}자")
+        assert False, f"제목이 너무 깁니다: {title_length}/{YouTubeConstants.TITLE_MAX_LENGTH}자"
     
-    # 설명 길이 검증
-    desc_length = len(test_metadata['description'])
-    if desc_length <= 5000:
-        print(f"   ✅ 설명 길이 적절: {desc_length}/5000자")
-        assert desc_length <= 5000
+    # 설명 길이 검증 (바이트 단위)
+    desc_bytes = len(test_metadata['description'].encode('utf-8'))
+    if desc_bytes <= YouTubeConstants.DESCRIPTION_MAX_BYTES:
+        print(f"   ✅ 설명 길이 적절: {desc_bytes}/{YouTubeConstants.DESCRIPTION_MAX_BYTES} 바이트")
+        assert desc_bytes <= YouTubeConstants.DESCRIPTION_MAX_BYTES
     else:
-        print(f"   ❌ 설명이 너무 김: {desc_length}/5000자")
-        assert False, f"설명이 너무 깁니다: {desc_length}/5000자"
+        print(f"   ❌ 설명이 너무 김: {desc_bytes}/{YouTubeConstants.DESCRIPTION_MAX_BYTES} 바이트")
+        assert False, f"설명이 너무 깁니다: {desc_bytes}/{YouTubeConstants.DESCRIPTION_MAX_BYTES} 바이트"
     
     assert test_metadata['title']
     assert test_metadata['privacy_status'] in ['private', 'unlisted', 'public']

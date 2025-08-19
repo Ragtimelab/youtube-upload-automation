@@ -14,7 +14,7 @@ project_root = Path(__file__).parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
     
-from backend.app.core.constants import FileConstants, NetworkConstants
+from backend.app.core.constants import FileConstants, NetworkConstants, PaginationConstants
 
 
 class YouTubeAutomationAPI:
@@ -104,7 +104,7 @@ class YouTubeAutomationAPI:
             response.raise_for_status()
             return response.json()
     
-    def get_scripts(self, skip: int = 0, limit: int = 100, status: Optional[str] = None) -> Dict[str, Any]:
+    def get_scripts(self, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT, status: Optional[str] = None) -> Dict[str, Any]:
         """스크립트 목록 조회"""
         params = {'skip': skip, 'limit': limit}
         if status:

@@ -15,6 +15,7 @@ project_root = Path(__file__).parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
+from backend.app.core.constants import PaginationConstants
 from cli.utils.api_client import api, APIError
 from cli.utils.validators import file_validator, input_validator
 
@@ -65,7 +66,7 @@ def upload(file_path: str):
 
 @script.command()
 @click.option('--status', '-s', help='상태별 필터링 (script_ready, video_ready, uploaded, error, scheduled)')
-@click.option('--limit', '-l', default=20, help='조회할 최대 개수 (기본: 20)')
+@click.option('--limit', '-l', default=PaginationConstants.CLI_DEFAULT_LIST_LIMIT, help='조회할 최대 개수 (기본: 20)')
 @click.option('--skip', default=0, help='건너뛸 개수 (기본: 0)')
 def list(status: Optional[str], limit: int, skip: int):
     """등록된 스크립트 목록 조회"""

@@ -11,6 +11,7 @@ from fastapi import UploadFile
 from sqlalchemy.orm import Session
 
 from ..config import get_settings
+from ..core.constants import FileConstants
 from ..core.exceptions import (
     DatabaseError,
     FileUploadError,
@@ -359,7 +360,7 @@ class UploadService:
             file_size = os.path.getsize(script.video_file_path)
             progress["video_file_info"] = {
                 "file_size": file_size,
-                "file_size_mb": round(file_size / (1024 * 1024), 2),
+                "file_size_mb": round(file_size / FileConstants.BYTES_PER_MB, 2),
                 "filename": os.path.basename(script.video_file_path)
             }
 
@@ -400,7 +401,7 @@ class UploadService:
         # 파일 크기 검증 
         if hasattr(video_file, 'size') and video_file.size:
             if video_file.size > self.settings.max_video_size_bytes:
-                size_mb = video_file.size / (1024 * 1024)
+                size_mb = video_file.size / FileConstants.BYTES_PER_MB
                 raise FileValidationError(
                     f"파일 크기가 너무 큽니다. 최대 {self.settings.max_video_size_mb}MB까지 업로드 가능합니다. "
                     f"현재 파일 크기: {size_mb:.1f}MB"
@@ -427,7 +428,7 @@ class UploadService:
 
         try:
             # 청크 단위로 파일 저장 (진행률 추적 가능)
-            chunk_size = 1024 * 1024  # 1MB 청크
+            chunk_size = FileConstants.CHUNK_SIZE_1MB  # 1MB 청크
             total_size = 0
             
             with open(file_path, "wb") as buffer:

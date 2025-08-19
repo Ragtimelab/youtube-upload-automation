@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Dict, Any
 
 from ..config import get_settings
+from .constants import LoggingConstants
 
 
 def setup_logging():
@@ -53,8 +54,8 @@ def setup_logging():
                 "level": "INFO",
                 "formatter": "detailed",
                 "filename": f"logs/app-{today}.log",
-                "maxBytes": 10485760,  # 10MB
-                "backupCount": 5,
+                "maxBytes": LoggingConstants.LOG_FILE_MAX_BYTES,
+                "backupCount": LoggingConstants.LOG_BACKUP_COUNT,
                 "encoding": "utf8",
             },
             "error_file": {
@@ -62,8 +63,8 @@ def setup_logging():
                 "level": "ERROR",
                 "formatter": "detailed",
                 "filename": f"logs/error-{today}.log",
-                "maxBytes": 10485760,  # 10MB
-                "backupCount": 5,
+                "maxBytes": LoggingConstants.LOG_FILE_MAX_BYTES,
+                "backupCount": LoggingConstants.LOG_BACKUP_COUNT,
                 "encoding": "utf8",
             },
         },

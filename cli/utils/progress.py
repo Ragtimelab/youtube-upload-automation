@@ -4,8 +4,17 @@ Enhanced progress display utilities for CLI
 
 import time
 import threading
+import sys
+from pathlib import Path
 from typing import Optional, Callable, Any
 from rich.console import Console
+
+# 백엔드 constants 임포트
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+    
+from backend.app.core.constants import TimeConstants
 from rich.progress import (
     Progress, 
     TaskID, 
@@ -304,7 +313,7 @@ class RealTimeUploadProgress:
         """Stop progress monitoring"""
         self.is_monitoring = False
         if self.monitor_thread:
-            self.monitor_thread.join(timeout=1.0)
+            self.monitor_thread.join(timeout=TimeConstants.PROGRESS_MONITOR_TIMEOUT)
         
         if self.progress:
             self.progress.__exit__(None, None, None)

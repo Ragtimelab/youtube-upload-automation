@@ -15,7 +15,13 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 # 백엔드 constants 임포트
-from backend.app.core.constants import FileConstants, NetworkConstants, MessageConstants
+from backend.app.core.constants import (
+    FileConstants, 
+    NetworkConstants, 
+    MessageConstants, 
+    PaginationConstants,
+    TimeConstants
+)
 
 # CLI 명령어 그룹들 import (절대 임포트)
 from cli.commands.script import script
@@ -100,7 +106,7 @@ def quick_upload(file_path: str):
 
 @cli.command()
 @click.option('--status', '-s', help='상태별 필터링')
-@click.option('--limit', '-l', default=10, help='표시할 개수')
+@click.option('--limit', '-l', default=PaginationConstants.CLI_SMALL_LIST_LIMIT, help='표시할 개수')
 def ls(status, limit):
     """스크립트 목록 조회 (script list의 단축어)"""
     ctx = click.get_current_context()
@@ -206,7 +212,7 @@ def interactive():
 
 
 @cli.command()
-@click.option('--duration', '-d', default=60, help='모니터링 시간(초)')
+@click.option('--duration', '-d', default=TimeConstants.DEFAULT_MONITOR_DURATION, help='모니터링 시간(초)')
 def monitor(duration: int):
     """🔍 실시간 시스템 모니터링"""
     monitor_system(duration)
@@ -214,7 +220,7 @@ def monitor(duration: int):
 
 @cli.command()
 @click.argument('script_ids', nargs=-1, type=int)
-@click.option('--duration', '-d', default=300, help='모니터링 시간(초)')
+@click.option('--duration', '-d', default=TimeConstants.EXTENDED_MONITOR_DURATION, help='모니터링 시간(초)')
 def watch(script_ids: tuple, duration: int):
     """👀 특정 스크립트 상태 모니터링"""
     if not script_ids:

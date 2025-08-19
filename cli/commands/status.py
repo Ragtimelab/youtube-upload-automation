@@ -16,6 +16,7 @@ project_root = Path(__file__).parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
+from backend.app.core.constants import PaginationConstants, TimeConstants
 from cli.utils.api_client import api, APIError
 
 
@@ -165,7 +166,7 @@ def pipeline():
         console.print("🔄 파이프라인 상태 확인 중...", style="yellow")
         
         # 모든 스크립트 조회
-        all_scripts = api.get_scripts(limit=1000)['scripts']
+        all_scripts = api.get_scripts(limit=PaginationConstants.CLI_PIPELINE_LIMIT)['scripts']
         
         if not all_scripts:
             console.print("📭 등록된 스크립트가 없습니다.", style="yellow")
@@ -242,7 +243,7 @@ def pipeline():
 
 
 @status.command()
-@click.option('--interval', '-i', default=5, help='새로고침 간격 (초, 기본: 5)')
+@click.option('--interval', '-i', default=TimeConstants.STATUS_REFRESH_INTERVAL, help='새로고침 간격 (초, 기본: 5)')
 def monitor(interval: int):
     """실시간 시스템 모니터링"""
     try:

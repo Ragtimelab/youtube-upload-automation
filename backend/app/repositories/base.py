@@ -7,6 +7,8 @@ from typing import Generic, List, Optional, TypeVar
 
 from sqlalchemy.orm import Session
 
+from ..core.constants import PaginationConstants
+
 T = TypeVar("T")
 
 
@@ -27,7 +29,7 @@ class BaseRepository(Generic[T], ABC):
         pass
 
     @abstractmethod
-    def get_all(self, skip: int = 0, limit: int = 100) -> List[T]:
+    def get_all(self, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT) -> List[T]:
         """모든 엔티티 조회"""
         pass
 
@@ -60,7 +62,7 @@ class BaseSQLAlchemyRepository(BaseRepository[T]):
         """ID로 엔티티 조회"""
         return self.db.query(self.model).filter(self.model.id == entity_id).first()
 
-    def get_all(self, skip: int = 0, limit: int = 100) -> List[T]:
+    def get_all(self, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT) -> List[T]:
         """모든 엔티티 조회"""
         return self.db.query(self.model).offset(skip).limit(limit).all()
 

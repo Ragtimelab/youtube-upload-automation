@@ -4,6 +4,8 @@ Real-time feedback and monitoring utilities
 
 import time
 import threading
+import sys
+from pathlib import Path
 from typing import Dict, List, Optional, Callable
 from datetime import datetime, timedelta
 from rich.console import Console
@@ -15,6 +17,12 @@ from rich.layout import Layout
 from rich.text import Text
 from contextlib import contextmanager
 
+# 백엔드 constants 임포트
+project_root = Path(__file__).parent.parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+    
+from backend.app.core.constants import TimeConstants
 from .api_client import api, APIError
 
 
@@ -28,11 +36,11 @@ class RealTimeMonitor:
         self.console = Console()
         self.is_running = False
         self.monitor_thread = None
-        self.refresh_interval = 2.0  # seconds
+        self.refresh_interval = TimeConstants.REALTIME_REFRESH_INTERVAL  # seconds
         self.data_cache = {}
         self.last_update = None
         
-    def start_monitoring(self, refresh_interval: float = 2.0):
+    def start_monitoring(self, refresh_interval: float = TimeConstants.REALTIME_REFRESH_INTERVAL):
         """Start real-time monitoring"""
         self.refresh_interval = refresh_interval
         self.is_running = True
@@ -43,7 +51,7 @@ class RealTimeMonitor:
         """Stop monitoring"""
         self.is_running = False
         if self.monitor_thread:
-            self.monitor_thread.join(timeout=3.0)
+            self.monitor_thread.join(timeout=TimeConstants.THREAD_JOIN_TIMEOUT)
     
     def _monitor_loop(self):
         """Main monitoring loop"""
@@ -181,7 +189,7 @@ class StatusWatcher:
         """Stop watching"""
         self.is_watching = False
         if self.watch_thread:
-            self.watch_thread.join(timeout=2.0)
+            self.watch_thread.join(timeout=TimeConstants.THREAD_JOIN_TIMEOUT)
             
     def _watch_loop(self):
         """Main watching loop"""

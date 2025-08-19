@@ -35,6 +35,7 @@
 ## 🚀 시스템 아키텍처
 
 ### Backend (FastAPI)
+
 ```
 backend/app/
 ├── main.py                 # FastAPI 애플리케이션
@@ -49,6 +50,7 @@ backend/app/
 ```
 
 ### CLI Interface (Click)
+
 ```
 cli/
 ├── main.py               # CLI 진입점
@@ -62,6 +64,7 @@ cli/
 ```
 
 ### Monitoring Dashboard (Streamlit)
+
 ```
 streamlit_app.py          # 메인 대시보드
 .streamlit/config.toml    # Streamlit 설정
@@ -113,6 +116,7 @@ make run
 ### 1. datetime 변수 충돌 해결 (중요!)
 
 **문제**: `backend/app/services/upload_service.py`에서 변수명 충돌
+
 ```python
 # ❌ 이전 (오류)
 script.scheduled_time = datetime.fromisoformat(...)  # 변수 충돌
@@ -137,17 +141,20 @@ script.scheduled_time = datetime.fromisoformat(...)  # 정상 작동
 ## 🎯 사용자별 최적화
 
 ### 개발자 (주 사용자)
+
 - **CLI 우선**: 빠르고 효율적인 명령줄 인터페이스
 - **스크립트 자동화**: 배치 처리 및 자동화 스크립트 지원
 - **디버깅**: 상세한 로그 및 에러 정보
 
 ### 모니터링 필요시
+
 - **대시보드**: Streamlit으로 시각적 모니터링
 - **실시간 업데이트**: 자동 새로고침으로 현재 상태 확인
 
 ## 🔄 완전한 워크플로우
 
 ### 1. 기본 워크플로우
+
 ```bash
 # 1. 대본 업로드
 ./youtube-cli script upload my_script.txt
@@ -160,12 +167,14 @@ script.scheduled_time = datetime.fromisoformat(...)  # 정상 작동
 ```
 
 ### 2. 배치 처리
+
 ```bash
 # 모든 준비된 스크립트 YouTube 업로드
 ./youtube-cli youtube batch --privacy unlisted
 ```
 
 ### 3. 예약 발행
+
 ```bash
 # 내일 오전 9시 발행 예약
 ./youtube-cli youtube upload 1 --schedule "2025-08-17T09:00:00.000Z"
@@ -194,16 +203,19 @@ youtube-upload-automation/
 ## ✅ 테스트 결과
 
 ### 1. CLI 도구
+
 - ✅ 모든 명령어 정상 작동
 - ✅ 에러 처리 및 메시지 출력 확인
 - ✅ Rich 테이블 및 프로그레스바 표시 정상
 
 ### 2. Streamlit 대시보드
+
 - ✅ 서버 시작 및 웹 인터페이스 정상
 - ✅ API 연결 및 데이터 로드 확인
 - ✅ 차트 및 테이블 시각화 정상
 
 ### 3. Backend API
+
 - ✅ YouTube API 인증 흐름 정상
 - ✅ 파일 업로드 및 데이터베이스 저장 확인
 - ✅ datetime 충돌 문제 해결 완료
@@ -211,12 +223,14 @@ youtube-upload-automation/
 ## 🎉 최종 결과
 
 ### ✅ 목표 달성
+
 1. **프론트엔드/백엔드 완벽 통합**: CLI + Streamlit 대시보드로 완성
 2. **글로벌 원칙 준수**: 근본 해결, 추측 금지, 검증 우선
 3. **프론트엔드 오류 해결**: React 제거, CLI로 대체
 4. **개발자 효율성**: 4배 빠른 워크플로우 달성
 
 ### 🚀 준비 완료
+
 - **일일 사용**: CLI 도구로 빠른 업로드 워크플로우
 - **모니터링**: Streamlit 대시보드로 시각적 관리
 - **자동화**: 배치 처리 및 스크립트 자동화 지원

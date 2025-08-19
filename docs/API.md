@@ -3,6 +3,7 @@
 > **YouTube 업로드 자동화 시스템 REST API 가이드**
 
 ## 📋 목차
+
 - [API 개요](#-api-개요)
 - [인증](#-인증)
 - [스크립트 관리](#-스크립트-관리-api)
@@ -17,18 +18,21 @@
 ## 🌐 API 개요
 
 ### 기본 정보
+
 - **Base URL**: `http://localhost:8000`
 - **API 버전**: v1
 - **데이터 형식**: JSON
 - **문자 인코딩**: UTF-8
 
 ### 지원 HTTP 메서드
+
 - `GET`: 데이터 조회
 - `POST`: 데이터 생성/업로드
 - `PUT`: 데이터 수정
 - `DELETE`: 데이터 삭제
 
 ### 응답 형식
+
 ```json
 {
   "status": "success|error",
@@ -43,6 +47,7 @@
 ## 🔐 인증
 
 ### YouTube API 인증
+
 YouTube 업로드를 위한 OAuth 2.0 인증이 필요합니다.
 
 ```bash
@@ -65,16 +70,19 @@ GET /api/auth/youtube/status
 ## 📝 스크립트 관리 API
 
 ### 스크립트 목록 조회
+
 ```bash
 GET /api/scripts/
 ```
 
 **Query Parameters:**
+
 - `skip` (int): 건너뛸 개수 (기본값: 0)
 - `limit` (int): 가져올 개수 (기본값: 100, 최대: 1000)
 - `status` (string): 상태 필터 (script_ready, video_ready, uploaded, error)
 
 **응답:**
+
 ```json
 {
   "status": "success",
@@ -96,11 +104,13 @@ GET /api/scripts/
 ```
 
 ### 단일 스크립트 조회
+
 ```bash
 GET /api/scripts/{script_id}
 ```
 
 **응답:**
+
 ```json
 {
   "status": "success",
@@ -122,15 +132,18 @@ GET /api/scripts/{script_id}
 ```
 
 ### 스크립트 업로드
+
 ```bash
 POST /api/scripts/upload
 Content-Type: multipart/form-data
 ```
 
 **Form Data:**
+
 - `file`: 스크립트 파일 (.txt, .md)
 
 **응답:**
+
 ```json
 {
   "status": "success",
@@ -144,12 +157,14 @@ Content-Type: multipart/form-data
 ```
 
 ### 스크립트 수정
+
 ```bash
 PUT /api/scripts/{script_id}
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "title": "수정된 제목",
@@ -159,11 +174,13 @@ Content-Type: application/json
 ```
 
 ### 스크립트 삭제
+
 ```bash
 DELETE /api/scripts/{script_id}
 ```
 
 **응답:**
+
 ```json
 {
   "status": "success",
@@ -172,11 +189,13 @@ DELETE /api/scripts/{script_id}
 ```
 
 ### 스크립트 통계
+
 ```bash
 GET /api/scripts/stats/summary
 ```
 
 **응답:**
+
 ```json
 {
   "status": "success",
@@ -196,15 +215,18 @@ GET /api/scripts/stats/summary
 ## 🎬 업로드 관리 API
 
 ### 비디오 파일 업로드
+
 ```bash
 POST /api/upload/video/{script_id}
 Content-Type: multipart/form-data
 ```
 
 **Form Data:**
+
 - `file`: 비디오 파일 (.mp4, .avi, .mov, .mkv, .webm, 최대 8GB)
 
 **응답:**
+
 ```json
 {
   "status": "success",
@@ -218,12 +240,14 @@ Content-Type: multipart/form-data
 ```
 
 ### YouTube 업로드
+
 ```bash
 POST /api/upload/youtube/{script_id}
 Content-Type: application/json
 ```
 
 **Request Body:**
+
 ```json
 {
   "privacy_status": "private",
@@ -233,11 +257,13 @@ Content-Type: application/json
 ```
 
 **Privacy Status 옵션:**
+
 - `private`: 비공개
 - `unlisted`: 링크 공유
 - `public`: 공개
 
 **Category ID 옵션:**
+
 - `22`: People & Blogs (기본값)
 - `24`: Entertainment
 - `26`: Howto & Style
@@ -245,6 +271,7 @@ Content-Type: application/json
 - `28`: Science & Technology
 
 **응답:**
+
 ```json
 {
   "status": "success",
@@ -259,11 +286,13 @@ Content-Type: application/json
 ```
 
 ### 업로드 상태 조회
+
 ```bash
 GET /api/upload/status/{script_id}
 ```
 
 **응답:**
+
 ```json
 {
   "status": "success",
@@ -279,11 +308,13 @@ GET /api/upload/status/{script_id}
 ```
 
 ### 업로드 진행률 조회
+
 ```bash
 GET /api/upload/progress/{script_id}
 ```
 
 **응답:**
+
 ```json
 {
   "status": "success",
@@ -299,11 +330,13 @@ GET /api/upload/progress/{script_id}
 ```
 
 ### 비디오 파일 삭제
+
 ```bash
 DELETE /api/upload/video/{script_id}
 ```
 
 **응답:**
+
 ```json
 {
   "status": "success",
@@ -316,14 +349,17 @@ DELETE /api/upload/video/{script_id}
 ## 🌐 WebSocket API
 
 ### WebSocket 연결
+
 ```
 WS /ws
 ```
 
 **연결 파라미터:**
+
 - `user_id` (query): 사용자 식별자
 
 **예시:**
+
 ```javascript
 const ws = new WebSocket('ws://localhost:8000/ws?user_id=user123');
 ```
@@ -333,6 +369,7 @@ const ws = new WebSocket('ws://localhost:8000/ws?user_id=user123');
 #### 클라이언트 → 서버
 
 **스크립트 구독:**
+
 ```json
 {
   "type": "subscribe_script",
@@ -341,6 +378,7 @@ const ws = new WebSocket('ws://localhost:8000/ws?user_id=user123');
 ```
 
 **스크립트 구독 해제:**
+
 ```json
 {
   "type": "unsubscribe_script",
@@ -349,6 +387,7 @@ const ws = new WebSocket('ws://localhost:8000/ws?user_id=user123');
 ```
 
 **상태 확인:**
+
 ```json
 {
   "type": "get_script_status",
@@ -357,6 +396,7 @@ const ws = new WebSocket('ws://localhost:8000/ws?user_id=user123');
 ```
 
 **연결 확인:**
+
 ```json
 {
   "type": "ping"
@@ -366,6 +406,7 @@ const ws = new WebSocket('ws://localhost:8000/ws?user_id=user123');
 #### 서버 → 클라이언트
 
 **업로드 진행률:**
+
 ```json
 {
   "type": "upload_progress",
@@ -381,6 +422,7 @@ const ws = new WebSocket('ws://localhost:8000/ws?user_id=user123');
 ```
 
 **업로드 완료:**
+
 ```json
 {
   "type": "upload_completed",
@@ -394,6 +436,7 @@ const ws = new WebSocket('ws://localhost:8000/ws?user_id=user123');
 ```
 
 **오류 알림:**
+
 ```json
 {
   "type": "upload_error",
@@ -407,11 +450,13 @@ const ws = new WebSocket('ws://localhost:8000/ws?user_id=user123');
 ```
 
 ### WebSocket 통계
+
 ```bash
 GET /ws/stats
 ```
 
 **응답:**
+
 ```json
 {
   "status": "success",
@@ -431,11 +476,13 @@ GET /ws/stats
 ## 🔧 시스템 API
 
 ### 헬스 체크
+
 ```bash
 GET /health
 ```
 
 **응답:**
+
 ```json
 {
   "status": "healthy",
@@ -447,11 +494,13 @@ GET /health
 ```
 
 ### API 상태
+
 ```bash
 GET /
 ```
 
 **응답:**
+
 ```json
 {
   "message": "YouTube 업로드 자동화 API",
@@ -466,6 +515,7 @@ GET /
 ## ❌ 오류 처리
 
 ### HTTP 상태 코드
+
 - `200`: 성공
 - `201`: 생성 완료
 - `400`: 잘못된 요청
@@ -475,6 +525,7 @@ GET /
 - `500`: 서버 오류
 
 ### 오류 응답 형식
+
 ```json
 {
   "status": "error",
@@ -488,6 +539,7 @@ GET /
 ```
 
 ### 주요 오류 코드
+
 - `SCRIPT_NOT_FOUND`: 스크립트 없음
 - `SCRIPT_PARSING_ERROR`: 스크립트 파싱 실패
 - `FILE_VALIDATION_ERROR`: 파일 검증 실패
@@ -502,6 +554,7 @@ GET /
 ## 💻 예제 코드
 
 ### Python 예제
+
 ```python
 import requests
 import json
@@ -546,6 +599,7 @@ api.upload_to_youtube(script_id, "private")
 ```
 
 ### JavaScript 예제
+
 ```javascript
 // API 클라이언트 클래스
 class YouTubeAutomationAPI {
@@ -610,6 +664,7 @@ ws.onmessage = (event) => {
 ```
 
 ### cURL 예제
+
 ```bash
 # 스크립트 업로드
 curl -X POST "http://localhost:8000/api/scripts/upload" \
@@ -636,16 +691,19 @@ curl -X GET "http://localhost:8000/api/upload/status/1"
 ## 📚 추가 정보
 
 ### API 문서 (Swagger)
+
 - **URL**: `http://localhost:8000/docs`
 - **Interactive**: 브라우저에서 직접 API 테스트 가능
 - **스키마**: OpenAPI 3.0 호환
 
 ### 할당량 제한
+
 - **YouTube API**: 일일 10,000 units
 - **업로드당 소모**: 1,600 units
 - **최대 일일 업로드**: 6개 비디오
 
 ### 파일 크기 제한
+
 - **스크립트 파일**: 최대 100MB
 - **비디오 파일**: 최대 8GB
 - **지원 형식**: .mp4, .avi, .mov, .mkv, .webm

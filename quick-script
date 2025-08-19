@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+# !/usr/bin/env bash
+
 # 빠른 스크립트 업로드용 래퍼
 
 if [ $# -eq 0 ]; then

@@ -11,6 +11,7 @@
 YouTube 업로드 자동화 시스템은 콘텐츠 제작자가 스크립트 작성부터 YouTube 업로드까지의 반복적인 작업을 자동화하여, **순수 창작 활동에만 집중**할 수 있도록 도와주는 시스템입니다.
 
 ### 🎯 핵심 기능
+
 - ✅ **스크립트 파일 기반 자동 등록**: 표준화된 형식의 스크립트 파일 업로드로 메타데이터 자동 추출
 - ✅ **CLI 기반 자동화**: 명령줄 인터페이스로 빠른 업로드 워크플로우
 - ✅ **비디오-스크립트 스마트 매칭**: 드롭다운 인터페이스로 실수 없는 매칭
@@ -20,6 +21,7 @@ YouTube 업로드 자동화 시스템은 콘텐츠 제작자가 스크립트 작
 - ✅ **API 할당량 자동 관리**: 일일 10,000 units 한도 내에서 최적화된 업로드
 
 ### 💡 핵심 가치 제안
+
 - **80% 작업 시간 단축**: 기존 60분/일 → 10분/일
 - **99% 업로드 성공률**: 안정적인 자동화 시스템
 - **완전 자동 워크플로우**: 스크립트 → 비디오 → YouTube
@@ -30,12 +32,14 @@ YouTube 업로드 자동화 시스템은 콘텐츠 제작자가 스크립트 작
 ## 🚀 Quick Start
 
 ### 1. 저장소 복제
+
 ```bash
 git clone https://github.com/Ragtimelab/youtube-upload-automation.git
 cd youtube-upload-automation
 ```
 
 ### 2. Poetry 를 이용한 의존성 설치
+
 ```bash
 # Poetry 가상환경 설정 및 의존성 설치
 poetry install
@@ -43,12 +47,14 @@ poetry shell  # 가상환경 활성화
 ```
 
 ### 3. 데이터베이스 초기화
+
 ```bash
 cd backend
 poetry run alembic upgrade head
 ```
 
 ### 4. YouTube API 설정
+
 1. [Google Cloud Console](https://console.cloud.google.com/)에서 프로젝트 생성
 2. YouTube Data API v3 활성화
 3. OAuth 2.0 클라이언트 ID 생성
@@ -57,6 +63,7 @@ poetry run alembic upgrade head
 ### 5. 시스템 실행
 
 #### **방법 1: CLI 도구 (권장)**
+
 ```bash
 # 빠른 스크립트 업로드
 ./quick-script script.txt
@@ -69,7 +76,8 @@ poetry run alembic upgrade head
 ```
 
 ### 6. 시스템 접속
-- **API 문서**: http://localhost:8000/docs
+
+- **API 문서**: <http://localhost:8000/docs>
 - **CLI 인터페이스**: `./youtube-cli`
 
 ---
@@ -103,6 +111,7 @@ youtube-upload-automation/
 ## 🔧 기술 스택
 
 ### Backend
+
 - **Python 3.13**: 최신 Python 버전
 - **Poetry**: 의존성 및 패키지 관리 도구
 - **FastAPI 0.116.0+**: 고성능 API 프레임워크 + WebSocket 지원
@@ -111,13 +120,14 @@ youtube-upload-automation/
 - **Google APIs**: YouTube Data API v3 연동
 - **WebSocket**: 실시간 양방향 통신
 
-
 ### CLI Tools
+
 - **Click 8.2+**: 명령줄 인터페이스 프레임워크
 - **Rich 14.1+**: 아름다운 터미널 출력
 - **Colorama**: 크로스 플랫폼 컬러 지원
 
 ### DevOps
+
 - **Git/GitHub**: 버전 관리 및 협업
 - **Poetry**: 의존성 관리 및 패키징
 - **Make**: 빌드 자동화
@@ -129,11 +139,13 @@ youtube-upload-automation/
 ### ⌨️ CLI 도구 (권장)
 
 #### 1. 스크립트 업로드
+
 1. 웹 대시보드 접속 → "📝 스크립트 관리" 탭
 2. "직접 입력" 또는 "파일 업로드" 선택
 3. 표준화된 스크립트 형식으로 업로드
 
 **스크립트 파일 형식 예시:**
+
 ```text
 === 제목 ===
 60년 만에 밝히는 할머니의 비밀
@@ -151,11 +163,13 @@ ImageFX 프롬프트: elderly korean person with emotional expression, warm ligh
 ```
 
 #### 2. 비디오 업로드
+
 1. "🎬 업로드 관리" → "🎥 비디오 업로드" 탭
 2. 등록된 스크립트 선택
 3. 제작한 비디오 파일 업로드 (최대 8GB)
 
 #### 3. YouTube 업로드
+
 1. "📺 YouTube 업로드" 탭
 2. 공개 설정 및 카테고리 선택
 3. "📺 YouTube 업로드" 버튼 클릭
@@ -164,6 +178,7 @@ ImageFX 프롬프트: elderly korean person with emotional expression, warm ligh
 ### ⌨️ CLI 도구
 
 #### 빠른 명령어
+
 ```bash
 # 스크립트 빠른 업로드
 ./quick-script my_script.txt
@@ -176,6 +191,7 @@ ImageFX 프롬프트: elderly korean person with emotional expression, warm ligh
 ```
 
 #### 상세 CLI 사용법
+
 ```bash
 # 스크립트 관리
 ./youtube-cli script upload script.txt
@@ -197,12 +213,14 @@ ImageFX 프롬프트: elderly korean person with emotional expression, warm ligh
 ## 📊 시스템 모니터링
 
 ### 실시간 대시보드
+
 - **📊 대시보드**: 시스템 상태, 통계, 최근 활동
 - **업로드 진행률**: WebSocket 기반 실시간 업데이트
 - **성공/실패 통계**: 상태별 스크립트 현황
 - **YouTube 연동 상태**: API 연결 및 채널 정보
 
 ### WebSocket 실시간 기능
+
 - **진행률 추적**: 업로드 단계별 실시간 상태
 - **즉시 알림**: 업로드 완료, 오류 발생 시 즉시 알림
 - **자동 재연결**: 연결 끊김 시 자동 복구
@@ -212,6 +230,7 @@ ImageFX 프롬프트: elderly korean person with emotional expression, warm ligh
 ## ⚙️ 설정 및 환경 변수
 
 ### 주요 설정 항목
+
 `.env` 파일에서 다음 설정을 수정할 수 있습니다:
 
 ```bash
@@ -235,6 +254,7 @@ LOG_LEVEL=INFO
 ```
 
 ### YouTube API 제한사항
+
 - **일일 할당량**: 10,000 units (업로드당 1,600 units)
 - **미인증 프로젝트**: private 모드만 업로드 가능
 - **콘텐츠 제한**: 제목 100자, 설명 5,000바이트, 태그 500자
@@ -244,6 +264,7 @@ LOG_LEVEL=INFO
 ## 🛠️ 개발 가이드
 
 ### 개발 환경 설정
+
 ```bash
 # Poetry로 개발 의존성 설치
 poetry install --with dev,test
@@ -255,6 +276,7 @@ make test      # 테스트 실행
 ```
 
 ### 백엔드 개발
+
 ```bash
 cd backend
 
@@ -269,6 +291,7 @@ make test
 ```
 
 ### Streamlit 개발
+
 ```bash
 # 개발 모드로 실행 (자동 리로드)
 streamlit run streamlit_app/app.py
@@ -282,12 +305,14 @@ streamlit run streamlit_app/app.py --server.port 8501
 ## 📚 문서
 
 ### 📖 사용자 가이드
+
 - **[빠른 시작 가이드](docs/QUICK_START.md)**: 5분만에 시작하기
 - **[사용자 가이드](docs/USER_GUIDE.md)**: 완전한 사용법
 - **[FAQ](docs/FAQ.md)**: 자주 묻는 질문과 해결책
 - **[문서 인덱스](docs/INDEX.md)**: 모든 문서 총정리
 
 ### 🔧 개발자 가이드  
+
 - **[개발자 가이드](CLAUDE.md)**: 전체 시스템 구조 및 개발 가이드
 - **[CLI 사용법](docs/CLI_USAGE.md)**: 명령줄 도구 상세 가이드
 - **[API 문서](docs/API.md)**: REST API 및 WebSocket 가이드
@@ -300,6 +325,7 @@ streamlit run streamlit_app/app.py --server.port 8501
 ## 📈 로드맵
 
 ### ✅ Phase 1: Core System (완료)
+
 - [x] 스크립트 파일 파싱 시스템
 - [x] YouTube API 연동 및 업로드
 - [x] Streamlit 웹 대시보드
@@ -308,12 +334,14 @@ streamlit run streamlit_app/app.py --server.port 8501
 - [x] 완전한 문서화
 
 ### 🚧 Phase 2: 확장 기능 (계획)
+
 - [ ] 배치 업로드 스케줄링
 - [ ] 다중 채널 지원
 - [ ] 고급 통계 및 분석
 - [ ] API 할당량 최적화
 
 ### 🔮 Phase 3: 고도화 (예정)
+
 - [ ] AI 기반 태그 추천
 - [ ] 다중 플랫폼 지원 (네이버 TV 등)
 - [ ] 모바일 앱 지원
@@ -324,17 +352,21 @@ streamlit run streamlit_app/app.py --server.port 8501
 ## 🤝 기여하기
 
 ### 버그 신고
+
 GitHub Issues를 통해 버그를 신고해주세요:
+
 1. 버그 재현 단계 상세 기술
 2. 예상 동작과 실제 동작 명시
 3. 환경 정보 (OS, Python 버전 등)
 
 ### 기능 요청
+
 1. 기능의 필요성과 배경
 2. 구체적인 사용 사례
 3. 예상되는 사용자 이점
 
 ### Pull Request 가이드
+
 1. 기능 브랜치에서 개발
 2. 코드 스타일 가이드 준수 (`make format`, `make lint`)
 3. 테스트 케이스 작성
@@ -345,6 +377,7 @@ GitHub Issues를 통해 버그를 신고해주세요:
 ## 🔐 보안 고려사항
 
 ### 중요 파일 보호
+
 - `.secrets/youtube-oauth2.json` - YouTube OAuth2 클라이언트 인증 정보
 - `.secrets/youtube-token.pickle` - YouTube API 액세스 토큰
 - `.secrets/google-tts-service.json` - Google TTS 서비스 계정 키
@@ -352,6 +385,7 @@ GitHub Issues를 통해 버그를 신고해주세요:
 - `*.db` - 데이터베이스 파일
 
 ### API 키 관리
+
 - Google Cloud Console에서 API 키 제한 설정
 - OAuth 2.0 클라이언트 ID의 승인된 리디렉션 URI 제한
 - 정기적인 토큰 갱신 및 모니터링
@@ -367,11 +401,13 @@ GitHub Issues를 통해 버그를 신고해주세요:
 ## 📞 지원 및 문의
 
 ### 커뮤니티
+
 - **GitHub Issues**: 버그 신고 및 기능 요청
 - **GitHub Discussions**: 질문 및 토론
 
 ### 개발자
-- **Email**: ragtime1260@gmail.com
+
+- **Email**: <ragtime1260@gmail.com>
 - **GitHub**: [@Ragtimelab](https://github.com/Ragtimelab)
 
 ---

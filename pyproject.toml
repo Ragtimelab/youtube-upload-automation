@@ -53,7 +53,9 @@ target-version = ['py313']
 include = '\.pyi?$'
 extend-exclude = '''
 /(
-  # directories
+
+# directories
+
   \.eggs
   | \.git
   | \.hg

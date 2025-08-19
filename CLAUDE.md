@@ -18,6 +18,7 @@ youtube-upload-automation/
 ```
 
 ### Backend Architecture (Clean Architecture)
+
 ```
 backend/app/
 ├── main.py                 # FastAPI application entry point
@@ -51,6 +52,7 @@ backend/app/
 ```
 
 ### CLI Architecture
+
 ```
 cli/
 ├── main.py               # CLI entry point with date-upload command
@@ -69,6 +71,7 @@ cli/
 ### 🎨 Architecture Patterns
 
 **Backend:**
+
 - **Repository Pattern**: Data access abstraction
 - **Service Layer**: Business logic encapsulation
 - **Dependency Injection**: FastAPI Depends for testable code
@@ -76,6 +79,7 @@ cli/
 - **Structured Logging**: Component-based logging with daily rotation
 
 **CLI:**
+
 - **Command Pattern**: Structured command organization
 - **Rich Console Output**: Beautiful terminal interface with progress bars
 - **Configuration Management**: YAML/JSON config file support
@@ -83,6 +87,7 @@ cli/
 ## 🛠️ Essential Development Commands
 
 ### Backend (Poetry Environment Management)
+
 ```bash
 # Install dependencies
 poetry install
@@ -95,6 +100,7 @@ poetry shell
 ```
 
 ### Backend Commands (Makefile based - Run from backend/ directory)
+
 ```bash
 # Server management (essential for development)
 make run                # uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
@@ -115,6 +121,7 @@ make clean             # Remove cache and temp files
 ```
 
 ### CLI Usage
+
 ```bash
 # Direct execution (recommended)
 python cli/main.py --help
@@ -146,6 +153,7 @@ python cli/main.py examples         # Show detailed usage examples and workflows
 ```
 
 ### Environment Configuration
+
 ```bash
 # Backend server config
 BACKEND_HOST=0.0.0.0
@@ -171,6 +179,7 @@ LOG_LEVEL=INFO
 ## 📊 Core Data Models
 
 ### Script Entity
+
 ```python
 class Script(Base):
     id: int                    # Primary Key
@@ -189,6 +198,7 @@ class Script(Base):
 ```
 
 ### Status Workflow
+
 ```
 script_ready → video_ready → uploaded/scheduled → error
 ```
@@ -196,6 +206,7 @@ script_ready → video_ready → uploaded/scheduled → error
 ## 🔧 Core Business Logic
 
 ### 1. Date-Based Auto-Mapping System
+
 **Location**: `cli/utils/date_mapping.py`
 
 ```python
@@ -216,6 +227,7 @@ class DateBasedMapper:
 - **Rich console output**: Uses Rich library for beautiful terminal interface when available
 
 ### 2. Script Parsing (ScriptParser)
+
 **Location**: `app/services/script_parser.py`
 
 ```python
@@ -242,6 +254,7 @@ ImageFX 프롬프트: [AI generation prompt]
 - **Required field validation**: Ensures title and content exist
 
 ### 3. WebSocket Real-time System
+
 **Location**: `app/services/websocket_manager.py`
 
 ```python
@@ -262,6 +275,7 @@ class WebSocketNotificationService:
 ## 🌐 API Endpoints
 
 ### Script Management API
+
 ```
 POST   /api/scripts/upload           # Script file upload (.txt, .md 지원)
 GET    /api/scripts/                 # List scripts with pagination & status filter
@@ -274,6 +288,7 @@ GET    /api/scripts/ready-for-youtube # Scripts ready for YouTube upload (status
 ```
 
 ### Upload API
+
 ```
 POST   /api/upload/video/{script_id}    # Video file upload (mp4, avi, mov 등 지원)
 POST   /api/upload/youtube/{script_id}  # YouTube upload (privacy, category, schedule 설정)
@@ -284,6 +299,7 @@ GET    /api/upload/health               # Upload service health check
 ```
 
 ### WebSocket API
+
 ```
 WS     /ws                          # WebSocket connection (?user_id= 선택사항)
 GET    /ws/stats                    # WebSocket connection statistics
@@ -292,6 +308,7 @@ POST   /ws/notify/script/{script_id} # Script-specific notification API
 ```
 
 ### System API
+
 ```
 GET    /                            # API status check (app name, version, status)
 GET    /health                      # Health check with DB connection test
@@ -300,6 +317,7 @@ GET    /redoc                       # ReDoc API documentation (alternative UI)
 ```
 
 ### CLI Commands (Date-Based Features)
+
 ```bash
 # Date-based auto-mapping
 video auto-mapping scripts/ videos/                    # Auto-match today's files
@@ -323,6 +341,7 @@ ls --status video_ready --limit 5                   # List scripts with filters
 ## 🚨 Custom Exception System
 
 ### Exception Hierarchy
+
 **Location**: `app/core/exceptions.py`
 
 ```python
@@ -338,13 +357,16 @@ BaseAppException                     # Base custom exception
 ```
 
 ### Global Error Handler
+
 **Location**: `app/middleware/error_handler.py`
+
 - Converts all exceptions to consistent JSON responses
 - Logs errors with request context
 
 ## 📝 Structured Logging System
 
 ### Component-specific Loggers
+
 **Location**: `app/core/logging.py`
 
 ```python
@@ -356,6 +378,7 @@ get_router_logger("scripts")         # Router loggers
 ```
 
 ### Log File Structure
+
 ```
 logs/
 ├── app-2025-08-16.log              # All logs (daily rotation)
@@ -375,6 +398,7 @@ tests/
 ```
 
 ### Running Tests
+
 ```bash
 # From backend/ directory
 make test              # Basic test run
@@ -384,6 +408,7 @@ poetry run pytest tests/ -k "test_parse" -v           # Specific test pattern
 ```
 
 ### Testing Patterns
+
 - **Script Parser Tests**: Test all script formats including edge cases
 - **YouTube Integration**: Mock YouTube API responses for reliable testing  
 - **FastAPI Testing**: Use TestClient with dependency overrides
@@ -392,6 +417,7 @@ poetry run pytest tests/ -k "test_parse" -v           # Specific test pattern
 ## ⚙️ Development Tools Configuration
 
 ### Code Quality Tools
+
 ```toml
 [tool.black]                       # Code formatting
 line-length = 88
@@ -406,6 +432,7 @@ disallow_untyped_defs = true
 ```
 
 ### Pre-commit Hooks
+
 ```bash
 poetry run pre-commit install      # Setup
 poetry run pre-commit run --all-files  # Manual run
@@ -414,6 +441,7 @@ poetry run pre-commit run --all-files  # Manual run
 ## 📦 Core Dependencies & Poetry Management
 
 ### Poetry-Based Dependency Management
+
 **전체 프로젝트는 Poetry로 관리됩니다.**
 
 ```bash
@@ -424,6 +452,7 @@ poetry install --with dev,test   # 개발/테스트 의존성 포함
 ```
 
 ### Backend Dependencies (pyproject.toml 기준)
+
 - **FastAPI 0.116.0+**: Web framework
 - **SQLAlchemy 2.0+**: ORM  
 - **Alembic 1.12+**: Database migrations
@@ -435,6 +464,7 @@ poetry install --with dev,test   # 개발/테스트 의존성 포함
 - **Rich 14.1+**: Terminal formatting
 
 ### YouTube Integration
+
 - **google-api-python-client**: YouTube Data API v3
 - **google-auth**: OAuth 2.0 authentication
 - **google-auth-oauthlib**: OAuth flow
@@ -442,6 +472,7 @@ poetry install --with dev,test   # 개발/테스트 의존성 포함
 - **미인증 프로젝트**: 2020년 7월 28일 이후 생성시 private 모드만 가능
 
 ### Development Tools (Poetry Groups)
+
 - **pytest**: Testing framework
 - **black**: Code formatting
 - **isort**: Import sorting
@@ -452,6 +483,7 @@ poetry install --with dev,test   # 개발/테스트 의존성 포함
 ## 🔄 Development Workflow
 
 ### Standard Development Process
+
 1. **Start backend server** (`make run` from backend/)
 2. **Use CLI interface** (`./youtube-cli` or `python cli/main.py`)
 3. **Create data model** (backend/models/)
@@ -462,6 +494,7 @@ poetry install --with dev,test   # 개발/테스트 의존성 포함
 8. **Check API documentation** (/docs)
 
 ### Code Quality Process
+
 ```bash
 # Backend (from backend/)
 make format                        # Format Python code
@@ -473,6 +506,7 @@ poetry run pytest                 # Run all tests
 ```
 
 ### Database Management
+
 ```bash
 # Model changes workflow (from backend/)
 make migrate-auto                 # Generate migration
@@ -482,6 +516,7 @@ make migrate                      # Apply migration
 ### Common Debugging Workflows
 
 #### Backend API Issues
+
 ```bash
 # 1. Check if backend is running
 curl http://localhost:8000/health
@@ -498,6 +533,7 @@ open http://localhost:8000/docs
 ```
 
 #### CLI Date-Mapping Debug
+
 ```bash
 # Test file parsing without upload
 python cli/main.py video auto-mapping scripts/ videos/ --dry-run
@@ -512,16 +548,19 @@ python cli/main.py date-upload scripts/ videos/ --date 20250819 --dry-run
 ## 🚀 Production Deployment
 
 ### Docker Support
+
 ```bash
 make docker-build                 # Build image
 make docker-run                   # Run container
 ```
 
 ### Environment Configuration
+
 - **Development**: DEBUG=true, LOG_LEVEL=DEBUG
 - **Production**: DEBUG=false, LOG_LEVEL=WARNING
 
 ### Monitoring Points
+
 - API response times
 - YouTube API quota usage
 - Upload success/failure rates
@@ -530,12 +569,14 @@ make docker-run                   # Run container
 ## 🔧 Interface-Specific Patterns
 
 ### Adding CLI Command
+
 1. **Create command file**: `cli/commands/new_command.py`
 2. **Follow Click patterns**: Use decorators for options/arguments
 3. **Use Rich output**: For beautiful terminal formatting
 4. **Add to main CLI**: Register in `cli/main.py`
 
 ### Extending API
+
 1. **Backend**: Add router → service → repository
 2. **CLI**: Add command using new API endpoint
 3. **Test**: Add integration tests
@@ -543,6 +584,7 @@ make docker-run                   # Run container
 ## 🐛 Common Troubleshooting
 
 ### Backend Issues
+
 - **Database Lock**: SQLite concurrent access → consider PostgreSQL
 - **File Upload Limit**: Check `MAX_VIDEO_SIZE_MB` setting
 - **YouTube API Quota**: Daily 10,000 units limit (업로드당 1,600 units)
@@ -551,6 +593,7 @@ make docker-run                   # Run container
 - **필드 제한**: 제목 100자, 설명 5000바이트, 태그 500자
 
 ### CLI Issues
+
 - **Permissions**: Make sure scripts are executable (`chmod +x`)
 - **Python Path**: Ensure virtual environment is activated
 - **API Connectivity**: Check backend server status
@@ -559,6 +602,7 @@ make docker-run                   # Run container
 - **Import Errors**: Use absolute paths and verify sys.path configuration
 
 ### Debug Log Access
+
 ```bash
 # Backend logs
 tail -f logs/app-$(date +%Y-%m-%d).log
@@ -568,6 +612,7 @@ tail -f logs/error-$(date +%Y-%m-%d).log
 ## 🔄 WebSocket Real-time Features (Completed)
 
 ### 구현된 실시간 기능
+
 - ✅ **WebSocket 연결 관리**: 자동 재연결, 하트비트, 연결 풀링
 - ✅ **실시간 알림 시스템**: 업로드 상태 변화, 성공/실패 알림
 - ✅ **업로드 진행률 추적**: 실시간 진행률 브로드캐스트
@@ -575,6 +620,7 @@ tail -f logs/error-$(date +%Y-%m-%d).log
 - ✅ **오류 처리**: WebSocket 연결 실패시 재연결 로직
 
 ### WebSocket 메시지 프로토콜
+
 ```typescript
 // 클라이언트 → 서버
 {
@@ -597,6 +643,7 @@ tail -f logs/error-$(date +%Y-%m-%d).log
 ## 🔍 Key Architectural Insights
 
 ### Design Philosophy
+
 - **Korean Senior-Focused**: CLI interface prioritizes simplicity and intuitive workflows
 - **Two-Interface Strategy**: CLI (primary), API (automation)
 - **Complete Automation**: Script → Video → YouTube with minimal manual intervention
@@ -605,35 +652,42 @@ tail -f logs/error-$(date +%Y-%m-%d).log
 ### Critical Implementation Details
 
 #### 1. Script Status Workflow
+
 ```
 script_ready → video_ready → uploaded → error
 ```
+
 - Status transitions are enforced at the service layer
 - Each status has specific API endpoints for next valid actions
 - Failed uploads transition to 'error' status with detailed error messages
 
 #### 2. File Naming Convention (CLI)
+
 ```
 YYYYMMDD_NN_story.txt    # Script files
 YYYYMMDD_NN_story.mp4    # Video files
 ```
+
 - Date validation prevents invalid file processing
 - Sequence numbers (NN) allow multiple files per day
 - Name matching ensures script-video pairs are correctly associated
 
 #### 3. YouTube API Integration Constraints
+
 - **Daily quota**: 10,000 units (upload = 1,600 units)
 - **Unverified projects**: Limited to private uploads only
 - **Field limits**: Title 100 chars, description 5000 bytes, tags 500 chars
 - **Error handling**: Comprehensive retry logic with exponential backoff
 
 #### 4. Database Architecture
+
 - **Single SQLite database**: Simplifies deployment and backup
 - **Script-centric design**: All operations revolve around Script entity
 - **Status-driven workflows**: Database constraints prevent invalid state transitions
 - **Audit timestamps**: created_at/updated_at for all entities
 
 ### Integration Points
+
 - **FastAPI ↔ CLI**: HTTP API with Rich terminal formatting
 - **WebSocket ↔ Backend**: Real-time progress updates and notifications
 - **YouTube API ↔ Services**: OAuth flow with token persistence
@@ -643,6 +697,7 @@ YYYYMMDD_NN_story.mp4    # Video files
 ## 📋 Key Development Practices
 
 ### Adding New CLI Commands
+
 1. Create command module in `cli/commands/`
 2. Use Click decorators for consistent CLI interface
 3. Integrate with Rich for beautiful terminal output
@@ -650,6 +705,7 @@ YYYYMMDD_NN_story.mp4    # Video files
 5. Register in `cli/main.py` main group
 
 ### Backend Service Development
+
 1. Follow Clean Architecture: Repository → Service → Router pattern
 2. Use dependency injection with FastAPI Depends()
 3. Implement custom exceptions in `app/core/exceptions.py`
@@ -657,12 +713,14 @@ YYYYMMDD_NN_story.mp4    # Video files
 5. Write tests for both unit and integration levels
 
 ### Database Changes
+
 1. Always use Alembic for migrations: `make migrate-auto`
 2. Review generated migrations before applying
 3. Test migrations with sample data
 4. Update repository and service layers accordingly
 
 ### WebSocket Integration
+
 1. Use `WebSocketManager` for connection handling
 2. Implement proper error handling and reconnection
 3. Use structured message protocol for client-server communication

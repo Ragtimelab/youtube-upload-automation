@@ -1,9 +1,11 @@
-#!/usr/bin/env bash
+# !/usr/bin/env bash
+
 # YouTube 자동화 CLI 실행 스크립트
 
 cd "$(dirname "$0")"
 
 # Poetry 환경에서 실행 시도 (우선)
+
 if command -v poetry > /dev/null && poetry env info > /dev/null 2>&1; then
     poetry run python cli/main.py "$@"
 else

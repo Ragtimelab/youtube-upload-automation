@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+# !/usr/bin/env bash
+
 # 빠른 전체 워크플로우 래퍼
 
 if [ $# -lt 2 ]; then
@@ -18,6 +19,7 @@ echo "🔒 공개 설정: $PRIVACY"
 echo ""
 
 # 1단계: 비디오 업로드
+
 echo "1️⃣ 비디오 업로드 중..."
 python cli/main.py video upload "$SCRIPT_ID" "$VIDEO_FILE"
 
@@ -25,7 +27,7 @@ if [ $? -eq 0 ]; then
     echo ""
     echo "2️⃣ YouTube 업로드 중..."
     python cli/main.py youtube upload "$SCRIPT_ID" --privacy "$PRIVACY"
-    
+
     if [ $? -eq 0 ]; then
         echo ""
         echo "✅ 전체 업로드 워크플로우 완료!"

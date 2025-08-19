@@ -3,6 +3,7 @@
 > **자주 묻는 질문과 실전 문제해결 가이드**
 
 ## 📋 목차
+
 1. [설치 및 시작](#-설치-및-시작)
 2. [스크립트 관리](#-스크립트-관리)
 3. [비디오 업로드](#-비디오-업로드)
@@ -15,7 +16,9 @@
 ## 🚀 설치 및 시작
 
 ### Q: Streamlit 앱이 시작되지 않아요
+
 **A: 다음 단계를 확인하세요**
+
 ```bash
 # 1. 가상환경 활성화 확인
 poetry shell
@@ -31,7 +34,9 @@ streamlit run streamlit_app/app.py
 ```
 
 ### Q: "ModuleNotFoundError" 오류가 발생해요
+
 **A: Python 경로 문제입니다**
+
 ```bash
 # 프로젝트 루트에서 실행하세요
 cd /path/to/youtube-upload-automation
@@ -42,7 +47,9 @@ PYTHONPATH=/path/to/project streamlit run streamlit_app/app.py
 ```
 
 ### Q: 포트 8503이 이미 사용 중이라고 나와요
+
 **A: 다른 포트를 사용하세요**
+
 ```bash
 # 다른 포트로 실행
 streamlit run streamlit_app/app.py --server.port 8504
@@ -56,15 +63,18 @@ lsof -ti:8503 | xargs kill -9
 ## 📝 스크립트 관리
 
 ### Q: 스크립트 업로드 후 "파싱 오류"가 발생해요
+
 **A: 스크립트 형식을 정확히 맞춰주세요**
 
 ❌ **잘못된 형식:**
+
 ```
 제목: 내 비디오
 설명: 비디오 설명
 ```
 
 ✅ **올바른 형식:**
+
 ```
 === 제목 ===
 내 비디오
@@ -82,7 +92,9 @@ ImageFX 프롬프트: AI 프롬프트
 ```
 
 ### Q: UTF-8 인코딩 오류가 발생해요
+
 **A: 파일 인코딩을 확인하세요**
+
 ```bash
 # Windows 메모장에서 저장할 때
 # 인코딩: UTF-8 선택
@@ -95,13 +107,17 @@ file -bi script.txt
 ```
 
 ### Q: 한글 제목이 깨져서 나와요
+
 **A: 브라우저 인코딩을 확인하세요**
+
 - F12 → Console → 오류 메시지 확인
 - 브라우저 캐시 삭제: Ctrl+Shift+R (또는 Cmd+Shift+R)
 - 다른 브라우저에서 테스트 (Chrome 권장)
 
 ### Q: 스크립트 삭제가 안 돼요
+
 **A: 확인 절차를 완료하세요**
+
 1. **🗑️ 삭제** 버튼 클릭
 2. **⚠️ 정말로 삭제하시겠습니까?** 메시지 확인
 3. **✅ 확실히 삭제** 버튼 클릭
@@ -112,9 +128,11 @@ file -bi script.txt
 ## 🎥 비디오 업로드
 
 ### Q: "지원하지 않는 파일 형식"이라고 나와요
+
 **A: 지원 형식을 확인하세요**
 
 ✅ **지원 형식:**
+
 - .mp4 (권장)
 - .avi
 - .mov
@@ -122,19 +140,23 @@ file -bi script.txt
 - .webm
 
 ❌ **미지원 형식:**
+
 - .wmv
 - .flv
 - .3gp
 - .m4v
 
 **해결책:**
+
 ```bash
 # FFmpeg로 변환
 ffmpeg -i input.wmv -c:v libx264 -c:a aac output.mp4
 ```
 
 ### Q: 8GB 제한을 초과했다고 나와요
+
 **A: 파일 크기를 줄이세요**
+
 ```bash
 # FFmpeg로 압축
 ffmpeg -i large_video.mp4 -crf 28 -preset fast compressed_video.mp4
@@ -147,14 +169,18 @@ ffmpeg -i input.mp4 -b:v 2M -b:a 128k output.mp4
 ```
 
 ### Q: 업로드가 중간에 멈춰요
+
 **A: 네트워크와 시스템을 확인하세요**
+
 - 네트워크 연결 상태 확인
 - 디스크 용량 확인: `df -h`
 - 메모리 사용량 확인: `free -h`
 - 백엔드 로그 확인: `tail -f backend/logs/app-*.log`
 
 ### Q: "script_ready 상태 스크립트가 없습니다"라고 나와요
+
 **A: 스크립트를 먼저 업로드하세요**
+
 1. **📝 스크립트 관리** → **📤 업로드** 탭
 2. 스크립트 업로드 완료 후
 3. **🎬 업로드 관리** → **🎥 비디오 업로드**
@@ -164,7 +190,9 @@ ffmpeg -i input.mp4 -b:v 2M -b:a 128k output.mp4
 ## 📺 YouTube 업로드
 
 ### Q: "YouTube API 인증 실패"가 발생해요
+
 **A: 인증을 다시 설정하세요**
+
 ```bash
 # 1. 토큰 파일 삭제
 rm token.pickle
@@ -179,30 +207,39 @@ cd backend && make run
 ```
 
 ### Q: "일일 할당량 초과" 오류가 나와요
+
 **A: YouTube API 할당량을 확인하세요**
+
 - **일일 한도**: 10,000 units
 - **업로드당 소모**: 1,600 units
 - **하루 최대**: 약 6개 영상
 
 **해결책:**
+
 - 다음 날까지 대기 (할당량은 UTC 기준 자정에 리셋)
 - Google Cloud Console에서 할당량 증가 요청
 
 ### Q: "video_ready 상태 스크립트가 없습니다"라고 나와요
+
 **A: 비디오를 먼저 업로드하세요**
+
 1. **🎬 업로드 관리** → **🎥 비디오 업로드**
 2. 비디오 업로드 완료 후 (상태: video_ready)
 3. **📺 YouTube 업로드** 탭에서 업로드
 
 ### Q: YouTube에 업로드됐는데 제목/설명이 다르게 나와요
+
 **A: 스크립트 형식과 YouTube 제한을 확인하세요**
+
 - **제목 제한**: 100자 (한글 기준 50자)
 - **설명 제한**: 5,000 바이트
 - **태그 제한**: 500자
 - 특수문자가 자동으로 필터링될 수 있음
 
 ### Q: "미인증 프로젝트"라서 public 업로드가 안 돼요
+
 **A: 프로젝트 인증 상태를 확인하세요**
+
 - 2020년 7월 28일 이후 생성된 프로젝트는 인증 필요
 - 인증 전까지는 private 모드만 가능
 - Google Cloud Console → APIs & Services → OAuth consent screen → 게시 신청
@@ -212,7 +249,9 @@ cd backend && make run
 ## ⚙️ 시스템 오류
 
 ### Q: "❌ API 서버 연결 실패"가 계속 나와요
+
 **A: 백엔드 서버 상태를 확인하세요**
+
 ```bash
 # 1. 백엔드 프로세스 확인
 ps aux | grep uvicorn
@@ -229,7 +268,9 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### Q: Streamlit이 계속 "Connecting..." 상태에요
+
 **A: 방화벽과 네트워크를 확인하세요**
+
 ```bash
 # 1. 로컬 방화벽 확인
 sudo ufw status
@@ -244,18 +285,24 @@ streamlit run streamlit_app/app.py --server.port 8504
 ```
 
 ### Q: "세션 상태 오류"가 발생해요
+
 **A: 브라우저를 새로고침하세요**
+
 - F5 또는 Ctrl+R로 페이지 새로고침
 - 심한 경우: 브라우저 완전 종료 후 재시작
 - 캐시 문제: Ctrl+Shift+Delete로 캐시 삭제
 
 ### Q: 업로드 진행률이 99%에서 멈춰요
+
 **A: 서버 처리 시간을 기다리세요**
+
 - 대용량 파일은 처리 시간이 오래 걸림
 - 백엔드 로그에서 진행 상황 확인:
+
 ```bash
 tail -f backend/logs/app-$(date +%Y-%m-%d).log
 ```
+
 - 5분 이상 멈춰있으면 페이지 새로고침
 
 ---
@@ -263,14 +310,17 @@ tail -f backend/logs/app-$(date +%Y-%m-%d).log
 ## ⚡ 성능 최적화
 
 ### Q: 페이지 로딩이 너무 느려요
+
 **A: 다음 최적화를 적용하세요**
 
 **브라우저 최적화:**
+
 - Chrome 브라우저 사용 권장
 - 불필요한 확장 프로그램 비활성화
 - 브라우저 캐시 정리
 
 **시스템 최적화:**
+
 ```bash
 # 메모리 사용량 확인
 free -h
@@ -283,21 +333,26 @@ df -h
 ```
 
 ### Q: 대용량 파일 업로드가 자주 실패해요
+
 **A: 업로드 설정을 조정하세요**
 
 **분할 업로드:**
+
 ```bash
 # 파일을 작은 조각으로 나누어 업로드
 split -b 1G large_video.mp4 video_part_
 ```
 
 **네트워크 최적화:**
+
 - 유선 연결 사용
 - 다른 네트워크 활동 최소화
 - 업로드 시간대 조정 (밤 시간 권장)
 
 ### Q: 여러 스크립트를 동시에 처리하고 싶어요
+
 **A: CLI 도구를 활용하세요**
+
 ```bash
 # 배치 처리 스크립트
 for script in script1.txt script2.txt script3.txt; do
@@ -316,6 +371,7 @@ wait
 ## 🔍 디버깅 팁
 
 ### 로그 확인 방법
+
 ```bash
 # 실시간 로그 모니터링
 tail -f backend/logs/app-$(date +%Y-%m-%d).log
@@ -328,12 +384,14 @@ grep "script_id.*123" backend/logs/app-*.log
 ```
 
 ### 개발자 도구 활용
+
 1. **F12** → **Console** 탭
 2. 에러 메시지 확인
 3. **Network** 탭에서 API 요청 실패 확인
 4. 응답 상태 코드 확인 (200, 404, 500 등)
 
 ### 데이터베이스 직접 확인
+
 ```bash
 # SQLite 데이터베이스 접속
 sqlite3 backend/app.db
@@ -350,18 +408,21 @@ SELECT * FROM scripts WHERE id = 1;
 ## 📞 추가 도움이 필요하다면
 
 ### 문서 참조
+
 - 📖 **STREAMLIT_USER_GUIDE.md**: 완전한 사용법
 - ⚡ **QUICK_START_GUIDE.md**: 5분 빠른 시작
 - 💻 **CLI_USAGE.md**: 명령줄 도구
 - 🏗️ **CLAUDE.md**: 전체 시스템 구조
 
 ### 문제 보고
+
 - 에러 메시지 전체 복사
 - 재현 단계 상세히 기록
 - 시스템 환경 정보 (OS, Python 버전 등)
 - 로그 파일 첨부
 
 ### 긴급 해결책
+
 ```bash
 # 완전 초기화 (주의: 모든 데이터 삭제)
 rm backend/app.db

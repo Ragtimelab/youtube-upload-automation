@@ -5,18 +5,22 @@
 ## 🎯 상황별 문서 선택 가이드
 
 ### 🚀 **처음 사용하시나요?**
+
 1. 📖 [QUICK_START.md](./QUICK_START.md) - **5분만에 시작하기**
 2. 🎬 [USER_GUIDE.md](./USER_GUIDE.md) - **완전한 사용법**
 
 ### 🔧 **문제가 생겼나요?**
+
 1. 🙋‍♂️ [FAQ.md](./FAQ.md) - **자주 묻는 질문과 해결책**
 
 ### 💻 **개발자이신가요?**
+
 1. 🏗️ [CLAUDE.md](../CLAUDE.md) - **전체 시스템 구조**
 2. ⌨️ [CLI_USAGE.md](./CLI_USAGE.md) - **명령줄 도구**
 3. 🔌 [API.md](./API.md) - **REST API 및 WebSocket 가이드**
 
 ### 🎊 **시스템 완성도를 확인하고 싶으신가요?**
+
 1. ✅ [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md) - **구현 완료 보고서**
 2. 🚀 [DEPLOYMENT_READY.md](./DEPLOYMENT_READY.md) - **배포 준비 상태**
 3. 📋 [CHANGELOG.md](./CHANGELOG.md) - **버전별 변경사항**
@@ -26,6 +30,7 @@
 ## 📋 전체 문서 목록
 
 ### 🎬 **Streamlit 대시보드 관련**
+
 | 문서 | 설명 | 대상 사용자 | 예상 시간 |
 |------|------|------------|----------|
 | [USER_GUIDE.md](./USER_GUIDE.md) | 💎 **완전한 사용법 가이드** | 모든 사용자 | 15분 |
@@ -34,6 +39,7 @@
 | [streamlit_app/README.md](./streamlit_app/README.md) | 📘 **기술 문서** | 개발자 | 10분 |
 
 ### 🛠️ **시스템 & 개발**
+
 | 문서 | 설명 | 대상 사용자 | 예상 시간 |
 |------|------|------------|----------|
 | [CLAUDE.md](../CLAUDE.md) | 🏗️ **전체 시스템 구조** | 개발자 | 30분 |
@@ -41,6 +47,7 @@
 | [API.md](./API.md) | 🔌 **REST API 가이드** | 개발자/통합 | 20분 |
 
 ### 📊 **프로젝트 상태**
+
 | 문서 | 설명 | 대상 사용자 | 예상 시간 |
 |------|------|------------|----------|
 | [IMPLEMENTATION_COMPLETE.md](./IMPLEMENTATION_COMPLETE.md) | ✅ **구현 완료 보고서** | PM/검토자 | 10분 |
@@ -52,6 +59,7 @@
 ## 🎯 사용 시나리오별 권장 읽기 순서
 
 ### 📱 **신규 사용자 (처음 시작)**
+
 ```
 1. QUICK_START.md (필수)
    ↓
@@ -61,6 +69,7 @@
 ```
 
 ### 🔧 **문제 해결이 필요한 경우**
+
 ```
 1. FAQ.md (먼저 확인)
    ↓
@@ -70,6 +79,7 @@
 ```
 
 ### 💻 **개발자/고급 사용자**
+
 ```
 1. CLAUDE.md (시스템 이해)
    ↓
@@ -81,6 +91,7 @@
 ```
 
 ### 📊 **프로젝트 검토자/PM**
+
 ```
 1. IMPLEMENTATION_COMPLETE.md (완성도 확인)
    ↓
@@ -96,6 +107,7 @@
 ## 🔍 기능별 문서 찾기
 
 ### 📝 **스크립트 관리**
+
 - **기본 사용법**: USER_GUIDE.md > 스크립트 관리
 - **형식 오류**: FAQ.md > 스크립트 관리
 - **CLI 도구**: CLI_USAGE.md > 스크립트 명령어
@@ -103,6 +115,7 @@
 - **파싱 로직**: CLAUDE.md > 스크립트 파서
 
 ### 🎥 **비디오 업로드**
+
 - **기본 사용법**: USER_GUIDE.md > 업로드 관리
 - **파일 형식 문제**: FAQ.md > 비디오 업로드
 - **대용량 파일**: FAQ.md > 성능 최적화
@@ -110,6 +123,7 @@
 - **백엔드 구조**: CLAUDE.md > 업로드 서비스
 
 ### 📺 **YouTube 업로드**
+
 - **기본 사용법**: USER_GUIDE.md > YouTube 업로드
 - **인증 문제**: FAQ.md > YouTube 업로드
 - **할당량 관리**: FAQ.md > API 제한
@@ -117,6 +131,7 @@
 - **API 구조**: CLAUDE.md > YouTube 서비스
 
 ### 📊 **모니터링 & 대시보드**
+
 - **대시보드 사용법**: USER_GUIDE.md > 대시보드
 - **상태 확인**: QUICK_START.md > 완료 확인
 - **시스템 상태**: FAQ.md > 시스템 오류
@@ -128,6 +143,7 @@
 ## 🛠️ 개발 환경별 가이드
 
 ### 🐍 **Python/Backend 개발**
+
 ```
 📖 CLAUDE.md (필수)
    → Backend Architecture
@@ -139,6 +155,7 @@
 ```
 
 ### 🎨 **Frontend/UI 개발**
+
 ```
 📖 USER_GUIDE.md
    → 모든 UI 기능 이해
@@ -149,6 +166,7 @@
 ```
 
 ### ⚙️ **DevOps/배포**
+
 ```
 📖 DEPLOYMENT_READY.md (필수)
    → 배포 체크리스트
@@ -160,6 +178,7 @@
 ```
 
 ### 🧪 **QA/테스트**
+
 ```
 📖 QUICK_START.md
    → 기본 기능 테스트
@@ -176,6 +195,7 @@
 ## 📱 스크린샷 및 미디어
 
 ### 📸 **사용법 스크린샷** (`docs/screenshots/`)
+
 - `01_dashboard_overview.png` - 대시보드 전체
 - `02_dashboard_system_status.png` - 시스템 상태
 - `03_script_management_upload.png` - 스크립트 업로드
@@ -185,6 +205,7 @@
 - `07_upload_management_youtube.png` - YouTube 업로드
 
 ### 🎬 **테스트 결과**
+
 - `streamlit_basic_test.png` - 기본 기능 테스트
 - `streamlit_test_complete.png` - 전체 테스트 완료
 
@@ -193,12 +214,14 @@
 ## 🆘 긴급 도움말
 
 ### 🔥 **즉시 해결이 필요한 문제**
+
 1. **앱이 실행되지 않음**: FAQ.md > 설치 및 시작
 2. **업로드 실패**: FAQ.md > 비디오 업로드  
 3. **YouTube 인증 오류**: FAQ.md > YouTube 업로드
 4. **API 연결 실패**: FAQ.md > 시스템 오류
 
 ### 📞 **단계별 디버깅**
+
 ```bash
 # 1. 로그 확인
 tail -f backend/logs/app-$(date +%Y-%m-%d).log
@@ -225,7 +248,7 @@ curl http://localhost:8000/health
 
 ---
 
-## 🎉 시작하세요!
+## 🎉 시작하세요
 
 **처음 사용하시나요?** → [⚡ QUICK_START.md](./QUICK_START.md)에서 5분만에 시작하세요!
 

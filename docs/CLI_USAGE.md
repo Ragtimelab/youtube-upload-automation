@@ -3,6 +3,7 @@
 > **YouTube 업로드 자동화 시스템 - 실제 구현된 명령줄 인터페이스**
 
 ## 📋 목차
+
 1. [CLI 개요](#-cli-개요)
 2. [설치 및 실행](#-설치-및-실행)
 3. [기본 명령어](#-기본-명령어)
@@ -21,6 +22,7 @@
 YouTube 자동화 CLI는 Streamlit 대시보드와 동일한 기능을 명령줄에서 제공하며, 배치 처리와 자동화에 특화되어 있습니다.
 
 ### 🎯 주요 특징
+
 - **🚀 직접 실행**: GUI 없이 바로 명령어 실행
 - **📦 배치 처리**: 여러 파일 동시 처리
 - **🎨 Rich UI**: 컬러풀한 터미널 출력
@@ -32,6 +34,7 @@ YouTube 자동화 CLI는 Streamlit 대시보드와 동일한 기능을 명령줄
 ## 🛠️ 설치 및 실행
 
 ### 전제 조건
+
 ```bash
 # 1. 백엔드 서버 실행 (필수)
 cd backend
@@ -42,6 +45,7 @@ poetry shell
 ```
 
 ### CLI 실행 방법
+
 ```bash
 # 방법 1: 직접 실행 (권장)
 python cli/main.py
@@ -65,12 +69,14 @@ python cli/main.py --version
 ## 🎮 기본 명령어
 
 ### 환영 메시지
+
 ```bash
 # CLI 시작 화면 보기
 python cli/main.py
 ```
 
 ### 빠른 상태 확인
+
 ```bash
 # 시스템 전체 상태
 python cli/main.py health
@@ -80,6 +86,7 @@ python cli/main.py examples
 ```
 
 ### 스크립트 목록 (단축 명령어)
+
 ```bash
 # 스크립트 목록 (ls 별칭)
 python cli/main.py ls
@@ -96,6 +103,7 @@ python cli/main.py ls --limit 5
 ## 📝 스크립트 관리
 
 ### 스크립트 업로드
+
 ```bash
 # 단일 파일 업로드
 python cli/main.py script upload my_script.txt
@@ -105,6 +113,7 @@ python cli/main.py batch-upload-scripts ./scripts/
 ```
 
 ### 스크립트 목록 조회
+
 ```bash
 # 전체 스크립트 목록
 python cli/main.py script list
@@ -121,12 +130,14 @@ python cli/main.py script list --skip 10 --limit 5
 ```
 
 ### 스크립트 상세 조회
+
 ```bash
 # 특정 스크립트 상세 정보
 python cli/main.py script show 1
 ```
 
 ### 스크립트 편집
+
 ```bash
 # 제목 수정
 python cli/main.py script edit 1 --title "새로운 제목"
@@ -151,12 +162,14 @@ python cli/main.py script edit 1 \
 ```
 
 ### 스크립트 삭제
+
 ```bash
 # 스크립트 삭제 (확인 메시지 포함)
 python cli/main.py script delete 1
 ```
 
 ### 스크립트 통계
+
 ```bash
 # 전체 통계 조회
 python cli/main.py script stats
@@ -167,24 +180,28 @@ python cli/main.py script stats
 ## 🎥 비디오 업로드
 
 ### 비디오 파일 업로드
+
 ```bash
 # 기본 업로드 (스크립트 ID 1에 비디오 연결)
 python cli/main.py video upload 1 my_video.mp4
 ```
 
 ### 업로드 가능한 스크립트 확인
+
 ```bash
 # script_ready 상태인 스크립트 목록
 python cli/main.py video ready
 ```
 
 ### 비디오 파일 삭제
+
 ```bash
 # 비디오 파일만 삭제 (스크립트는 유지)
 python cli/main.py video delete 1
 ```
 
 ### 비디오 상태 확인
+
 ```bash
 # 비디오 업로드 상태 확인
 python cli/main.py video status 1
@@ -198,6 +215,7 @@ python cli/main.py video progress 1
 ## 📺 YouTube 업로드
 
 ### 단일 업로드
+
 ```bash
 # 기본 업로드 (private)
 python cli/main.py youtube upload 1
@@ -214,6 +232,7 @@ python cli/main.py youtube upload 1 --category 27  # Education
 ```
 
 ### 배치 업로드
+
 ```bash
 # 여러 스크립트 배치 업로드
 python cli/main.py youtube batch 1 2 3 4 5
@@ -223,6 +242,7 @@ python cli/main.py youtube batch 1 2 3 --privacy unlisted
 ```
 
 ### YouTube 상태 확인
+
 ```bash
 # YouTube API 연결 상태 확인
 python cli/main.py youtube health
@@ -239,12 +259,14 @@ python cli/main.py youtube uploaded
 ## 📊 시스템 모니터링
 
 ### 전체 시스템 상태
+
 ```bash
 # 시스템 헬스 체크
 python cli/main.py status system
 ```
 
 ### 파이프라인 상태
+
 ```bash
 # 전체 파이프라인 분석
 python cli/main.py status pipeline
@@ -254,12 +276,14 @@ python cli/main.py pipeline
 ```
 
 ### 개별 스크립트 상태
+
 ```bash
 # 특정 스크립트 상태 추적
 python cli/main.py status script 1
 ```
 
 ### 실시간 모니터링
+
 ```bash
 # 실시간 상태 모니터링 (5초 간격)
 python cli/main.py status monitor
@@ -273,6 +297,7 @@ python cli/main.py status monitor --interval 10
 ## 🔄 실제 워크플로우
 
 ### 🗓️ 날짜 기반 워크플로우 (권장!)
+
 ```bash
 # 1단계: 파일명을 날짜 형식으로 준비
 scripts/
@@ -294,6 +319,7 @@ python cli/main.py status pipeline
 ```
 
 ### 🔍 시뮬레이션 워크플로우
+
 ```bash
 # 1단계: 매핑 시뮬레이션
 python cli/main.py video auto-mapping scripts/ videos/ --dry-run
@@ -308,6 +334,7 @@ python cli/main.py date-upload scripts/ videos/
 ```
 
 ### 기본 워크플로우 (1개 비디오)
+
 ```bash
 # 1단계: 스크립트 업로드
 python cli/main.py script upload my_script.txt
@@ -327,6 +354,7 @@ python cli/main.py script show 1
 ```
 
 ### 배치 워크플로우 (여러 비디오)
+
 ```bash
 # 1단계: 모든 스크립트 업로드
 python cli/main.py batch-upload-scripts ./scripts/
@@ -348,6 +376,7 @@ python cli/main.py status pipeline
 ## 🗓️ 날짜 기반 자동 매핑 (신기능!)
 
 ### 파일명 규칙
+
 ```bash
 # 대본과 영상 파일명을 날짜_순번_이름 형식으로 통일
 20250817_01_story.txt ↔ 20250817_01_story.mp4
@@ -356,6 +385,7 @@ python cli/main.py status pipeline
 ```
 
 ### 자동 매핑 명령어
+
 ```bash
 # 오늘 날짜 파일들 자동 매핑
 python cli/main.py video auto-mapping scripts/ videos/
@@ -368,6 +398,7 @@ python cli/main.py video auto-mapping scripts/ videos/ --dry-run
 ```
 
 ### 완전 자동화 명령어
+
 ```bash
 # 대본→영상→YouTube 한 번에 처리
 python cli/main.py date-upload scripts/ videos/
@@ -382,6 +413,7 @@ python cli/main.py date-upload scripts/ videos/ --dry-run
 ## 🚀 빠른 명령어
 
 ### 프로젝트 루트의 빠른 스크립트
+
 ```bash
 # 빠른 스크립트 업로드
 ./quick-script my_script.txt
@@ -391,6 +423,7 @@ python cli/main.py date-upload scripts/ videos/ --dry-run
 ```
 
 ### 단축 명령어
+
 ```bash
 # 스크립트 목록 조회 (ls 별칭)
 python cli/main.py ls
@@ -404,6 +437,7 @@ python cli/main.py health
 ```
 
 ### 체인 명령어
+
 ```bash
 # 스크립트 업로드 → 상태 확인
 python cli/main.py script upload script.txt && python cli/main.py ls
@@ -420,6 +454,7 @@ python cli/main.py youtube upload 1 --privacy private
 ### 일반적인 오류
 
 #### 1. API 서버 연결 실패
+
 ```bash
 ❌ API 서버에 연결할 수 없습니다
 
@@ -431,6 +466,7 @@ poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 #### 2. 파일을 찾을 수 없음
+
 ```bash
 ❌ 파일이 존재하지 않습니다: my_script.txt
 
@@ -441,6 +477,7 @@ python cli/main.py script upload ./scripts/my_script.txt  # 상대경로 사용
 ```
 
 #### 3. YouTube API 인증 실패
+
 ```bash
 ❌ YouTube API 인증에 실패했습니다
 
@@ -451,6 +488,7 @@ python cli/main.py youtube health    # 재인증 확인
 ```
 
 #### 4. 스크립트 상태 오류
+
 ```bash
 ❌ 스크립트 상태가 'script_ready'가 아닙니다
 
@@ -461,6 +499,7 @@ python cli/main.py status script 1        # 상세 상태 분석
 ```
 
 #### 5. 파일 크기 초과
+
 ```bash
 ❌ 파일 크기가 8GB를 초과합니다
 
@@ -473,6 +512,7 @@ ffmpeg -i input.mp4 -crf 23 output.mp4
 ### 디버깅 도구
 
 #### 로그 확인
+
 ```bash
 # 백엔드 로그 실시간 확인
 tail -f backend/logs/app-$(date +%Y-%m-%d).log
@@ -482,6 +522,7 @@ tail -f backend/logs/error-$(date +%Y-%m-%d).log | grep ERROR
 ```
 
 #### 네트워크 연결 테스트
+
 ```bash
 # API 서버 연결 테스트
 curl http://localhost:8000/health
@@ -494,6 +535,7 @@ python cli/main.py status system
 ```
 
 #### 상세 정보 확인
+
 ```bash
 # 스크립트 상세 정보
 python cli/main.py script show 1
@@ -510,6 +552,7 @@ python cli/main.py video status 1
 ## 📚 추가 정보
 
 ### 스크립트 파일 형식
+
 ```text
 === 제목 ===
 여기에 YouTube 비디오 제목 (최대 100자)
@@ -528,12 +571,14 @@ ImageFX 프롬프트: AI 이미지 생성용 프롬프트
 ```
 
 ### 지원하는 비디오 형식
+
 - **권장**: MP4 (H.264 + AAC)
 - **지원**: AVI, MOV, MKV, WEBM
 - **최대 크기**: 8GB
 - **최대 길이**: 12시간
 
 ### YouTube API 제한사항
+
 - **일일 할당량**: 10,000 units
 - **업로드당 소모**: 1,600 units
 - **미인증 프로젝트**: private 모드만 업로드 가능
@@ -542,6 +587,7 @@ ImageFX 프롬프트: AI 이미지 생성용 프롬프트
 - **태그 제한**: 최대 500자
 
 ### 환경 변수
+
 ```bash
 # .env 파일
 BACKEND_HOST=0.0.0.0

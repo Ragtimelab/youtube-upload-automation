@@ -1,7 +1,8 @@
 import re
-from typing import Dict, Optional
+from typing import Dict, List, Optional, Tuple
 
 from ..core.exceptions import ScriptParsingError
+from ..core.constants import YouTubeConstants
 
 
 class ScriptParser:
@@ -175,7 +176,7 @@ class ScriptParser:
         return thumbnail_data
 
     def validate_parsed_data(self, parsed_data: Dict[str, str]) -> bool:
-        """파싱된 데이터 유효성 검증
+        """파싱된 데이터 유효성 검증 (YouTube API 제한 적용)
 
         Args:
             parsed_data: 파싱된 데이터
@@ -189,14 +190,63 @@ class ScriptParser:
             if not parsed_data.get(field):
                 return False
 
-        # 제목 길이 제한 (YouTube 제목 최대 100자)
-        if len(parsed_data.get("title", "")) > 100:
+        # 제목 길이 제한 (YouTube API)
+        title = parsed_data.get("title", "")
+        if len(title) > YouTubeConstants.TITLE_MAX_LENGTH:
             return False
 
-        # 설명 길이 제한 (YouTube 설명 최대 5000자)
-        if len(parsed_data.get("description", "")) > 5000:
+        # 설명 바이트 단위 제한 (YouTube API)
+        description = parsed_data.get("description", "")
+        if len(description.encode("utf-8")) > YouTubeConstants.DESCRIPTION_MAX_BYTES:
+            return False
+
+        # 태그 길이 제한 (YouTube API)
+        tags = parsed_data.get("tags", "")
+        if len(tags) > YouTubeConstants.TAGS_MAX_LENGTH:
             return False
 
         return True
+
+    def validate_with_errors(self, parsed_data: Dict[str, str]) -> Tuple[bool, List[str]]:
+        """상세한 에러 메시지와 함께 유효성 검증
+
+        Args:
+            parsed_data: 파싱된 데이터
+
+        Returns:
+            (검증 성공 여부, 에러 메시지 리스트)
+        """
+        errors = []
+
+        # 필수 필드 검증
+        required_fields = ["content", "title"]
+        for field in required_fields:
+            if not parsed_data.get(field):
+                field_names = {"content": "대본 내용", "title": "제목"}
+                errors.append(f"{field_names[field]}이 없습니다.")
+
+        # 제목 길이 제한 (YouTube API)
+        title = parsed_data.get("title", "")
+        if len(title) > YouTubeConstants.TITLE_MAX_LENGTH:
+            errors.append(
+                f"제목이 너무 깁니다 ({len(title)}/{YouTubeConstants.TITLE_MAX_LENGTH}자)"
+            )
+
+        # 설명 바이트 단위 제한 (YouTube API)
+        description = parsed_data.get("description", "")
+        description_bytes = len(description.encode("utf-8"))
+        if description_bytes > YouTubeConstants.DESCRIPTION_MAX_BYTES:
+            errors.append(
+                f"설명이 너무 깁니다 ({description_bytes}/{YouTubeConstants.DESCRIPTION_MAX_BYTES} 바이트)"
+            )
+
+        # 태그 길이 제한 (YouTube API)
+        tags = parsed_data.get("tags", "")
+        if len(tags) > YouTubeConstants.TAGS_MAX_LENGTH:
+            errors.append(
+                f"태그가 너무 깁니다 ({len(tags)}/{YouTubeConstants.TAGS_MAX_LENGTH}자)"
+            )
+
+        return len(errors) == 0, errors
 
 

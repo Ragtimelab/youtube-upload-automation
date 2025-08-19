@@ -31,14 +31,93 @@
 - `PUT`: 데이터 수정
 - `DELETE`: 데이터 삭제
 
-### 응답 형식
+### 표준화된 응답 형식
+
+모든 API 엔드포인트는 일관된 응답 형식을 사용합니다:
+
+#### 성공 응답
 
 ```json
 {
-  "status": "success|error",
-  "data": {},
-  "message": "상태 메시지",
-  "timestamp": "2025-08-17T10:30:00Z"
+  "success": true,
+  "message": "작업이 성공적으로 완료되었습니다",
+  "timestamp": "2025-08-19T16:58:53.321429+00:00",
+  "data": {
+    // 실제 데이터 객체
+  }
+}
+```
+
+#### 목록 응답 (페이지네이션)
+
+```json
+{
+  "success": true,
+  "message": "대본 목록을 조회했습니다. (총 5개)",
+  "timestamp": "2025-08-19T16:58:53.321429+00:00",
+  "data": [
+    // 데이터 배열
+  ],
+  "pagination": {
+    "total": 5,
+    "count": 5,
+    "skip": 0,
+    "limit": 100,
+    "has_more": false
+  }
+}
+```
+
+#### 에러 응답
+
+```json
+{
+  "success": false,
+  "message": "대본 파싱 실패: 대본 내용이 없습니다",
+  "timestamp": "2025-08-19T16:58:53.379383+00:00",
+  "error_code": "ScriptParsingError",
+  "error_details": null
+}
+```
+
+### JSON 직렬화 시스템
+
+모든 SQLAlchemy 모델은 JSON 직렬화를 위해 dictionary로 변환됩니다:
+
+#### Script 모델 필드
+
+- **상세 조회** (`GET /api/scripts/{id}`)에서는 모든 필드 포함
+- **목록 조회** (`GET /api/scripts/`)에서는 요약 필드만 포함
+
+**상세 필드:**
+```json
+{
+  "id": 1,
+  "title": "스크립트 제목",
+  "content": "전체 스크립트 내용",
+  "description": "비디오 설명",
+  "tags": "태그1, 태그2",
+  "thumbnail_text": "썸네일 텍스트",
+  "imagefx_prompt": "AI 프롬프트",
+  "status": "script_ready",
+  "video_file_path": null,
+  "youtube_video_id": null,
+  "scheduled_time": null,
+  "created_at": "2025-08-17T10:30:00",
+  "updated_at": "2025-08-17T10:30:00"
+}
+```
+
+**요약 필드 (목록용):**
+```json
+{
+  "id": 1,
+  "title": "스크립트 제목",
+  "status": "script_ready",
+  "created_at": "2025-08-17T10:30:00",
+  "updated_at": "2025-08-17T10:30:00",
+  "has_video": false,
+  "youtube_uploaded": false
 }
 ```
 
@@ -85,20 +164,26 @@ GET /api/scripts/
 
 ```json
 {
-  "status": "success",
-  "data": {
-    "scripts": [
-      {
-        "id": 1,
-        "title": "비디오 제목",
-        "status": "script_ready",
-        "created_at": "2025-08-17T10:30:00Z",
-        "youtube_video_id": null
-      }
-    ],
+  "success": true,
+  "message": "대본 목록을 조회했습니다. (총 10개)",
+  "timestamp": "2025-08-19T16:58:53.321429+00:00",
+  "data": [
+    {
+      "id": 1,
+      "title": "비디오 제목",
+      "status": "script_ready",
+      "created_at": "2025-08-17T10:30:00",
+      "updated_at": "2025-08-17T10:30:00",
+      "has_video": false,
+      "youtube_uploaded": false
+    }
+  ],
+  "pagination": {
     "total": 10,
+    "count": 1,
     "skip": 0,
-    "limit": 100
+    "limit": 100,
+    "has_more": true
   }
 }
 ```
@@ -113,7 +198,9 @@ GET /api/scripts/{script_id}
 
 ```json
 {
-  "status": "success",
+  "success": true,
+  "message": "대본을 조회했습니다. (ID: 1)",
+  "timestamp": "2025-08-19T16:58:53.335763+00:00",
   "data": {
     "id": 1,
     "title": "비디오 제목",
@@ -125,8 +212,9 @@ GET /api/scripts/{script_id}
     "status": "script_ready",
     "video_file_path": null,
     "youtube_video_id": null,
-    "created_at": "2025-08-17T10:30:00Z",
-    "updated_at": "2025-08-17T10:30:00Z"
+    "scheduled_time": null,
+    "created_at": "2025-08-17T10:30:00",
+    "updated_at": "2025-08-17T10:30:00"
   }
 }
 ```
@@ -146,13 +234,16 @@ Content-Type: multipart/form-data
 
 ```json
 {
-  "status": "success",
+  "success": true,
+  "message": "대본이 성공적으로 업로드되었습니다.",
+  "timestamp": "2025-08-19T16:58:53.335763+00:00",
   "data": {
-    "script_id": 1,
+    "id": 1,
     "title": "추출된 제목",
-    "status": "script_ready"
-  },
-  "message": "스크립트 업로드 성공"
+    "status": "script_ready",
+    "filename": "script.txt",
+    "created_at": "2025-08-19T16:58:53.328977"
+  }
 }
 ```
 

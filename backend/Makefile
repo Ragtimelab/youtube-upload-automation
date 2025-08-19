@@ -18,7 +18,7 @@ test-cov:  ## 커버리지 포함 테스트 실행
 	poetry run pytest --cov=app tests/ --cov-report=html --cov-report=term
 
 lint:  ## 코드 린팅 실행
-	poetry run flake8 app/
+	poetry run flake8 app/ --max-line-length=88 --extend-ignore=E203,W503
 	poetry run mypy app/
 
 format:  ## 코드 포맷팅 실행

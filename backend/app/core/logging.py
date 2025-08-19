@@ -32,11 +32,11 @@ def setup_logging():
                 "datefmt": "%Y-%m-%d %H:%M:%S",
             },
             "detailed": {
-                "format": "[%(asctime)s] %(levelname)s in %(name)s (%(filename)s:%(lineno)d): %(message)s",
+                "format": "[%(asctime)s] %(levelname)s in %(name)s (%(filename)s:%(lineno)d): %(message)s",  # noqa: E501
                 "datefmt": "%Y-%m-%d %H:%M:%S",
             },
             "json": {
-                "format": '{"time": "%(asctime)s", "level": "%(levelname)s", "module": "%(module)s", "message": "%(message)s"}',
+                "format": '{"time": "%(asctime)s", "level": "%(levelname)s", "module": "%(module)s", "message": "%(message)s"}',  # noqa: E501
                 "datefmt": "%Y-%m-%d %H:%M:%S",
             },
         },

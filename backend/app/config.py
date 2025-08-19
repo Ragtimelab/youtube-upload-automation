@@ -196,7 +196,8 @@ class Settings(BaseSettings):
         """YouTube 공개 설정 검증"""
         if v not in YouTubeConstants.PRIVACY_STATUSES:
             raise ValueError(
-                f"Invalid privacy status. Must be one of: {YouTubeConstants.PRIVACY_STATUSES}"
+                f"Invalid privacy status. Must be one of: "
+                f"{YouTubeConstants.PRIVACY_STATUSES}"
             )
         return v
 

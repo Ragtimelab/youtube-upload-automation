@@ -30,6 +30,6 @@ def get_db():
 
 def init_database():
     """데이터베이스 초기화 - 테이블 생성"""
-    from .models import script  # Import here to avoid circular imports
+    from .models import script  # Import here to avoid circular imports  # noqa: F401
 
     Base.metadata.create_all(bind=engine)

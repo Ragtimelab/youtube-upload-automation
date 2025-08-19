@@ -152,7 +152,9 @@ def update_script(
                 "id": script.id,
                 "title": script.title,
                 "status": script.status,
-                "updated_at": script.updated_at.isoformat() if script.updated_at else None,
+                "updated_at": (
+                    script.updated_at.isoformat() if script.updated_at else None
+                ),
             }
         )
 
@@ -171,7 +173,7 @@ def delete_script(script_id: int, db: Session = Depends(get_db)):
         result = script_service.delete_script(script_id)
 
         logger.info(f"대본 삭제 완료: ID={script_id}, 제목={result['title']}")
-        return ScriptResponse.deleted(script_id, result['title'])
+        return ScriptResponse.deleted(script_id, result["title"])
 
     except BaseAppException:
         raise

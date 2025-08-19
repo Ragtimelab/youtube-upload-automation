@@ -4,9 +4,9 @@ from sqlalchemy.orm import Session
 
 from .config import get_settings
 from .core.logging import configure_logging, get_logger
-from .database import SessionLocal, engine, get_db
+from .core.responses import HealthCheckResponse
+from .database import get_db, init_database
 from .middleware.error_handler import ErrorHandlerMiddleware
-from .models import script
 from .routers import scripts, upload, websocket
 
 # 로깅 시스템 초기화
@@ -16,8 +16,8 @@ logger = get_logger("main")
 # 설정 로드
 settings = get_settings()
 
-# 데이터베이스 테이블 생성
-script.Base.metadata.create_all(bind=engine)
+# 데이터베이스 초기화
+init_database()
 
 app = FastAPI(
     title=settings.app_name,
@@ -64,11 +64,16 @@ def health_check(db: Session = Depends(get_db)):
         db.execute(text("SELECT 1"))
 
         logger.info("헬스체크 성공")
-        return {"status": "healthy", "database": "connected", "api": "operational"}
+        return HealthCheckResponse.healthy({
+            "api": "operational",
+            "database": "connected",
+            "version": settings.app_version
+        })
     except Exception as e:
         logger.error(f"헬스체크 실패: {str(e)}")
-        raise HTTPException(
-            status_code=503, detail=f"Database connection failed: {str(e)}"
+        return HealthCheckResponse.unhealthy(
+            services={"api": "operational", "database": "error"},
+            message=f"데이터베이스 연결 실패: {str(e)}"
         )
 
 

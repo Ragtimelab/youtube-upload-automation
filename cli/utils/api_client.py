@@ -28,12 +28,35 @@ class YouTubeAutomationAPI:
             response.raise_for_status()
             
             if response.headers.get('content-type', '').startswith('application/json'):
-                return response.json()
+                data = response.json()
+                
+                # 새로운 표준화된 응답 형식 처리
+                if isinstance(data, dict) and 'success' in data:
+                    if not data.get('success', True):
+                        # 에러 응답 처리
+                        error_msg = data.get('message', '알 수 없는 오류가 발생했습니다.')
+                        error_code = data.get('error_code', 'UNKNOWN_ERROR')
+                        raise APIError(f"[{error_code}] {error_msg}")
+                    
+                    # 성공 응답에서 data 필드 반환 (하위 호환성 위해)
+                    return data.get('data', data)
+                else:
+                    # 레거시 응답 형식 지원
+                    return data
             else:
                 return {"message": response.text}
                 
+        except requests.exceptions.HTTPError as e:
+            # HTTP 에러 응답 처리
+            try:
+                error_data = e.response.json()
+                if 'message' in error_data:
+                    raise APIError(error_data['message'])
+            except:
+                pass
+            raise APIError(f"HTTP {e.response.status_code}: {str(e)}")
         except requests.exceptions.RequestException as e:
-            raise APIError(f"API 요청 실패: {str(e)}")
+            raise APIError(f"네트워크 오류: {str(e)}")
     
     def health_check(self) -> Dict[str, Any]:
         """API 서버 상태 확인"""

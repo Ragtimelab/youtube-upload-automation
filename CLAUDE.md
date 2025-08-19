@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🎯 Project Overview
 
-**YouTube Upload Automation** - A comprehensive system with FastAPI backend and CLI tools that automates YouTube content upload for content creators targeting Korean seniors, focusing on simplicity and complete automation.
+**YouTube Upload Automation** - A comprehensive system with FastAPI backend and CLI tools that automates YouTube content upload for solo developers creating content targeting Korean seniors, focusing on simplicity and complete automation.
 
 ## 🏗️ Complete System Architecture
 
@@ -707,7 +707,7 @@ tail -f logs/error-$(date +%Y-%m-%d).log
 
 ### Design Philosophy
 
-- **Korean Senior-Focused**: CLI interface prioritizes simplicity and intuitive workflows
+- **Solo Developer-Focused**: CLI interface prioritizes automation and efficiency
 - **Two-Interface Strategy**: CLI (primary), API (automation)
 - **Complete Automation**: Script → Video → YouTube with minimal manual intervention
 - **Real-time Feedback**: WebSocket integration provides immediate status updates
@@ -755,7 +755,7 @@ YYYYMMDD_NN_story.mp4    # Video files
 - **WebSocket ↔ Backend**: Real-time progress updates and notifications
 - **YouTube API ↔ Services**: OAuth flow with token persistence
 
-**Important Note**: This system is designed specifically for **Korean seniors** using **simplified automation** processes. The **CLI interface** is the primary production interface providing **date-based auto-mapping** for batch processing. Keep interfaces **simple** and **intuitive** while maintaining **robust** backend functionality including **real-time progress tracking**, **instant notifications**, and **intelligent file matching**.
+**Important Note**: This system is designed specifically for **solo developers creating content for Korean seniors** using **simplified automation** processes. The **CLI interface** is the primary production interface providing **date-based auto-mapping** for batch processing. Keep interfaces **simple** and **intuitive** while maintaining **robust** backend functionality including **real-time progress tracking**, **instant notifications**, and **intelligent file matching**.
 
 ## 📋 Key Development Practices
 

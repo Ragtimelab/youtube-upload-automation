@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🎯 Project Overview
 
-**YouTube Upload Automation for Korean Seniors** - A comprehensive system with FastAPI backend and CLI tools that automates YouTube content upload for senior Korean content creators, focusing on simplicity and complete automation.
+**YouTube Upload Automation** - A comprehensive system with FastAPI backend and CLI tools that automates YouTube content upload for content creators targeting Korean seniors, focusing on simplicity and complete automation.
 
 ## 🏗️ Complete System Architecture
 

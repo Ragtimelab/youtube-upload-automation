@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "youtube-upload-automation"
 version = "1.0.0"
-description = "YouTube 업로드 자동화 시스템 - 시니어 대상 콘텐츠 제작자를 위한 완전 자동화 솔루션"
+description = "YouTube 업로드 자동화 시스템 - 1인 개발자를 위한 콘텐츠 제작 완전 자동화 솔루션"
 authors = ["Ragtime Lab <ragtime1260@gmail.com>"]
 readme = "README.md"
 packages = [{include = "app", from = "backend"}]

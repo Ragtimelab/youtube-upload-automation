@@ -67,7 +67,7 @@ class Settings(BaseSettings):
     app_name: str = Field(default="YouTube Upload Automation", validation_alias="APP_NAME")
     app_version: str = Field(default="1.0.0", validation_alias="APP_VERSION")
     app_description: str = Field(
-        default="시니어 대상 YouTube 콘텐츠 업로드 자동화 시스템", validation_alias="APP_DESCRIPTION"
+        default="1인 개발자를 위한 YouTube 콘텐츠 업로드 자동화 시스템", validation_alias="APP_DESCRIPTION"
     )
 
     # ===========================================

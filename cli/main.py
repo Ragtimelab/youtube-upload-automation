@@ -42,7 +42,7 @@ def cli(ctx):
     """
     🎬 YouTube 업로드 자동화 CLI 도구
     
-    한국 시니어를 위한 YouTube 콘텐츠 자동화 시스템
+    1인 개발자를 위한 YouTube 콘텐츠 제작 자동화 시스템
     """
     # 컨텍스트 초기화
     ctx.ensure_object(dict)

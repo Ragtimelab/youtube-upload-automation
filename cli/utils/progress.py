@@ -6,7 +6,7 @@ import time
 import threading
 import sys
 from pathlib import Path
-from typing import Optional, Callable, Any
+from typing import Optional, Callable
 from rich.console import Console
 
 # 백엔드 constants 임포트
@@ -22,7 +22,6 @@ from rich.progress import (
     TextColumn, 
     BarColumn, 
     TimeElapsedColumn,
-    TimeRemainingColumn,
     MofNCompleteColumn,
     ProgressColumn
 )

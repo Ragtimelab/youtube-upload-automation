@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
@@ -64,16 +64,18 @@ def health_check(db: Session = Depends(get_db)):
         db.execute(text("SELECT 1"))
 
         logger.info("헬스체크 성공")
-        return HealthCheckResponse.healthy({
-            "api": "operational",
-            "database": "connected",
-            "version": settings.app_version
-        })
+        return HealthCheckResponse.healthy(
+            {
+                "api": "operational",
+                "database": "connected",
+                "version": settings.app_version,
+            }
+        )
     except Exception as e:
         logger.error(f"헬스체크 실패: {str(e)}")
         return HealthCheckResponse.unhealthy(
             services={"api": "operational", "database": "error"},
-            message=f"데이터베이스 연결 실패: {str(e)}"
+            message=f"데이터베이스 연결 실패: {str(e)}",
         )
 
 

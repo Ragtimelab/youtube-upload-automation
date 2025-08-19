@@ -3,8 +3,7 @@ Interactive mode utilities for CLI
 """
 
 import sys
-import os
-from typing import List, Dict, Any, Optional, Callable
+from typing import List, Dict, Optional, Callable
 from pathlib import Path
 
 # 백엔드 constants 임포트
@@ -17,13 +16,9 @@ from rich.console import Console
 from rich.prompt import Prompt, IntPrompt, Confirm
 from rich.panel import Panel
 from rich.table import Table
-from rich.text import Text
-from rich.columns import Columns
-from rich.align import Align
 
 from .api_client import api, APIError
 from .progress import show_success_message, show_error_message
-from .validators import file_validator
 from .date_mapping import date_mapper
 
 
@@ -280,7 +275,7 @@ class QuickActions:
         
         try:
             console.print(f"🎬 {video_file.name} 업로드 중...", style="yellow")
-            result = api.upload_video(script['id'], str(video_file))
+            api.upload_video(script['id'], str(video_file))
             
             show_success_message(
                 "비디오가 성공적으로 업로드되었습니다!",

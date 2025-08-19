@@ -5,7 +5,6 @@ CLI 설정 관리
 import os
 import sys
 from pathlib import Path
-from typing import Dict, Any
 
 # 백엔드 constants 임포트
 project_root = Path(__file__).parent.parent.parent

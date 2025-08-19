@@ -61,7 +61,9 @@ async def upload_to_youtube(
         category_id: YouTube 카테고리 ID (기본: 24 - Entertainment)
     """
     try:
-        logger.info(f"YouTube 업로드 시작: script_id={script_id}, 예약발행={bool(publish_at)}")
+        logger.info(
+            f"YouTube 업로드 시작: script_id={script_id}, 예약발행={bool(publish_at)}"
+        )
 
         upload_service = UploadService(db)
         result = await upload_service.upload_to_youtube(
@@ -138,19 +140,19 @@ def delete_video_file(script_id: int, db: Session = Depends(get_db)):
 @router.get("/progress/{script_id}")
 async def get_upload_progress(script_id: int, db: Session = Depends(get_db)):
     """업로드 진행률 조회
-    
+
     Args:
         script_id: 대본 ID
-        
+
     Returns:
         업로드 진행률 및 상태 정보
     """
     try:
         upload_service = UploadService(db)
         result = await upload_service.get_upload_progress(script_id)
-        
+
         return result
-        
+
     except BaseAppException:
         raise
     except Exception as e:
@@ -161,17 +163,17 @@ async def get_upload_progress(script_id: int, db: Session = Depends(get_db)):
 @router.get("/health")
 def upload_system_health():
     """업로드 시스템 상태 확인
-    
+
     Returns:
         시스템 상태 정보
     """
     try:
-        from ..services.youtube_client import YouTubeClient
         from ..config import get_settings
-        
+        from ..services.youtube_client import YouTubeClient
+
         settings = get_settings()
         youtube_client = YouTubeClient()
-        
+
         health_status = {
             "upload_system": "operational",
             "youtube_api": "unknown",
@@ -181,10 +183,10 @@ def upload_system_health():
                 "format": "MP4 (H.264 + AAC-LC)",
                 "resolution": "1920x1080",
                 "bitrate": f"{settings.recommended_video_bitrate_mbps}Mbps",
-                "audio_bitrate": f"{settings.recommended_audio_bitrate_kbps}kbps"
-            }
+                "audio_bitrate": f"{settings.recommended_audio_bitrate_kbps}kbps",
+            },
         }
-        
+
         # YouTube API 연결 테스트
         try:
             if youtube_client.authenticate():
@@ -193,18 +195,15 @@ def upload_system_health():
                 if channel_info:
                     health_status["youtube_channel"] = {
                         "title": channel_info.get("title", "Unknown"),
-                        "subscriber_count": channel_info.get("subscriberCount", "0")
+                        "subscriber_count": channel_info.get("subscriberCount", "0"),
                     }
             else:
                 health_status["youtube_api"] = "authentication_failed"
         except Exception as e:
             health_status["youtube_api"] = f"error: {str(e)}"
-        
+
         return health_status
-        
+
     except Exception as e:
         logger.error(f"업로드 시스템 상태 확인 중 오류: {str(e)}")
-        return {
-            "upload_system": "error",
-            "error": str(e)
-        }
+        return {"upload_system": "error", "error": str(e)}

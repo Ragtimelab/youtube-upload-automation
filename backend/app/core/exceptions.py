@@ -98,11 +98,16 @@ class UploadProgressError(BaseAppException):
 
     def __init__(self, message: str, progress_percentage: int = 0):
         self.progress_percentage = progress_percentage
-        super().__init__(f"업로드 진행 중 오류 ({progress_percentage}%): {message}", 500)
+        super().__init__(
+            f"업로드 진행 중 오류 ({progress_percentage}%): {message}", 500
+        )
 
 
 class YouTubeQuotaExceededError(BaseAppException):
     """YouTube API 할당량 초과 오류"""
 
-    def __init__(self, message: str = "YouTube API 할당량이 초과되었습니다. 내일 다시 시도해주세요."):
+    def __init__(
+        self,
+        message: str = "YouTube API 할당량이 초과되었습니다. 내일 다시 시도해주세요.",
+    ):
         super().__init__(message, 429)

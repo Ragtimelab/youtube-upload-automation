@@ -2,10 +2,9 @@
 YouTube 자동화 백엔드 API 클라이언트
 """
 
-import json
 import os
 import sys
-from typing import Dict, List, Optional, Any
+from typing import Dict, Optional, Any
 import requests
 from pathlib import Path
 
@@ -201,7 +200,6 @@ class YouTubeAutomationAPI:
 
 class APIError(Exception):
     """API 호출 관련 예외"""
-    pass
 
 
 # 기본 클라이언트 인스턴스

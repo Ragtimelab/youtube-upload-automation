@@ -21,27 +21,24 @@ class BaseRepository(Generic[T], ABC):
     @abstractmethod
     def create(self, entity: T) -> T:
         """엔티티 생성"""
-        pass
 
     @abstractmethod
     def get_by_id(self, entity_id: int) -> Optional[T]:
         """ID로 엔티티 조회"""
-        pass
 
     @abstractmethod
-    def get_all(self, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT) -> List[T]:
+    def get_all(
+        self, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT
+    ) -> List[T]:
         """모든 엔티티 조회"""
-        pass
 
     @abstractmethod
     def update(self, entity: T) -> T:
         """엔티티 수정"""
-        pass
 
     @abstractmethod
     def delete(self, entity_id: int) -> bool:
         """엔티티 삭제"""
-        pass
 
 
 class BaseSQLAlchemyRepository(BaseRepository[T]):
@@ -62,7 +59,9 @@ class BaseSQLAlchemyRepository(BaseRepository[T]):
         """ID로 엔티티 조회"""
         return self.db.query(self.model).filter(self.model.id == entity_id).first()
 
-    def get_all(self, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT) -> List[T]:
+    def get_all(
+        self, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT
+    ) -> List[T]:
         """모든 엔티티 조회"""
         return self.db.query(self.model).offset(skip).limit(limit).all()
 

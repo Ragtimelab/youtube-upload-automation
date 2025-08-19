@@ -8,7 +8,7 @@ from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.progress import Progress, BarColumn, TextColumn
+from rich.progress import Progress
 import time
 
 # 프로젝트 루트 디렉토리를 sys.path에 추가
@@ -26,7 +26,6 @@ console = Console()
 @click.group()
 def status():
     """시스템 상태 확인 명령어"""
-    pass
 
 
 @status.command()
@@ -183,7 +182,7 @@ def pipeline():
         # 파이프라인 진행률 계산
         total = len(all_scripts)
         completed = len(by_status.get('uploaded', []))
-        in_progress = len(by_status.get('video_ready', [])) + len(by_status.get('uploading', []))
+        len(by_status.get('video_ready', [])) + len(by_status.get('uploading', []))
         
         # 진행률 표시
         with Progress() as progress:

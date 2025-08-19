@@ -25,7 +25,6 @@ console = Console()
 @click.group()
 def youtube():
     """YouTube 업로드 관리 명령어"""
-    pass
 
 
 @youtube.command()

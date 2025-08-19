@@ -6,15 +6,13 @@ import time
 import threading
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional, Callable
-from datetime import datetime, timedelta
+from typing import List, Optional, Callable
+from datetime import datetime
 from rich.console import Console
 from rich.live import Live
 from rich.panel import Panel
 from rich.table import Table
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.layout import Layout
-from rich.text import Text
 from contextlib import contextmanager
 
 # 백엔드 constants 임포트

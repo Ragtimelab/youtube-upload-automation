@@ -18,15 +18,12 @@ google-auth = "^2.25.2"
 google-auth-oauthlib = "^1.1.0"
 google-auth-httplib2 = "^0.2.0"
 google-api-python-client = "^2.179.0"
-pydub = "^0.25.1"
 python-dotenv = "^1.0.0"
 pydantic = "^2.5.0"
 pydantic-settings = "^2.10.1"
 click = "^8.2.1"
 rich = "^14.1.0"
 requests = "^2.32.4"
-colorama = "^0.4.6"
-playwright = "^1.54.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.4.0"
@@ -37,6 +34,7 @@ isort = "^6.0.0"
 flake8 = "^7.0.0"
 mypy = "^1.6.0"
 pre-commit = "^4.3.0"
+autoflake = "^2.3.1"
 
 [tool.poetry.group.test.dependencies]
 coverage = "^7.3.0"
@@ -99,3 +97,7 @@ omit = [
 precision = 2
 show_missing = true
 skip_covered = false
+
+[tool.flake8]
+max-line-length = 88
+extend-ignore = ["E203", "W503"]

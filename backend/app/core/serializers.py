@@ -2,8 +2,8 @@
 JSON 직렬화를 위한 유틸리티 함수들
 """
 
-from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
+
 from ..models.script import Script
 
 
@@ -20,7 +20,9 @@ def script_to_dict(script: Script) -> Dict[str, Any]:
         "status": script.status,
         "video_file_path": script.video_file_path,
         "youtube_video_id": script.youtube_video_id,
-        "scheduled_time": script.scheduled_time.isoformat() if script.scheduled_time else None,
+        "scheduled_time": (
+            script.scheduled_time.isoformat() if script.scheduled_time else None
+        ),
         "created_at": script.created_at.isoformat() if script.created_at else None,
         "updated_at": script.updated_at.isoformat() if script.updated_at else None,
     }

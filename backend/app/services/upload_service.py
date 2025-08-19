@@ -3,7 +3,6 @@
 """
 
 import os
-import shutil
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -23,8 +22,8 @@ from ..core.exceptions import (
 )
 from ..models.script import Script
 from ..repositories.script_repository import ScriptRepository
-from .youtube_client import YouTubeClient
 from .websocket_manager import websocket_notification_service
+from .youtube_client import YouTubeClient
 
 
 class UploadService:
@@ -69,7 +68,7 @@ class UploadService:
                 "uploaded_filename": video_file.filename,
                 "saved_filename": os.path.basename(file_path),
             }
-            
+
             # 비디오 업로드 완료 알림
             try:
                 await websocket_notification_service.notify_video_uploaded(
@@ -120,7 +119,9 @@ class UploadService:
             privacy_status = "private"  # 예약 발행시 강제로 private 설정
             try:
                 # ISO 8601 형식 검증
-                scheduled_datetime = datetime.fromisoformat(publish_at.replace('Z', '+00:00'))
+                scheduled_datetime = datetime.fromisoformat(
+                    publish_at.replace("Z", "+00:00")
+                )
                 if scheduled_datetime <= datetime.now(timezone.utc):
                     raise ValueError("예약 시간은 현재 시간보다 미래여야 합니다")
             except ValueError as e:
@@ -141,9 +142,9 @@ class UploadService:
                 "id": script.id,
                 "title": script.title,
                 "status": script.status,
-                "scheduled_publish": publish_at is not None
+                "scheduled_publish": publish_at is not None,
             }
-            
+
             try:
                 await websocket_notification_service.notify_youtube_upload_started(
                     script_id, script_data
@@ -188,7 +189,7 @@ class UploadService:
                 "youtube_video_id": video_id,
                 "youtube_url": youtube_url,
             }
-            
+
             try:
                 await websocket_notification_service.notify_youtube_upload_completed(
                     script_id, final_script_data, youtube_url
@@ -213,7 +214,7 @@ class UploadService:
             script.status = "error"
             script.updated_at = datetime.utcnow()
             self.repository.update(script)
-            
+
             # 에러 알림 전송
             try:
                 await websocket_notification_service.notify_upload_error(
@@ -221,14 +222,14 @@ class UploadService:
                 )
             except Exception as notify_error:
                 print(f"WebSocket 에러 알림 전송 실패: {notify_error}")
-            
+
             raise
         except Exception as e:
             # 기타 예외 처리
             script.status = "error"
             script.updated_at = datetime.utcnow()
             self.repository.update(script)
-            
+
             # 에러 알림 전송
             try:
                 await websocket_notification_service.notify_upload_error(
@@ -236,7 +237,7 @@ class UploadService:
                 )
             except Exception as notify_error:
                 print(f"WebSocket 에러 알림 전송 실패: {notify_error}")
-            
+
             raise YouTubeUploadError(str(e))
 
     def get_upload_status(self, script_id: int) -> dict:
@@ -338,7 +339,7 @@ class UploadService:
             "total_steps": 3,  # script_ready -> video_ready -> uploaded
             "estimated_time_remaining": None,
             "created_at": script.created_at,
-            "updated_at": script.updated_at
+            "updated_at": script.updated_at,
         }
 
         # 상태별 진행률 계산
@@ -361,7 +362,7 @@ class UploadService:
             progress["video_file_info"] = {
                 "file_size": file_size,
                 "file_size_mb": round(file_size / FileConstants.BYTES_PER_MB, 2),
-                "filename": os.path.basename(script.video_file_path)
+                "filename": os.path.basename(script.video_file_path),
             }
 
         # YouTube 정보 추가
@@ -369,12 +370,14 @@ class UploadService:
             progress["youtube_info"] = {
                 "video_id": script.youtube_video_id,
                 "url": f"https://www.youtube.com/watch?v={script.youtube_video_id}",
-                "scheduled_time": script.scheduled_time
+                "scheduled_time": script.scheduled_time,
             }
 
         # WebSocket으로 진행률 브로드캐스트
         try:
-            await websocket_notification_service.send_upload_progress(script_id, progress)
+            await websocket_notification_service.send_upload_progress(
+                script_id, progress
+            )
         except Exception as e:
             print(f"WebSocket 진행률 브로드캐스트 실패: {e}")
 
@@ -394,19 +397,19 @@ class UploadService:
 
         if file_extension not in self.settings.allowed_video_extensions:
             raise FileValidationError(
-                f"YouTube FHD 최적화 권장 형식만 지원됩니다. "
-                f"MP4 (H.264 1920×1080, AAC-LC 48kHz) 형식을 사용해주세요."
+                "YouTube FHD 최적화 권장 형식만 지원됩니다. "
+                "MP4 (H.264 1920×1080, AAC-LC 48kHz) 형식을 사용해주세요."
             )
 
-        # 파일 크기 검증 
-        if hasattr(video_file, 'size') and video_file.size:
+        # 파일 크기 검증
+        if hasattr(video_file, "size") and video_file.size:
             if video_file.size > self.settings.max_video_size_bytes:
                 size_mb = video_file.size / FileConstants.BYTES_PER_MB
                 raise FileValidationError(
                     f"파일 크기가 너무 큽니다. 최대 {self.settings.max_video_size_mb}MB까지 업로드 가능합니다. "
                     f"현재 파일 크기: {size_mb:.1f}MB"
                 )
-        
+
         # 파일 내용 검증 (첫 바이트를 읽어서 파일이 비어있지 않은지 확인)
         current_position = video_file.file.tell()
         try:
@@ -430,7 +433,7 @@ class UploadService:
             # 청크 단위로 파일 저장 (진행률 추적 가능)
             chunk_size = FileConstants.CHUNK_SIZE_1MB  # 1MB 청크
             total_size = 0
-            
+
             with open(file_path, "wb") as buffer:
                 while True:
                     chunk = video_file.file.read(chunk_size)
@@ -438,7 +441,7 @@ class UploadService:
                         break
                     buffer.write(chunk)
                     total_size += len(chunk)
-                    
+
             return file_path
         except Exception as e:
             # 실패시 부분 파일 정리

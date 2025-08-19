@@ -16,7 +16,7 @@ if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 from cli.utils.api_client import api, APIError
-from cli.utils.validators import file_validator, input_validator
+from cli.utils.validators import file_validator
 from cli.utils.date_mapping import date_mapper
 
 
@@ -26,7 +26,6 @@ console = Console()
 @click.group()
 def video():
     """비디오 업로드 관리 명령어"""
-    pass
 
 
 @video.command()

@@ -11,7 +11,6 @@ from sqlalchemy.orm import Session
 from ..core.constants import PaginationConstants
 from ..core.exceptions import (
     DatabaseError,
-    FileUploadError,
     InvalidScriptStatusError,
     ScriptNotFoundError,
     ScriptParsingError,
@@ -72,7 +71,10 @@ class ScriptService:
         return script_to_dict(script)
 
     def get_scripts(
-        self, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT, status: Optional[str] = None
+        self,
+        skip: int = 0,
+        limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT,
+        status: Optional[str] = None,
     ) -> dict:
         """대본 목록 조회 (직렬화된 데이터 반환)"""
         try:
@@ -158,7 +160,10 @@ class ScriptService:
             raise DatabaseError(f"통계 조회 중 오류 발생: {str(e)}")
 
     def search_scripts(
-        self, title_query: str, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT
+        self,
+        title_query: str,
+        skip: int = 0,
+        limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT,
     ) -> List[Script]:
         """제목으로 대본 검색"""
         try:

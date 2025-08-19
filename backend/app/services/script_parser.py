@@ -1,8 +1,8 @@
 import re
 from typing import Dict, List, Optional, Tuple
 
-from ..core.exceptions import ScriptParsingError
 from ..core.constants import YouTubeConstants
+from ..core.exceptions import ScriptParsingError
 
 
 class ScriptParser:
@@ -69,9 +69,11 @@ class ScriptParser:
             if thumbnail_section:
                 thumbnail_data = self._parse_thumbnail_section(thumbnail_section)
                 sections.update(thumbnail_data)
-            
+
             # 썸네일 정보 섹션 추출 및 파싱 (새로운 형식)
-            thumbnail_info_section = self._extract_section(content, "썸네일 정보", ["대본"])
+            thumbnail_info_section = self._extract_section(
+                content, "썸네일 정보", ["대본"]
+            )
             if thumbnail_info_section:
                 thumbnail_data = self._parse_thumbnail_section(thumbnail_info_section)
                 sections.update(thumbnail_data)
@@ -207,7 +209,9 @@ class ScriptParser:
 
         return True
 
-    def validate_with_errors(self, parsed_data: Dict[str, str]) -> Tuple[bool, List[str]]:
+    def validate_with_errors(
+        self, parsed_data: Dict[str, str]
+    ) -> Tuple[bool, List[str]]:
         """상세한 에러 메시지와 함께 유효성 검증
 
         Args:
@@ -248,5 +252,3 @@ class ScriptParser:
             )
 
         return len(errors) == 0, errors
-
-

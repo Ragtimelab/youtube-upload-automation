@@ -1,7 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, Text
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, DateTime, Integer, String, Text
 
 from ..database import Base
 
@@ -18,11 +17,14 @@ class Script(Base):
     imagefx_prompt = Column(Text)
     status = Column(String(20), default="script_ready")
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_at = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
     video_file_path = Column(String(500))
     youtube_video_id = Column(String(50))
     scheduled_time = Column(DateTime)
-
 
     def __repr__(self):
         return f"<Script(id={self.id}, title='{self.title}', status='{self.status}')>"

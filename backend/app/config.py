@@ -5,18 +5,17 @@
 Pydantic Settings를 사용하여 타입 안전성과 검증을 제공합니다.
 """
 
-import os
 from pathlib import Path
 from typing import List
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings
+
 from .core.constants import (
-    YouTubeConstants, 
-    FileConstants, 
-    NetworkConstants, 
+    FileConstants,
+    NetworkConstants,
     PathConstants,
-    ValidationConstants
+    YouTubeConstants,
 )
 
 # 프로젝트 루트 디렉토리 계산 (app/config.py -> 프로젝트 루트)
@@ -32,30 +31,52 @@ class Settings(BaseSettings):
     # ===========================================
     # Server Configuration
     # ===========================================
-    backend_host: str = Field(default=NetworkConstants.DEFAULT_API_HOST, validation_alias="BACKEND_HOST")
-    backend_port: int = Field(default=NetworkConstants.DEFAULT_API_PORT, validation_alias="BACKEND_PORT")
+    backend_host: str = Field(
+        default=NetworkConstants.DEFAULT_API_HOST, validation_alias="BACKEND_HOST"
+    )
+    backend_port: int = Field(
+        default=NetworkConstants.DEFAULT_API_PORT, validation_alias="BACKEND_PORT"
+    )
     backend_reload: bool = Field(default=True, validation_alias="BACKEND_RELOAD")
 
     # Frontend Configuration
-    frontend_url: str = Field(default="http://localhost:3000", validation_alias="FRONTEND_URL")
+    frontend_url: str = Field(
+        default="http://localhost:3000", validation_alias="FRONTEND_URL"
+    )
     cors_origins: List[str] = Field(
-        default=["http://localhost:3000", "http://127.0.0.1:3000"], validation_alias="CORS_ORIGINS"
+        default=["http://localhost:3000", "http://127.0.0.1:3000"],
+        validation_alias="CORS_ORIGINS",
     )
 
     # ===========================================
     # File Paths & Storage
     # ===========================================
-    upload_dir: str = Field(default=PathConstants.DEFAULT_UPLOAD_DIR, validation_alias="UPLOAD_DIR")
-    credentials_path: str = Field(default=str(PROJECT_ROOT / PathConstants.CREDENTIALS_RELATIVE_PATH), validation_alias="CREDENTIALS_PATH")
-    token_path: str = Field(default=str(PROJECT_ROOT / PathConstants.TOKEN_RELATIVE_PATH), validation_alias="TOKEN_PATH")
+    upload_dir: str = Field(
+        default=PathConstants.DEFAULT_UPLOAD_DIR, validation_alias="UPLOAD_DIR"
+    )
+    credentials_path: str = Field(
+        default=str(PROJECT_ROOT / PathConstants.CREDENTIALS_RELATIVE_PATH),
+        validation_alias="CREDENTIALS_PATH",
+    )
+    token_path: str = Field(
+        default=str(PROJECT_ROOT / PathConstants.TOKEN_RELATIVE_PATH),
+        validation_alias="TOKEN_PATH",
+    )
 
     # ===========================================
     # YouTube API Configuration
     # ===========================================
-    default_privacy_status: str = Field(default=YouTubeConstants.DEFAULT_PRIVACY_STATUS, validation_alias="DEFAULT_PRIVACY_STATUS")
-    default_category_id: int = Field(default=YouTubeConstants.DEFAULT_CATEGORY_ID, validation_alias="DEFAULT_CATEGORY_ID")
+    default_privacy_status: str = Field(
+        default=YouTubeConstants.DEFAULT_PRIVACY_STATUS,
+        validation_alias="DEFAULT_PRIVACY_STATUS",
+    )
+    default_category_id: int = Field(
+        default=YouTubeConstants.DEFAULT_CATEGORY_ID,
+        validation_alias="DEFAULT_CATEGORY_ID",
+    )
     youtube_api_scope_upload: str = Field(
-        default="https://www.googleapis.com/auth/youtube.upload", validation_alias="YOUTUBE_API_SCOPE_UPLOAD"
+        default="https://www.googleapis.com/auth/youtube.upload",
+        validation_alias="YOUTUBE_API_SCOPE_UPLOAD",
     )
     youtube_api_scope_readonly: str = Field(
         default="https://www.googleapis.com/auth/youtube.readonly",
@@ -63,7 +84,9 @@ class Settings(BaseSettings):
     )
 
     # API 프로젝트 인증 상태 (2020년 7월 28일 이후 프로젝트 제한)
-    youtube_project_verified: bool = Field(default=True, validation_alias="YOUTUBE_PROJECT_VERIFIED")
+    youtube_project_verified: bool = Field(
+        default=True, validation_alias="YOUTUBE_PROJECT_VERIFIED"
+    )
     youtube_project_created_after_2020_07_28: bool = Field(
         default=False, validation_alias="YOUTUBE_PROJECT_CREATED_AFTER_2020_07_28"
     )
@@ -71,17 +94,21 @@ class Settings(BaseSettings):
     # ===========================================
     # Application Metadata
     # ===========================================
-    app_name: str = Field(default="YouTube Upload Automation", validation_alias="APP_NAME")
+    app_name: str = Field(
+        default="YouTube Upload Automation", validation_alias="APP_NAME"
+    )
     app_version: str = Field(default="1.0.0", validation_alias="APP_VERSION")
     app_description: str = Field(
-        default="1인 개발자를 위한 YouTube 콘텐츠 업로드 자동화 시스템", validation_alias="APP_DESCRIPTION"
+        default="1인 개발자를 위한 YouTube 콘텐츠 업로드 자동화 시스템",
+        validation_alias="APP_DESCRIPTION",
     )
 
     # ===========================================
     # Database Configuration
     # ===========================================
     database_url: str = Field(
-        default="sqlite:///./backend/youtube_automation.db", validation_alias="DATABASE_URL"
+        default=f"sqlite:///{PROJECT_ROOT}/backend/youtube_automation.db",
+        validation_alias="DATABASE_URL",
     )
 
     # ===========================================
@@ -93,13 +120,16 @@ class Settings(BaseSettings):
     # ===========================================
     # File Upload Limits (YouTube FHD 최적화 권장사항)
     # ===========================================
-    max_video_size_mb: int = Field(default=FileConstants.MAX_VIDEO_SIZE_MB, validation_alias="MAX_VIDEO_SIZE_MB")
+    max_video_size_mb: int = Field(
+        default=FileConstants.MAX_VIDEO_SIZE_MB, validation_alias="MAX_VIDEO_SIZE_MB"
+    )
     allowed_video_extensions: List[str] = Field(
         default=FileConstants.ALLOWED_VIDEO_EXTENSIONS,
         validation_alias="ALLOWED_VIDEO_EXTENSIONS",
     )
     allowed_script_extensions: List[str] = Field(
-        default=FileConstants.ALLOWED_SCRIPT_EXTENSIONS, validation_alias="ALLOWED_SCRIPT_EXTENSIONS"
+        default=FileConstants.ALLOWED_SCRIPT_EXTENSIONS,
+        validation_alias="ALLOWED_SCRIPT_EXTENSIONS",
     )
 
     # ===========================================
@@ -108,9 +138,18 @@ class Settings(BaseSettings):
     # Video: H.264, 1920×1080, 8Mbps@30fps/12Mbps@60fps
     # Audio: AAC-LC, 48kHz, 128kbps, Stereo
     # GOP: 2초 간격, VBR 2-Pass 권장
-    recommended_video_bitrate_mbps: int = Field(default=FileConstants.RECOMMENDED_VIDEO_BITRATE_MBPS, validation_alias="RECOMMENDED_VIDEO_BITRATE_MBPS")
-    recommended_audio_bitrate_kbps: int = Field(default=FileConstants.RECOMMENDED_AUDIO_BITRATE_KBPS, validation_alias="RECOMMENDED_AUDIO_BITRATE_KBPS")
-    max_video_duration_hours: int = Field(default=FileConstants.MAX_VIDEO_DURATION_HOURS, validation_alias="MAX_VIDEO_DURATION_HOURS")
+    recommended_video_bitrate_mbps: int = Field(
+        default=FileConstants.RECOMMENDED_VIDEO_BITRATE_MBPS,
+        validation_alias="RECOMMENDED_VIDEO_BITRATE_MBPS",
+    )
+    recommended_audio_bitrate_kbps: int = Field(
+        default=FileConstants.RECOMMENDED_AUDIO_BITRATE_KBPS,
+        validation_alias="RECOMMENDED_AUDIO_BITRATE_KBPS",
+    )
+    max_video_duration_hours: int = Field(
+        default=FileConstants.MAX_VIDEO_DURATION_HOURS,
+        validation_alias="MAX_VIDEO_DURATION_HOURS",
+    )
 
     # ===========================================
     # Computed Properties
@@ -192,8 +231,8 @@ class Settings(BaseSettings):
     # ===========================================
     model_config = {
         "env_file": ".env",
-        "env_file_encoding": "utf-8", 
-        "case_sensitive": False
+        "env_file_encoding": "utf-8",
+        "case_sensitive": False,
     }
 
 
@@ -227,14 +266,16 @@ def validate_required_files():
 
     credentials_path = settings.credentials_file_path
     if not credentials_path.exists():
-        required_files.append(f"{credentials_path} (절대경로: {credentials_path.absolute()})")
+        required_files.append(
+            f"{credentials_path} (절대경로: {credentials_path.absolute()})"
+        )
 
     if required_files:
         print(f"🔍 프로젝트 루트: {PROJECT_ROOT}")
         print(f"🔍 백엔드 secrets 디렉토리: {PROJECT_ROOT / 'backend/secrets'}")
         print(f"🔍 credentials.json 경로: {credentials_path}")
         print(f"🔍 파일 존재 여부: {credentials_path.exists()}")
-        
+
         raise FileNotFoundError(
             f"Required files not found: {', '.join(required_files)}. "
             f"Please check your configuration and ensure these files exist."

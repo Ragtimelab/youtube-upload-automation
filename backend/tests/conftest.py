@@ -9,13 +9,13 @@ from fastapi.testclient import TestClient
 
 from app.config import Settings
 from app.database import get_db
-from .test_app import create_test_app, setup_test_database
+from .test_app import create_test_app, setup_test_database, create_in_memory_test_database
 
 
 @pytest.fixture
 def test_db():
     """테스트용 인메모리 데이터베이스 (단위 테스트용)"""
-    engine, TestingSessionLocal, override_get_db = setup_test_database()
+    engine, TestingSessionLocal, override_get_db = create_in_memory_test_database()
     
     # 세션 반환
     yield TestingSessionLocal()

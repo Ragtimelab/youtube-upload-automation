@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from ..core.exceptions import BaseAppException
 from ..core.logging import get_router_logger
-from ..core.responses import ScriptResponse, PaginatedResponse, SuccessResponse
+from ..core.responses import PaginatedResponse, ScriptResponse, SuccessResponse
 from ..core.validators import file_validator
 from ..database import get_db
 from ..services.script_service import ScriptService
@@ -48,13 +48,17 @@ async def upload_script(file: UploadFile = File(...), db: Session = Depends(get_
 
         logger.info(f"대본 업로드 성공: ID={script.id}, 제목={script.title}")
 
-        return ScriptResponse.created({
-            "id": script.id,
-            "title": script.title,
-            "status": script.status,
-            "filename": file.filename,
-            "created_at": script.created_at.isoformat() if script.created_at else None,
-        })
+        return ScriptResponse.created(
+            {
+                "id": script.id,
+                "title": script.title,
+                "status": script.status,
+                "filename": file.filename,
+                "created_at": (
+                    script.created_at.isoformat() if script.created_at else None
+                ),
+            }
+        )
 
     except UnicodeDecodeError:
         logger.error(f"파일 인코딩 오류: {file.filename}")
@@ -86,11 +90,11 @@ def get_scripts(
 
         logger.info(f"대본 목록 조회: total={result['total']}, status_filter={status}")
         return PaginatedResponse.create(
-            data=result['scripts'],
-            total=result['total'],
+            data=result["scripts"],
+            total=result["total"],
             skip=skip,
             limit=limit,
-            message=f"대본 목록을 조회했습니다. (총 {result['total']}개)"
+            message=f"대본 목록을 조회했습니다. (총 {result['total']}개)",
         )
 
     except BaseAppException:
@@ -109,8 +113,7 @@ def get_script(script_id: int, db: Session = Depends(get_db)):
 
         logger.info(f"대본 상세 조회: ID={script_id}")
         return SuccessResponse.create(
-            data=script_data,
-            message=f"대본을 조회했습니다. (ID: {script_id})"
+            data=script_data, message=f"대본을 조회했습니다. (ID: {script_id})"
         )
 
     except BaseAppException:
@@ -144,11 +147,14 @@ def update_script(
 
         logger.info(f"대본 정보 수정 완료: ID={script_id}")
 
-        return {
-            "id": script.id,
-            "message": "대본 정보 수정 완료",
-            "updated_at": script.updated_at,
-        }
+        return ScriptResponse.updated(
+            {
+                "id": script.id,
+                "title": script.title,
+                "status": script.status,
+                "updated_at": script.updated_at.isoformat() if script.updated_at else None,
+            }
+        )
 
     except BaseAppException:
         raise
@@ -165,7 +171,7 @@ def delete_script(script_id: int, db: Session = Depends(get_db)):
         result = script_service.delete_script(script_id)
 
         logger.info(f"대본 삭제 완료: ID={script_id}, 제목={result['title']}")
-        return result
+        return ScriptResponse.deleted(script_id, result['title'])
 
     except BaseAppException:
         raise
@@ -182,7 +188,9 @@ def get_scripts_stats(db: Session = Depends(get_db)):
         stats = script_service.get_statistics()
 
         logger.info("대본 통계 조회 완료")
-        return stats
+        return SuccessResponse.create(
+            data=stats, message="대본 통계 조회가 완료되었습니다."
+        )
 
     except BaseAppException:
         raise

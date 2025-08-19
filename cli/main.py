@@ -138,7 +138,7 @@ def health():
             
     except APIError as e:
         console.print(f"❌ API 연결 실패: {e}", style="red")
-        api_url = os.getenv('YOUTUBE_AUTOMATION_API_URL', NetworkConstants.DEFAULT_API_BASE_URL)
+        os.getenv('YOUTUBE_AUTOMATION_API_URL', NetworkConstants.DEFAULT_API_BASE_URL)
         console.print(MessageConstants.CHECK_SERVER_HELP, style="dim")
         sys.exit(1)
 

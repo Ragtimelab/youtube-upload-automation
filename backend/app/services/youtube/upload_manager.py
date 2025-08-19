@@ -9,14 +9,13 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
 from ...config import get_settings
-from ...core.constants import YouTubeConstants, FileConstants, ChannelConstants
+from ...core.constants import ChannelConstants, FileConstants, YouTubeConstants
 from ...core.exceptions import (
-    UnverifiedProjectRestrictionError,
+    UploadProgressError,
     VideoFileNotFoundError,
     YouTubeAuthenticationError,
-    YouTubeUploadError,
-    UploadProgressError,
     YouTubeQuotaExceededError,
+    YouTubeUploadError,
 )
 from .auth_manager import YouTubeAuthManager
 
@@ -81,9 +80,7 @@ class YouTubeUploadManager:
 
             # 미디어 파일 업로드 객체 생성 (청크 단위 업로드로 진행률 추적)
             chunk_size = FileConstants.DEFAULT_UPLOAD_CHUNK_SIZE
-            media = MediaFileUpload(
-                video_path, chunksize=chunk_size, resumable=True
-            )
+            media = MediaFileUpload(video_path, chunksize=chunk_size, resumable=True)
 
             # 업로드 요청 실행
             request = self.youtube.videos().insert(
@@ -101,18 +98,23 @@ class YouTubeUploadManager:
                         print(f"📊 업로드 진행률: {progress_percent}%")
                 except Exception as chunk_error:
                     error_str = str(chunk_error)
-                    
+
                     # YouTube API 할당량 초과 확인
                     if "quotaExceeded" in error_str or "quota" in error_str.lower():
                         raise YouTubeQuotaExceededError()
-                    
+
                     # 네트워크 관련 오류 처리
-                    if any(keyword in error_str.lower() for keyword in ["network", "timeout", "connection"]):
+                    if any(
+                        keyword in error_str.lower()
+                        for keyword in ["network", "timeout", "connection"]
+                    ):
                         print(f"🌐 네트워크 오류 발생: {chunk_error}")
                         # 작은 청크로 재시도
                         if chunk_size > FileConstants.CHUNK_SIZE_1MB:  # 1MB보다 큰 경우
                             chunk_size = chunk_size // 2
-                            print(f"🔄 청크 크기를 {chunk_size // FileConstants.BYTES_PER_MB}MB로 줄여서 재시도...")
+                            print(
+                                f"🔄 청크 크기를 {chunk_size // FileConstants.BYTES_PER_MB}MB로 줄여서 재시도..."
+                            )
                             media = MediaFileUpload(
                                 video_path, chunksize=chunk_size, resumable=True
                             )
@@ -120,12 +122,18 @@ class YouTubeUploadManager:
                                 part=",".join(body.keys()), body=body, media_body=media
                             )
                         else:
-                            current_progress = int(status.progress() * 100) if status else 0
-                            raise UploadProgressError(f"네트워크 오류: {chunk_error}", current_progress)
+                            current_progress = (
+                                int(status.progress() * 100) if status else 0
+                            )
+                            raise UploadProgressError(
+                                f"네트워크 오류: {chunk_error}", current_progress
+                            )
                     else:
                         # 기타 오류
                         current_progress = int(status.progress() * 100) if status else 0
-                        raise UploadProgressError(f"업로드 오류: {chunk_error}", current_progress)
+                        raise UploadProgressError(
+                            f"업로드 오류: {chunk_error}", current_progress
+                        )
             video_id = response["id"]
 
             print(f"✅ 업로드 성공! 비디오 ID: {video_id}")
@@ -226,12 +234,14 @@ class YouTubeUploadManager:
         """업로드용 메타데이터 구성 (채널 기본 정보 자동 추가)"""
         # 원본 설명에 채널 기본 설명 추가
         original_description = metadata.get("description", "")
-        combined_description = ChannelConstants.combine_description(original_description)
-        
+        combined_description = ChannelConstants.combine_description(
+            original_description
+        )
+
         # 원본 태그에 채널 기본 태그 추가
         original_tags = metadata.get("tags", "")
         combined_tags = ChannelConstants.combine_tags(original_tags)
-        
+
         # 태그를 리스트로 변환 (YouTube API 요구사항)
         if isinstance(combined_tags, str):
             tags = [tag.strip() for tag in combined_tags.split(",") if tag.strip()]
@@ -242,14 +252,20 @@ class YouTubeUploadManager:
 
         body = {
             "snippet": {
-                "title": metadata["title"][:YouTubeConstants.TITLE_MAX_LENGTH],
+                "title": metadata["title"][: YouTubeConstants.TITLE_MAX_LENGTH],
                 "description": combined_description,
                 "tags": tags,
-                "categoryId": str(metadata.get("category_id", YouTubeConstants.DEFAULT_CATEGORY_ID)),
+                "categoryId": str(
+                    metadata.get("category_id", YouTubeConstants.DEFAULT_CATEGORY_ID)
+                ),
                 "defaultLanguage": YouTubeConstants.DEFAULT_LANGUAGE,
                 "defaultAudioLanguage": YouTubeConstants.DEFAULT_AUDIO_LANGUAGE,
             },
-            "status": {"privacyStatus": metadata.get("privacy_status", YouTubeConstants.DEFAULT_PRIVACY_STATUS)},
+            "status": {
+                "privacyStatus": metadata.get(
+                    "privacy_status", YouTubeConstants.DEFAULT_PRIVACY_STATUS
+                )
+            },
         }
 
         # YouTube 네이티브 예약 발행 시간 설정

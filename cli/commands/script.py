@@ -26,7 +26,6 @@ console = Console()
 @click.group()
 def script():
     """스크립트 관리 명령어"""
-    pass
 
 
 @script.command()

@@ -2,10 +2,9 @@
 CLI 입력 검증 유틸리티
 """
 
-import os
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 from .date_mapping import date_mapper
 
 # 백엔드 constants 임포트

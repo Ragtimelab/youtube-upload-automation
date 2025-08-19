@@ -175,8 +175,13 @@ class TestScriptsAPI:
         response = test_client.get(f"/api/scripts/{script_id}")
         
         assert response.status_code == 200
-        script_data = response.json()
+        response_data = response.json()
         
+        # SuccessResponse 형식 확인
+        assert response_data["success"] is True
+        assert "data" in response_data
+        
+        script_data = response_data["data"]
         assert script_data["id"] == script_id
         assert script_data["title"] == "시니어의 지혜 이야기"
         assert script_data["status"] == "script_ready"
@@ -216,7 +221,8 @@ class TestScriptsAPI:
         
         # 수정된 데이터 확인
         get_response = test_client.get(f"/api/scripts/{script_id}")
-        script_data = get_response.json()
+        get_data = get_response.json()
+        script_data = get_data["data"]
         
         assert script_data["title"] == "수정된 제목"
         assert script_data["description"] == "수정된 설명"

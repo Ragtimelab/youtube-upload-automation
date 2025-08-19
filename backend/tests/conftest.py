@@ -5,65 +5,36 @@
 import pytest
 import tempfile
 import shutil
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from fastapi.testclient import TestClient
 
-from app.database import Base
-from app.main import app
 from app.config import Settings
 from app.database import get_db
+from .test_app import create_test_app, setup_test_database
 
 
 @pytest.fixture
 def test_db():
-    """테스트용 인메모리 데이터베이스"""
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    """테스트용 인메모리 데이터베이스 (단위 테스트용)"""
+    engine, TestingSessionLocal, override_get_db = setup_test_database()
     
-    Base.metadata.create_all(bind=engine)
-    
-    def override_get_db():
-        try:
-            db = TestingSessionLocal()
-            yield db
-        finally:
-            db.close()
-    
-    app.dependency_overrides[get_db] = override_get_db
-    
+    # 세션 반환
     yield TestingSessionLocal()
-    
-    app.dependency_overrides.clear()
 
 
 @pytest.fixture(scope="function")
 def test_client():
-    """테스트용 FastAPI 클라이언트"""
-    # 의존성 재정의 정리 (이전 테스트의 영향 제거)
-    app.dependency_overrides.clear()
+    """테스트용 FastAPI 클라이언트 (통합 테스트용)"""
+    # 테스트용 앱 생성
+    app = create_test_app()
     
-    # 테스트용 데이터베이스 엔진 생성
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    
-    # 모든 모델을 먼저 import하여 metadata에 등록
-    from app.models.script import Script  # 명시적으로 모델 import
-    
-    # 테이블 생성
-    Base.metadata.create_all(bind=engine)
+    # 테스트용 데이터베이스 설정
+    engine, TestingSessionLocal, override_get_db = setup_test_database()
     
     # 의존성 재정의
-    def override_get_db():
-        try:
-            db = TestingSessionLocal()
-            yield db
-        finally:
-            db.close()
-    
     app.dependency_overrides[get_db] = override_get_db
     
     try:
+        # TestClient 생성
         client = TestClient(app)
         yield client
     finally:

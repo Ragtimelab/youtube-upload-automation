@@ -13,10 +13,12 @@ from ..core.exceptions import (
     FileUploadError,
     InvalidScriptStatusError,
     ScriptNotFoundError,
+    ScriptParsingError,
 )
+from ..core.serializers import script_to_dict, scripts_summary_to_dict_list
 from ..models.script import Script
 from ..repositories.script_repository import ScriptRepository
-from .script_parser import ScriptParser, ScriptParsingError
+from .script_parser import ScriptParser
 
 
 class ScriptService:
@@ -57,16 +59,21 @@ class ScriptService:
             raise DatabaseError(f"대본 생성 중 오류 발생: {str(e)}")
 
     def get_script_by_id(self, script_id: int) -> Script:
-        """대본 ID로 조회"""
+        """대본 ID로 조회 (원본 모델 반환)"""
         script = self.repository.get_by_id(script_id)
         if not script:
             raise ScriptNotFoundError(script_id)
         return script
 
+    def get_script_dict_by_id(self, script_id: int) -> dict:
+        """대본 ID로 조회 (직렬화된 데이터 반환)"""
+        script = self.get_script_by_id(script_id)
+        return script_to_dict(script)
+
     def get_scripts(
         self, skip: int = 0, limit: int = 100, status: Optional[str] = None
     ) -> dict:
-        """대본 목록 조회"""
+        """대본 목록 조회 (직렬화된 데이터 반환)"""
         try:
             if status:
                 scripts = self.repository.get_by_status(status, skip, limit)
@@ -75,8 +82,11 @@ class ScriptService:
                 scripts = self.repository.get_all(skip, limit)
                 total = self.repository.count()
 
+            # Script 모델을 dictionary로 변환
+            serialized_scripts = scripts_summary_to_dict_list(scripts)
+
             return {
-                "scripts": scripts,
+                "scripts": serialized_scripts,
                 "total": total,
                 "skip": skip,
                 "limit": limit,

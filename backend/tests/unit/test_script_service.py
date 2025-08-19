@@ -108,7 +108,7 @@ class TestScriptService:
         
         assert result['total'] == 1
         assert len(result['scripts']) == 1
-        assert result['scripts'][0].status == "script_ready"
+        assert result['scripts'][0]['status'] == "script_ready"
         
         # video_ready 상태로 필터링 (없어야 함)
         result = script_service.get_scripts(status="video_ready")

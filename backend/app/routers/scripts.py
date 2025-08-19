@@ -105,10 +105,13 @@ def get_script(script_id: int, db: Session = Depends(get_db)):
     """특정 대본 상세 조회"""
     try:
         script_service = ScriptService(db)
-        script = script_service.get_script_by_id(script_id)
+        script_data = script_service.get_script_dict_by_id(script_id)
 
         logger.info(f"대본 상세 조회: ID={script_id}")
-        return script
+        return SuccessResponse.create(
+            data=script_data,
+            message=f"대본을 조회했습니다. (ID: {script_id})"
+        )
 
     except BaseAppException:
         raise

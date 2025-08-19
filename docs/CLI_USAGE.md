@@ -50,21 +50,17 @@ poetry shell
 ### CLI 실행 방법
 
 ```bash
-# 방법 1: 직접 실행 (권장)
-python cli/main.py
-
-# 방법 2: 실행 스크립트 사용
+# 기본 실행 (권장 - Poetry 자동 감지)
 ./youtube-cli
 
-# 방법 3: 모듈로 실행
-python -m cli.main
+# 개발자 실행
+python cli/main.py
 
 # 도움말 확인
-python cli/main.py --help
 ./youtube-cli --help
 
 # 버전 정보
-python cli/main.py --version
+./youtube-cli --version
 ```
 
 ---
@@ -75,30 +71,30 @@ python cli/main.py --version
 
 ```bash
 # CLI 시작 화면 보기
-python cli/main.py
+./youtube-cli
 ```
 
 ### 빠른 상태 확인
 
 ```bash
 # 시스템 전체 상태
-python cli/main.py health
+./youtube-cli health
 
 # 사용 예시 보기
-python cli/main.py examples
+./youtube-cli examples
 ```
 
 ### 🎮 인터랙티브 모드 (Phase 3 신기능)
 
 ```bash
 # 메뉴 기반 인터랙티브 모드
-python cli/main.py interactive
+./youtube-cli interactive
 
 # 실시간 시스템 모니터링
-python cli/main.py monitor
+./youtube-cli monitor
 
 # 인터랙티브 대시보드
-python cli/main.py dashboard
+./youtube-cli dashboard
 ```
 
 **인터랙티브 모드 특징:**
@@ -111,13 +107,13 @@ python cli/main.py dashboard
 
 ```bash
 # 스크립트 목록 (ls 별칭)
-python cli/main.py ls
+./youtube-cli ls
 
 # 상태별 필터링
-python cli/main.py ls --status video_ready
+./youtube-cli ls --status video_ready
 
 # 개수 제한
-python cli/main.py ls --limit 5
+./youtube-cli ls --limit 5
 ```
 
 ---
@@ -127,7 +123,7 @@ python cli/main.py ls --limit 5
 ### 메뉴 기반 인터랙티브 모드
 
 ```bash
-python cli/main.py interactive
+./youtube-cli interactive
 ```
 
 **인터랙티브 모드 기능:**
@@ -153,7 +149,7 @@ python cli/main.py interactive
 ### 실시간 모니터링
 
 ```bash
-python cli/main.py monitor
+./youtube-cli monitor
 ```
 
 **모니터링 화면:**
@@ -165,7 +161,7 @@ python cli/main.py monitor
 ### 인터랙티브 대시보드
 
 ```bash
-python cli/main.py dashboard
+./youtube-cli dashboard
 ```
 
 **대시보드 패널:**
@@ -182,56 +178,56 @@ python cli/main.py dashboard
 
 ```bash
 # 단일 파일 업로드
-python cli/main.py script upload my_script.txt
+./youtube-cli script upload my_script.txt
 
 # 디렉토리의 모든 스크립트 배치 업로드
-python cli/main.py batch-upload-scripts ./scripts/
+./youtube-cli batch-upload-scripts ./scripts/
 ```
 
 ### 스크립트 목록 조회
 
 ```bash
 # 전체 스크립트 목록
-python cli/main.py script list
+./youtube-cli script list
 
 # 상태별 필터링
-python cli/main.py script list --status script_ready
-python cli/main.py script list --status video_ready
-python cli/main.py script list --status uploaded
-python cli/main.py script list --status error
+./youtube-cli script list --status script_ready
+./youtube-cli script list --status video_ready
+./youtube-cli script list --status uploaded
+./youtube-cli script list --status error
 
 # 개수 제한 및 페이지네이션
-python cli/main.py script list --limit 5
-python cli/main.py script list --skip 10 --limit 5
+./youtube-cli script list --limit 5
+./youtube-cli script list --skip 10 --limit 5
 ```
 
 ### 스크립트 상세 조회
 
 ```bash
 # 특정 스크립트 상세 정보
-python cli/main.py script show 1
+./youtube-cli script show 1
 ```
 
 ### 스크립트 편집
 
 ```bash
 # 제목 수정
-python cli/main.py script edit 1 --title "새로운 제목"
+./youtube-cli script edit 1 --title "새로운 제목"
 
 # 설명 수정
-python cli/main.py script edit 1 --description "새로운 설명"
+./youtube-cli script edit 1 --description "새로운 설명"
 
 # 태그 수정
-python cli/main.py script edit 1 --tags "태그1, 태그2, 태그3"
+./youtube-cli script edit 1 --tags "태그1, 태그2, 태그3"
 
 # 썸네일 텍스트 수정
-python cli/main.py script edit 1 --thumbnail-text "썸네일 텍스트"
+./youtube-cli script edit 1 --thumbnail-text "썸네일 텍스트"
 
 # ImageFX 프롬프트 수정
-python cli/main.py script edit 1 --imagefx-prompt "AI 프롬프트"
+./youtube-cli script edit 1 --imagefx-prompt "AI 프롬프트"
 
 # 여러 필드 동시 수정
-python cli/main.py script edit 1 \
+./youtube-cli script edit 1 \
   --title "새 제목" \
   --description "새 설명" \
   --tags "새태그1, 새태그2"
@@ -241,14 +237,14 @@ python cli/main.py script edit 1 \
 
 ```bash
 # 스크립트 삭제 (확인 메시지 포함)
-python cli/main.py script delete 1
+./youtube-cli script delete 1
 ```
 
 ### 스크립트 통계
 
 ```bash
 # 전체 통계 조회
-python cli/main.py script stats
+./youtube-cli script stats
 ```
 
 ---
@@ -259,31 +255,31 @@ python cli/main.py script stats
 
 ```bash
 # 기본 업로드 (스크립트 ID 1에 비디오 연결)
-python cli/main.py video upload 1 my_video.mp4
+./youtube-cli video upload 1 my_video.mp4
 ```
 
 ### 업로드 가능한 스크립트 확인
 
 ```bash
 # script_ready 상태인 스크립트 목록
-python cli/main.py video ready
+./youtube-cli video ready
 ```
 
 ### 비디오 파일 삭제
 
 ```bash
 # 비디오 파일만 삭제 (스크립트는 유지)
-python cli/main.py video delete 1
+./youtube-cli video delete 1
 ```
 
 ### 비디오 상태 확인
 
 ```bash
 # 비디오 업로드 상태 확인
-python cli/main.py video status 1
+./youtube-cli video status 1
 
 # 업로드 진행률 실시간 모니터링
-python cli/main.py video progress 1
+./youtube-cli video progress 1
 ```
 
 ---
@@ -294,40 +290,40 @@ python cli/main.py video progress 1
 
 ```bash
 # 기본 업로드 (private)
-python cli/main.py youtube upload 1
+./youtube-cli youtube upload 1
 
 # 공개 설정 지정
-python cli/main.py youtube upload 1 --privacy private
-python cli/main.py youtube upload 1 --privacy unlisted  
-python cli/main.py youtube upload 1 --privacy public
+./youtube-cli youtube upload 1 --privacy private
+./youtube-cli youtube upload 1 --privacy unlisted  
+./youtube-cli youtube upload 1 --privacy public
 
 # 카테고리 지정
-python cli/main.py youtube upload 1 --category 22  # People & Blogs
-python cli/main.py youtube upload 1 --category 24  # Entertainment
-python cli/main.py youtube upload 1 --category 27  # Education
+./youtube-cli youtube upload 1 --category 22  # People & Blogs
+./youtube-cli youtube upload 1 --category 24  # Entertainment
+./youtube-cli youtube upload 1 --category 27  # Education
 ```
 
 ### 배치 업로드
 
 ```bash
 # 여러 스크립트 배치 업로드
-python cli/main.py youtube batch 1 2 3 4 5
+./youtube-cli youtube batch 1 2 3 4 5
 
 # 공개 설정 지정하여 배치 업로드
-python cli/main.py youtube batch 1 2 3 --privacy unlisted
+./youtube-cli youtube batch 1 2 3 --privacy unlisted
 ```
 
 ### YouTube 상태 확인
 
 ```bash
 # YouTube API 연결 상태 확인
-python cli/main.py youtube health
+./youtube-cli youtube health
 
 # 업로드 가능한 스크립트 목록
-python cli/main.py youtube ready
+./youtube-cli youtube ready
 
 # 업로드 완료된 비디오 목록
-python cli/main.py youtube uploaded
+./youtube-cli youtube uploaded
 ```
 
 ---
@@ -338,34 +334,34 @@ python cli/main.py youtube uploaded
 
 ```bash
 # 시스템 헬스 체크
-python cli/main.py status system
+./youtube-cli status system
 ```
 
 ### 파이프라인 상태
 
 ```bash
 # 전체 파이프라인 분석
-python cli/main.py status pipeline
+./youtube-cli status pipeline
 
 # 또는 단축 명령어
-python cli/main.py pipeline
+./youtube-cli pipeline
 ```
 
 ### 개별 스크립트 상태
 
 ```bash
 # 특정 스크립트 상태 추적
-python cli/main.py status script 1
+./youtube-cli status script 1
 ```
 
 ### 실시간 모니터링
 
 ```bash
 # 실시간 상태 모니터링 (5초 간격)
-python cli/main.py status monitor
+./youtube-cli status monitor
 
 # 사용자 정의 간격 (10초)
-python cli/main.py status monitor --interval 10
+./youtube-cli status monitor --interval 10
 ```
 
 ---
@@ -387,45 +383,45 @@ videos/
 └── 20250817_03_story.mp4
 
 # 2단계: 완전 자동화 실행 (대본→영상→YouTube)
-python cli/main.py date-upload scripts/ videos/
+./youtube-cli date-upload scripts/ videos/
 # → 확인 후 Enter: 모든 단계 자동 처리
 
 # 3단계: 결과 확인
-python cli/main.py status pipeline
+./youtube-cli status pipeline
 ```
 
 ### 🔍 시뮬레이션 워크플로우
 
 ```bash
 # 1단계: 매핑 시뮬레이션
-python cli/main.py video auto-mapping scripts/ videos/ --dry-run
+./youtube-cli video auto-mapping scripts/ videos/ --dry-run
 # → 어떤 파일들이 매칭되는지 확인
 
 # 2단계: 완전 자동화 시뮬레이션  
-python cli/main.py date-upload scripts/ videos/ --dry-run
+./youtube-cli date-upload scripts/ videos/ --dry-run
 # → 전체 과정 시뮬레이션
 
 # 3단계: 확인 후 실제 실행
-python cli/main.py date-upload scripts/ videos/
+./youtube-cli date-upload scripts/ videos/
 ```
 
 ### 기본 워크플로우 (1개 비디오)
 
 ```bash
 # 1단계: 스크립트 업로드
-python cli/main.py script upload my_script.txt
+./youtube-cli script upload my_script.txt
 # → 출력: 스크립트 ID: 1
 
 # 2단계: 비디오 업로드
-python cli/main.py video upload 1 my_video.mp4
+./youtube-cli video upload 1 my_video.mp4
 # → 상태: script_ready → video_ready
 
 # 3단계: YouTube 업로드
-python cli/main.py youtube upload 1 --privacy private
+./youtube-cli youtube upload 1 --privacy private
 # → 상태: video_ready → uploaded
 
 # 4단계: 결과 확인
-python cli/main.py script show 1
+./youtube-cli script show 1
 # → YouTube URL 확인
 ```
 
@@ -433,18 +429,18 @@ python cli/main.py script show 1
 
 ```bash
 # 1단계: 모든 스크립트 업로드
-python cli/main.py batch-upload-scripts ./scripts/
+./youtube-cli batch-upload-scripts ./scripts/
 
 # 2단계: 비디오들 개별 업로드
-python cli/main.py video upload 1 video1.mp4
-python cli/main.py video upload 2 video2.mp4
-python cli/main.py video upload 3 video3.mp4
+./youtube-cli video upload 1 video1.mp4
+./youtube-cli video upload 2 video2.mp4
+./youtube-cli video upload 3 video3.mp4
 
 # 3단계: 모든 비디오 YouTube 배치 업로드
-python cli/main.py youtube batch 1 2 3 --privacy unlisted
+./youtube-cli youtube batch 1 2 3 --privacy unlisted
 
 # 4단계: 전체 상태 확인
-python cli/main.py status pipeline
+./youtube-cli status pipeline
 ```
 
 ---
@@ -464,26 +460,26 @@ python cli/main.py status pipeline
 
 ```bash
 # 오늘 날짜 파일들 자동 매핑
-python cli/main.py video auto-mapping scripts/ videos/
+./youtube-cli video auto-mapping scripts/ videos/
 
 # 특정 날짜 파일들 매핑
-python cli/main.py video auto-mapping scripts/ videos/ --date 20250817
+./youtube-cli video auto-mapping scripts/ videos/ --date 20250817
 
 # 매핑 시뮬레이션 (실제 업로드 없이 확인)
-python cli/main.py video auto-mapping scripts/ videos/ --dry-run
+./youtube-cli video auto-mapping scripts/ videos/ --dry-run
 ```
 
 ### 완전 자동화 명령어
 
 ```bash
 # 대본→영상→YouTube 한 번에 처리
-python cli/main.py date-upload scripts/ videos/
+./youtube-cli date-upload scripts/ videos/
 
 # 특정 날짜 + 공개 설정
-python cli/main.py date-upload scripts/ videos/ --date 20250817 --privacy unlisted
+./youtube-cli date-upload scripts/ videos/ --date 20250817 --privacy unlisted
 
 # 시뮬레이션으로 먼저 확인
-python cli/main.py date-upload scripts/ videos/ --dry-run
+./youtube-cli date-upload scripts/ videos/ --dry-run
 ```
 
 ## 🚀 빠른 명령어
@@ -502,25 +498,25 @@ python cli/main.py date-upload scripts/ videos/ --dry-run
 
 ```bash
 # 스크립트 목록 조회 (ls 별칭)
-python cli/main.py ls
-python cli/main.py ls --status video_ready
+./youtube-cli ls
+./youtube-cli ls --status video_ready
 
 # 빠른 스크립트 업로드 (quick-upload 별칭)
-python cli/main.py quick-upload my_script.txt
+./youtube-cli quick-upload my_script.txt
 
 # 빠른 헬스 체크
-python cli/main.py health
+./youtube-cli health
 ```
 
 ### 체인 명령어
 
 ```bash
 # 스크립트 업로드 → 상태 확인
-python cli/main.py script upload script.txt && python cli/main.py ls
+./youtube-cli script upload script.txt && ./youtube-cli ls
 
 # 비디오 업로드 → YouTube 업로드
-python cli/main.py video upload 1 video.mp4 && \
-python cli/main.py youtube upload 1 --privacy private
+./youtube-cli video upload 1 video.mp4 && \
+./youtube-cli youtube upload 1 --privacy private
 ```
 
 ---
@@ -549,7 +545,7 @@ poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 # 해결책:
 ls -la my_script.txt  # 파일 존재 확인
 pwd                   # 현재 디렉토리 확인
-python cli/main.py script upload ./scripts/my_script.txt  # 상대경로 사용
+./youtube-cli script upload ./scripts/my_script.txt  # 상대경로 사용
 ```
 
 #### 3. YouTube API 인증 실패
@@ -560,7 +556,7 @@ python cli/main.py script upload ./scripts/my_script.txt  # 상대경로 사용
 # 해결책:
 ls .secrets/credentials.json  # 인증 파일 확인
 rm .secrets/token.pickle      # 토큰 재생성 (필요시)
-python cli/main.py youtube health    # 재인증 확인
+./youtube-cli youtube health    # 재인증 확인
 ```
 
 #### 4. 스크립트 상태 오류
@@ -569,8 +565,8 @@ python cli/main.py youtube health    # 재인증 확인
 ❌ 스크립트 상태가 'script_ready'가 아닙니다
 
 # 해결책:
-python cli/main.py script show 1          # 현재 상태 확인
-python cli/main.py status script 1        # 상세 상태 분석
+./youtube-cli script show 1          # 현재 상태 확인
+./youtube-cli status script 1        # 상세 상태 분석
 # 워크플로우 순서 확인: script → video → youtube
 ```
 
@@ -604,23 +600,23 @@ tail -f backend/logs/error-$(date +%Y-%m-%d).log | grep ERROR
 curl http://localhost:8000/health
 
 # YouTube API 연결 테스트
-python cli/main.py youtube health
+./youtube-cli youtube health
 
 # 전체 시스템 상태
-python cli/main.py status system
+./youtube-cli status system
 ```
 
 #### 상세 정보 확인
 
 ```bash
 # 스크립트 상세 정보
-python cli/main.py script show 1
+./youtube-cli script show 1
 
 # 파이프라인 전체 상태
-python cli/main.py status pipeline
+./youtube-cli status pipeline
 
 # 업로드 상태 확인
-python cli/main.py video status 1
+./youtube-cli video status 1
 ```
 
 ---

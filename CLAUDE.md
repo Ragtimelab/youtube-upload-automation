@@ -133,38 +133,35 @@ make clean             # Remove cache and temp files
 ### CLI Usage
 
 ```bash
-# Direct execution (recommended)
-python cli/main.py --help
-
-# Executable script (automatic Poetry detection)
+# Primary execution (recommended - automatic Poetry detection)
 ./youtube-cli --help
 
-# Module execution  
-python -m cli.main --help
+# Development execution
+python cli/main.py --help
 
 # Date-based auto-mapping (PRIMARY WORKFLOW)
-python cli/main.py video auto-mapping scripts/ videos/
-python cli/main.py date-upload scripts/ videos/ --date $(date +%Y%m%d)
-python cli/main.py date-upload scripts/ videos/ --dry-run
+./youtube-cli video auto-mapping scripts/ videos/
+./youtube-cli date-upload scripts/ videos/ --date $(date +%Y%m%d)
+./youtube-cli date-upload scripts/ videos/ --dry-run
 
 # Advanced batch operations
-python cli/main.py batch-upload-scripts scripts/  # Batch script upload from directory
-python cli/main.py date-upload scripts/ videos/ --privacy unlisted  # With custom privacy
-python cli/main.py pipeline         # Full pipeline status and recommendations
+./youtube-cli batch-upload-scripts scripts/  # Batch script upload from directory
+./youtube-cli date-upload scripts/ videos/ --privacy unlisted  # With custom privacy
+./youtube-cli pipeline         # Full pipeline status and recommendations
 
 # Quick commands (executable scripts in root)
 ./quick-script script.txt           # Quick script upload
 ./quick-upload                      # Interactive quick video upload
 
 # Interactive Mode (Phase 3 UX Enhancement)
-python cli/main.py interactive      # 🎮 Menu-based interactive mode
-python cli/main.py monitor          # 📊 Real-time system monitoring
-python cli/main.py dashboard        # 📈 Interactive dashboard view
+./youtube-cli interactive      # 🎮 Menu-based interactive mode
+./youtube-cli monitor          # 📊 Real-time system monitoring
+./youtube-cli dashboard        # 📈 Interactive dashboard view
 
 # Common workflows
-python cli/main.py health           # System health check
-python cli/main.py ls --status video_ready  # List scripts by status
-python cli/main.py examples         # Show detailed usage examples and workflows
+./youtube-cli health           # System health check
+./youtube-cli ls --status video_ready  # List scripts by status
+./youtube-cli examples         # Show detailed usage examples and workflows
 ```
 
 ### Environment Configuration

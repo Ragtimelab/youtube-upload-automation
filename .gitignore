@@ -119,6 +119,9 @@ simple_integration_test.py
 test_integration_fixed.py
 test_app.py
 
+# Legacy CLI wrapper files
+cli.py
+
 # Jupyter Notebook
 .ipynb_checkpoints
 

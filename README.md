@@ -65,14 +65,17 @@ poetry run alembic upgrade head
 #### **방법 1: CLI 도구 (권장)**
 
 ```bash
+# 메인 CLI 인터페이스 (권장)
+./youtube-cli
+
+# 개발자 실행 방법
+python cli/main.py
+
 # 빠른 스크립트 업로드
 ./quick-script script.txt
 
 # 빠른 비디오 업로드
 ./quick-upload
-
-# 전체 CLI 인터페이스
-./youtube-cli
 ```
 
 ### 6. 시스템 접속
@@ -102,7 +105,7 @@ youtube-upload-automation/
 │   └── screenshots/       # 사용법 가이드 스크린샷
 ├── quick-script           # 빠른 스크립트 업로드 도구
 ├── quick-upload           # 빠른 비디오 업로드 도구
-├── youtube-cli            # 전체 CLI 인터페이스
+├── youtube-cli            # 메인 CLI 인터페이스 (Poetry 자동 감지)
 └── README.md             # 프로젝트 개요 (이 파일)
 ```
 
@@ -177,6 +180,16 @@ ImageFX 프롬프트: elderly korean person with emotional expression, warm ligh
 
 ### ⌨️ CLI 도구
 
+#### CLI 실행 방법
+
+```bash
+# 메인 CLI 인터페이스 (권장)
+./youtube-cli
+
+# 개발자 실행 방법
+python cli/main.py
+```
+
 #### 빠른 명령어
 
 ```bash
@@ -185,9 +198,6 @@ ImageFX 프롬프트: elderly korean person with emotional expression, warm ligh
 
 # 비디오 빠른 업로드 (대화형)
 ./quick-upload
-
-# 전체 CLI 인터페이스
-./youtube-cli
 ```
 
 #### 상세 CLI 사용법

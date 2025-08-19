@@ -37,10 +37,38 @@ def test_db():
     app.dependency_overrides.clear()
 
 
-@pytest.fixture
-def test_client(test_db):
+@pytest.fixture(scope="function")
+def test_client():
     """테스트용 FastAPI 클라이언트"""
-    return TestClient(app)
+    # 의존성 재정의 정리 (이전 테스트의 영향 제거)
+    app.dependency_overrides.clear()
+    
+    # 테스트용 데이터베이스 엔진 생성
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    
+    # 모든 모델을 먼저 import하여 metadata에 등록
+    from app.models.script import Script  # 명시적으로 모델 import
+    
+    # 테이블 생성
+    Base.metadata.create_all(bind=engine)
+    
+    # 의존성 재정의
+    def override_get_db():
+        try:
+            db = TestingSessionLocal()
+            yield db
+        finally:
+            db.close()
+    
+    app.dependency_overrides[get_db] = override_get_db
+    
+    try:
+        client = TestClient(app)
+        yield client
+    finally:
+        # 의존성 재정의 정리
+        app.dependency_overrides.clear()
 
 
 @pytest.fixture

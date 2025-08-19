@@ -1,6 +1,8 @@
 import re
 from typing import Dict, Optional
 
+from ..core.exceptions import ScriptParsingError
+
 
 class ScriptParser:
     """대본 파일 파싱 클래스
@@ -198,7 +200,3 @@ class ScriptParser:
         return True
 
 
-class ScriptParsingError(Exception):
-    """대본 파싱 관련 예외"""
-
-    pass

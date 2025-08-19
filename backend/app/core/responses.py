@@ -3,8 +3,8 @@
 """
 
 from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel
-from datetime import datetime
+from pydantic import BaseModel, ConfigDict, field_serializer
+from datetime import datetime, timezone
 
 
 class BaseResponse(BaseModel):
@@ -15,8 +15,13 @@ class BaseResponse(BaseModel):
     
     def __init__(self, **data):
         if 'timestamp' not in data:
-            data['timestamp'] = datetime.utcnow()
+            data['timestamp'] = datetime.now(timezone.utc)
         super().__init__(**data)
+    
+    @field_serializer('timestamp')
+    def serialize_timestamp(self, value: datetime) -> Optional[str]:
+        """datetime을 ISO 형식 문자열로 직렬화"""
+        return value.isoformat() if value else None
 
 
 class SuccessResponse(BaseResponse):

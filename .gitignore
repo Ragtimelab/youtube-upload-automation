@@ -99,6 +99,9 @@ Thumbs.db
 tmp/
 temp/
 .tmp/
+prompt_backup_*.md
+test_script.txt
+*_backup_*.md
 
 # Docker
 .dockerignore
@@ -110,6 +113,11 @@ docker-compose.override.yml
 coverage.xml
 *.cover
 .hypothesis/
+htmlcov/
+debug_test.py
+simple_integration_test.py
+test_integration_fixed.py
+test_app.py
 
 # Jupyter Notebook
 .ipynb_checkpoints

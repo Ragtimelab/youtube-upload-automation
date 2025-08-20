@@ -40,7 +40,8 @@ class CleanGradioClient:
         """스크립트 목록 조회"""
         try:
             result = self.api.get_scripts()
-            scripts = result.get('scripts', [])
+            # API 응답의 data 필드가 직접 스크립트 배열임
+            scripts = result if isinstance(result, list) else []
             return [[s['id'], s['title'], s['status'], s.get('created_at', '')] for s in scripts]
         except Exception as e:
             return [["오류", f"목록 조회 실패: {str(e)}", "", ""]]
@@ -49,7 +50,8 @@ class CleanGradioClient:
         """특정 상태의 스크립트 선택지"""
         try:
             result = self.api.get_scripts(status=status_filter)
-            scripts = result.get('scripts', [])
+            # API 응답의 data 필드가 직접 스크립트 배열임
+            scripts = result if isinstance(result, list) else []
             choices = [f"[{s['id']}] {s['title']}" for s in scripts]
             return gr.update(choices=choices)
         except Exception as e:
@@ -143,12 +145,14 @@ class CleanGradioClient:
         try:
             result = self.api.health_check()
             if result.get('success', True):
+                # 헬스체크 API는 services 필드에 실제 정보가 있음
+                services = result.get('services', {})
                 return f"""
                 <div style="padding: 10px; border-radius: 8px; background: #d1fae5;">
                     <span style="color: #22c55e; font-weight: bold;">✅ 시스템 정상</span><br>
-                    API: {result.get('data', {}).get('api', '정상')}<br>
-                    Database: {result.get('data', {}).get('database', '정상')}<br>
-                    Version: {result.get('data', {}).get('version', '알 수 없음')}
+                    API: {services.get('api', '정상')}<br>
+                    Database: {services.get('database', '정상')}<br>
+                    Version: {services.get('version', '알 수 없음')}
                 </div>
                 """
             else:
@@ -170,7 +174,8 @@ class CleanGradioClient:
         """스크립트 통계"""
         try:
             result = self.api.get_scripts_stats()
-            stats = result.get('data', {})
+            # API 응답에서 statistics 필드가 직접 통계 데이터 포함
+            stats = result.get('statistics', {})
             return f"""
             <div style="padding: 15px; border-radius: 8px; background: #f0f9ff; border: 1px solid #0ea5e9;">
                 <h4 style="margin: 0 0 10px 0; color: #0369a1;">📊 스크립트 통계</h4>
@@ -186,6 +191,12 @@ class CleanGradioClient:
                     </div>
                     <div>
                         <strong>업로드 완료:</strong> {stats.get('uploaded', 0)}개
+                    </div>
+                    <div>
+                        <strong>예약 발행:</strong> {stats.get('scheduled', 0)}개
+                    </div>
+                    <div>
+                        <strong>오류 상태:</strong> {stats.get('error', 0)}개
                     </div>
                 </div>
             </div>

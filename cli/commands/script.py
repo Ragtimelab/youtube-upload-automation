@@ -78,8 +78,15 @@ def list(status: Optional[str], limit: int, skip: int):
         
         # API 호출
         result = api.get_scripts(skip=skip, limit=limit, status=status)
-        scripts = result.get('scripts', [])
-        total = result.get('total', 0)
+        
+        # API 클라이언트가 리스트 또는 dict 반환 가능 (표준화 이후)
+        if hasattr(result, 'get'):
+            scripts = result.get('scripts', [])
+            total = result.get('total', 0)
+        else:
+            # result가 리스트인 경우
+            scripts = result
+            total = len(result)
         
         if not scripts:
             console.print("📭 등록된 스크립트가 없습니다.", style="yellow")

@@ -67,10 +67,11 @@ def upload(script_id: int, video_file: str):
         
         # 성공 메시지
         console.print("✅ 비디오 업로드 성공!", style="green bold")
-        console.print(f"📄 스크립트 ID: {result.get('script_id')}")
-        console.print(f"📁 파일 경로: {result.get('file_path')}")
-        console.print(f"📊 파일 크기: {result.get('file_size_mb', 0):.1f} MB")
-        console.print(f"🔄 새로운 상태: {result.get('new_status')}")
+        console.print(f"📄 스크립트 ID: {result.get('id')}")
+        console.print(f"📁 파일 경로: {result.get('video_file_path')}")
+        console.print(f"📊 파일 크기: {result.get('file_size', 0) / 1024 / 1024:.1f} MB")
+        console.print(f"🔄 새로운 상태: {result.get('status')}")
+        console.print(f"📁 저장된 파일명: {result.get('saved_filename')}")
         
     except (FileNotFoundError, ValueError) as e:
         console.print(f"❌ 파일 오류: {e}", style="red")

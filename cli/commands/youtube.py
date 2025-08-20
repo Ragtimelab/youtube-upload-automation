@@ -176,7 +176,12 @@ def ready():
         
         # 'video_ready' 상태의 스크립트들 조회
         result = api.get_scripts(status='video_ready')
-        scripts = result.get('scripts', [])
+        
+        # API 클라이언트가 리스트 또는 dict 반환 가능
+        if hasattr(result, 'get'):
+            scripts = result.get('scripts', [])
+        else:
+            scripts = result
         
         if not scripts:
             console.print("📭 YouTube 업로드 준비된 스크립트가 없습니다.", style="yellow")
@@ -207,7 +212,12 @@ def uploaded():
         
         # 'uploaded' 상태의 스크립트들 조회
         result = api.get_scripts(status='uploaded')
-        scripts = result.get('scripts', [])
+        
+        # API 클라이언트가 리스트 또는 dict 반환 가능
+        if hasattr(result, 'get'):
+            scripts = result.get('scripts', [])
+        else:
+            scripts = result
         
         if not scripts:
             console.print("📭 업로드된 YouTube 비디오가 없습니다.", style="yellow")

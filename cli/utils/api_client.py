@@ -105,7 +105,13 @@ class YouTubeAutomationAPI:
                 headers=headers
             )
             response.raise_for_status()
-            return response.json()
+            full_response = response.json()
+            
+            # 표준화된 응답 구조에서 data 필드 추출 (CLI 호환성을 위해)
+            if isinstance(full_response, dict) and 'data' in full_response:
+                return full_response['data']
+            else:
+                return full_response
     
     def get_scripts(self, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT, status: Optional[str] = None) -> Dict[str, Any]:
         """스크립트 목록 조회"""
@@ -168,7 +174,11 @@ class YouTubeAutomationAPI:
                 files=files
             )
             response.raise_for_status()
-            return response.json()
+            full_response = response.json()
+            
+            # 비디오 업로드 API는 직접 데이터를 반환하므로 그대로 사용
+            # (표준화된 success/data 구조가 아닌 직접 스크립트 데이터 반환)
+            return full_response
     
     def upload_to_youtube(
         self, 

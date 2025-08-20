@@ -105,7 +105,13 @@ class GradioAPIClient:
         """스크립트 목록을 Dataframe 형태로 반환"""
         try:
             result = self.api.get_scripts()
-            scripts = result.get('scripts', [])
+            
+            # API 클라이언트가 이미 데이터를 추출해서 반환
+            # result가 리스트면 직접 사용, dict면 'scripts' 키에서 추출
+            if isinstance(result, list):
+                scripts = result
+            else:
+                scripts = result.get('scripts', [])
             
             # Dataframe용 데이터 포매팅
             formatted_data = []
@@ -127,7 +133,12 @@ class GradioAPIClient:
         """특정 상태의 스크립트를 드롭다운 선택지로 반환"""
         try:
             result = self.api.get_scripts(status=status_filter)
-            scripts = result.get('scripts', [])
+            
+            # API 클라이언트가 이미 데이터를 추출해서 반환
+            if isinstance(result, list):
+                scripts = result
+            else:
+                scripts = result.get('scripts', [])
             
             choices = []
             for script in scripts:
@@ -227,7 +238,12 @@ class GradioAPIClient:
             
             # 최근 활동 (스크립트 목록의 최근 항목들)
             result = self.api.get_scripts(limit=10)
-            scripts = result.get('scripts', [])
+            
+            # API 클라이언트가 이미 데이터를 추출해서 반환
+            if isinstance(result, list):
+                scripts = result
+            else:
+                scripts = result.get('scripts', [])
             
             recent_activity = []
             for script in scripts[-5:]:  # 최근 5개

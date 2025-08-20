@@ -80,12 +80,8 @@ class YouTubeAutomationInterface:
                 """
             )
             
-            # 자동 새로고침 설정 (5초마다 상태 업데이트)
-            interface.load(
-                fn=self._update_system_status,
-                outputs=[status_display],
-                every=5
-            )
+            # 자동 새로고침은 향후 WebSocket이나 별도 스레드로 구현 예정
+            # Gradio 5.x에서는 load 이벤트의 every 파라미터가 변경됨
         
         return interface
     
@@ -124,7 +120,8 @@ class YouTubeAutomationInterface:
                     headers=["ID", "제목", "상태", "생성일"],
                     datatype=["number", "str", "str", "str"],
                     interactive=False,
-                    wrap=True
+                    wrap=True,
+                    value=self._refresh_script_list()  # 초기 데이터 로드
                 )
         
         # 이벤트 핸들러
@@ -139,11 +136,7 @@ class YouTubeAutomationInterface:
             outputs=[script_list]
         )
         
-        # 초기 데이터 로드
-        script_list.load(
-            fn=self._refresh_script_list,
-            outputs=[script_list]
-        )
+        # 초기 데이터는 인터페이스 로드 시 자동으로 처리됩니다
     
     def _create_video_tab(self):
         """비디오 업로드 탭 구성"""
@@ -274,12 +267,7 @@ class YouTubeAutomationInterface:
             outputs=[stats_display, recent_activity]
         )
         
-        # 자동 새로고침 (10초마다)
-        stats_display.load(
-            fn=self._refresh_dashboard,
-            outputs=[stats_display, recent_activity],
-            every=10
-        )
+        # 대시보드 자동 새로고침은 전체 인터페이스 레벨에서 처리됩니다
     
     def _get_custom_css(self) -> str:
         """커스텀 CSS 스타일"""

@@ -210,6 +210,26 @@ class YouTubeAutomationAPI:
         """비디오 파일 삭제"""
         return self._make_request('DELETE', f'/api/upload/video/{script_id}')
     
+    def batch_upload_to_youtube(
+        self,
+        script_ids: list,
+        privacy_status: Optional[str] = None,
+        category_id: Optional[int] = None,
+        delay_seconds: int = 30,
+        publish_at: Optional[str] = None
+    ) -> Dict[str, Any]:
+        """YouTube 배치 업로드"""
+        data = {
+            'script_ids': script_ids,
+            'privacy_status': privacy_status or 'private',
+            'category_id': category_id or 24,
+            'delay_seconds': delay_seconds
+        }
+        if publish_at:
+            data['publish_at'] = publish_at
+        
+        return self._make_request('POST', '/api/upload/youtube/batch', json=data)
+    
 
 
 class APIError(Exception):

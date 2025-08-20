@@ -138,6 +138,22 @@ class UploadResponse(SuccessResponse):
         )
 
 
+class BatchUploadResponse(SuccessResponse):
+    """배치 업로드 응답 모델"""
+
+    @classmethod
+    def batch_completed(cls, batch_data: Dict[str, Any]) -> "BatchUploadResponse":
+        success_count = batch_data.get('summary', {}).get('success_count', 0)
+        failed_count = batch_data.get('summary', {}).get('failed_count', 0)
+        total_count = success_count + failed_count
+        
+        message = f"배치 업로드 완료: {success_count}/{total_count}개 성공"
+        if failed_count > 0:
+            message += f", {failed_count}개 실패"
+        
+        return cls.create(message=message, data=batch_data)
+
+
 class HealthCheckResponse(SuccessResponse):
     """헬스체크 응답 모델"""
 

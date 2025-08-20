@@ -1,15 +1,27 @@
-from typing import Optional
+from typing import Optional, List
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from ..core.constants import YouTubeConstants
 from ..core.exceptions import BaseAppException
 from ..core.logging import get_router_logger
+from ..core.responses import BatchUploadResponse
 from ..database import get_db
 from ..services.upload_service import UploadService
 
 router = APIRouter(prefix="/api/upload", tags=["upload"])
 logger = get_router_logger("upload")
+
+
+class BatchUploadRequest(BaseModel):
+    """배치 업로드 요청 모델"""
+    script_ids: List[int] = Field(..., description="업로드할 스크립트 ID 목록", max_items=5)
+    privacy_status: str = Field("private", description="공개 설정")
+    category_id: int = Field(24, description="YouTube 카테고리 ID")
+    delay_seconds: int = Field(30, ge=30, le=300, description="업로드 간격(초)")
+    publish_at: Optional[str] = Field(None, description="예약 발행 시간(ISO 8601)")
 
 
 @router.post("/video/{script_id}")
@@ -39,6 +51,68 @@ async def upload_video_file(
         raise
     except Exception as e:
         logger.error(f"비디오 파일 업로드 중 예기치 않은 오류: {str(e)}")
+        raise BaseAppException(f"서버 오류: {str(e)}", 500)
+
+
+@router.post("/youtube/batch")
+async def batch_upload_to_youtube(
+    request: BatchUploadRequest,
+    db: Session = Depends(get_db)
+):
+    """여러 스크립트를 YouTube에 배치 업로드
+    
+    Args:
+        request: 배치 업로드 요청 데이터
+    
+    Note:
+        YouTube API 할당량 제한으로 인해 다음 제한이 적용됩니다:
+        - 일일 최대 업로드: 6개 (10,000 units ÷ 1,600 units/upload)
+        - 배치 최대 크기: 5개
+        - 최소 업로드 간격: 30초
+    """
+    try:
+        # 할당량 제한 검증
+        if len(request.script_ids) > YouTubeConstants.MAX_BATCH_SIZE:
+            raise BaseAppException(
+                f"배치 크기가 너무 큽니다. 최대 {YouTubeConstants.MAX_BATCH_SIZE}개까지 가능합니다. "
+                f"(YouTube API 할당량 제한)",
+                400
+            )
+        
+        if request.delay_seconds < YouTubeConstants.MIN_BATCH_DELAY_SECONDS:
+            raise BaseAppException(
+                f"업로드 간격이 너무 짧습니다. 최소 {YouTubeConstants.MIN_BATCH_DELAY_SECONDS}초 이상 설정하세요.",
+                400
+            )
+        
+        logger.info(
+            f"배치 업로드 시작: script_ids={request.script_ids}, "
+            f"privacy={request.privacy_status}, delay={request.delay_seconds}초 "
+            f"(할당량 제한: {len(request.script_ids)}/{YouTubeConstants.MAX_BATCH_SIZE}개)"
+        )
+        
+        upload_service = UploadService(db)
+        result = await upload_service.batch_upload_to_youtube(
+            script_ids=request.script_ids,
+            privacy_status=request.privacy_status,
+            category_id=request.category_id,
+            delay_seconds=request.delay_seconds,
+            publish_at=request.publish_at
+        )
+        
+        logger.info(
+            f"배치 업로드 완료: batch_id={result['batch_id']}, "
+            f"성공={result['summary']['success_count']}, "
+            f"실패={result['summary']['failed_count']} "
+            f"(API 할당량 사용: {result['summary']['success_count'] * YouTubeConstants.VIDEO_UPLOAD_COST} units)"
+        )
+        
+        return BatchUploadResponse.batch_completed(result)
+        
+    except BaseAppException:
+        raise
+    except Exception as e:
+        logger.error(f"배치 업로드 중 예기치 않은 오류: {str(e)}")
         raise BaseAppException(f"서버 오류: {str(e)}", 500)
 
 

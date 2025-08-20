@@ -134,6 +134,12 @@ class YouTubeConstants:
     VIDEO_UPLOAD_COST = 1600  # units per upload
     VIDEO_LIST_COST = 1  # units per request
     CHANNEL_INFO_COST = 1  # units per request
+    
+    # 배치 업로드 제한 (일일 할당량 기반)
+    MAX_DAILY_UPLOADS = 6  # 10,000 ÷ 1,600 = 6.25
+    MAX_BATCH_SIZE = 5  # 한 번에 최대 5개까지 (효율성 향상)
+    MIN_BATCH_DELAY_SECONDS = 30  # 최소 업로드 간격
+    MAX_BATCH_DELAY_SECONDS = 300  # 최대 업로드 간격
 
 
 class FileConstants:

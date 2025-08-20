@@ -99,70 +99,90 @@ def upload(script_id: int, privacy: str, category: int, schedule: Optional[str])
               default='private',
               help='공개 설정 (기본: private)')
 @click.option('--category', '-c', type=int, default=24, help='YouTube 카테고리 ID (기본: 24 - Entertainment)')
-def batch(script_ids: List[int], privacy: str, category: int):
+@click.option('--delay', '-d', type=int, default=30, help='업로드 간격(초) - 최소 30초 (기본: 30)')
+def batch(script_ids: List[int], privacy: str, category: int, delay: int):
     """여러 스크립트를 YouTube에 배치 업로드
     
     Args:
         script_ids: 업로드할 스크립트 ID들
+    
+    Note:
+        YouTube API 할당량 제한으로 인해 최대 5개까지만 한 번에 업로드 가능합니다.
+        일일 최대 업로드: 6개 (10,000 units ÷ 1,600 units/upload)
     """
     try:
+        # 할당량 제한 사전 체크
+        if len(script_ids) > 5:
+            console.print("⚠️ YouTube API 할당량 제한으로 인해 한 번에 최대 5개까지만 업로드 가능합니다.", style="yellow")
+            console.print(f"💡 {len(script_ids)}개를 5개씩 나누어서 실행하세요.", style="dim")
+            console.print(f"   예: youtube batch {' '.join(map(str, script_ids[:5]))}", style="dim")
+            raise click.Abort()
+        
+        if delay < 30:
+            console.print("⚠️ 업로드 간격이 너무 짧습니다. 최소 30초 이상 설정하세요.", style="yellow")
+            raise click.Abort()
+        
         console.print(f"📺 {len(script_ids)}개 스크립트 배치 업로드 시작...", style="yellow")
+        console.print(f"⏱️ 업로드 간격: {delay}초", style="dim")
+        console.print(f"🔒 공개 설정: {privacy}", style="dim")
         
-        success_count = 0
-        failed_count = 0
-        results = []
+        # 새로운 배치 API 사용
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            task = progress.add_task("배치 업로드 진행 중...", total=None)
+            
+            result = api.batch_upload_to_youtube(
+                script_ids=list(script_ids),
+                privacy_status=privacy,
+                category_id=category,
+                delay_seconds=delay
+            )
+            
+            progress.update(task, description="배치 업로드 완료!")
         
-        for i, script_id in enumerate(script_ids, 1):
-            try:
-                console.print(f"\n[{i}/{len(script_ids)}] 스크립트 ID {script_id} 처리 중...", style="cyan")
-                
-                # 스크립트 상태 확인
-                script = api.get_script(script_id)
-                if script.get('status') != 'video_ready':
-                    console.print(f"  ⚠️ 건너뛰기: 상태가 'video_ready'가 아님 (현재: {script.get('status')})", style="yellow")
-                    failed_count += 1
-                    continue
-                
-                # YouTube 업로드
-                result = api.upload_to_youtube(
-                    script_id=script_id,
-                    privacy_status=privacy,
-                    category_id=category
-                )
-                
-                console.print(f"  ✅ 성공: {script.get('title', '')}", style="green")
-                console.print(f"  🎬 YouTube ID: {result.get('youtube_video_id')}", style="dim")
-                
-                results.append({
-                    'script_id': script_id,
-                    'title': script.get('title', ''),
-                    'youtube_id': result.get('youtube_video_id'),
-                    'status': 'success'
-                })
-                success_count += 1
-                
-            except APIError as e:
-                console.print(f"  ❌ 실패: {e}", style="red")
-                failed_count += 1
-                results.append({
-                    'script_id': script_id,
-                    'title': script.get('title', '') if 'script' in locals() else 'Unknown',
-                    'error': str(e),
-                    'status': 'failed'
-                })
-                
-        # 결과 요약
+        # 결과 분석
+        summary = result.get('summary', {})
+        success_count = summary.get('success_count', 0)
+        failed_count = summary.get('failed_count', 0)
+        uploads = result.get('uploads', [])
+        
+        # 결과 요약 표시
         console.print(f"\n📊 배치 업로드 완료!", style="bold")
         console.print(f"✅ 성공: {success_count}개", style="green")
-        console.print(f"❌ 실패: {failed_count}개", style="red")
+        if failed_count > 0:
+            console.print(f"❌ 실패: {failed_count}개", style="red")
         
-        # 성공한 항목들의 YouTube URL 표시
-        if results:
-            console.print("\n🔗 업로드된 비디오 URL:", style="bold")
-            for result in results:
-                if result['status'] == 'success':
-                    console.print(f"  • https://youtube.com/watch?v={result['youtube_id']}", style="blue")
+        # 할당량 사용량 표시
+        quota_used = success_count * 1600
+        console.print(f"📈 API 할당량 사용: {quota_used}/10,000 units ({quota_used/100:.1f}%)", style="cyan")
         
+        # 상세 결과 표시
+        if uploads:
+            console.print("\n📋 상세 결과:", style="bold")
+            for upload in uploads:
+                status = upload.get('status', 'unknown')
+                script_id = upload.get('script_id')
+                
+                if status == 'success':
+                    youtube_id = upload.get('youtube_video_id', '')
+                    console.print(f"  ✅ 스크립트 {script_id}: https://youtube.com/watch?v={youtube_id}", style="green")
+                else:
+                    error = upload.get('error', '알 수 없는 오류')
+                    console.print(f"  ❌ 스크립트 {script_id}: {error}", style="red")
+        
+        # 추가 배치 업로드 안내
+        if failed_count == 0 and success_count > 0:
+            remaining_quota = 10000 - quota_used
+            remaining_uploads = remaining_quota // 1600
+            if remaining_uploads > 0:
+                console.print(f"\n💡 오늘 추가로 {remaining_uploads}개 더 업로드 가능합니다.", style="dim")
+        
+    except APIError as e:
+        console.print(f"❌ API 오류: {e}", style="red")
+        raise click.Abort()
     except Exception as e:
         console.print(f"❌ 예상치 못한 오류: {e}", style="red")
         raise click.Abort()
@@ -244,6 +264,52 @@ def uploaded():
             )
         
         console.print(table)
+        
+    except APIError as e:
+        console.print(f"❌ API 오류: {e}", style="red")
+        raise click.Abort()
+    except Exception as e:
+        console.print(f"❌ 예상치 못한 오류: {e}", style="red")
+        raise click.Abort()
+
+
+@youtube.command()
+def quota():
+    """YouTube API 할당량 사용량 확인"""
+    try:
+        console.print("📊 YouTube API 할당량 정보", style="bold blue")
+        
+        # 오늘 업로드한 비디오 수 계산 (uploaded 상태 스크립트)
+        uploaded_scripts = api.get_scripts(status='uploaded')
+        if hasattr(uploaded_scripts, 'get'):
+            scripts = uploaded_scripts.get('scripts', [])
+        else:
+            scripts = uploaded_scripts
+        
+        # 오늘 날짜로 필터링 (간단히 전체 업로드 수로 가정)
+        today_uploads = len(scripts) if scripts else 0
+        quota_used = today_uploads * 1600
+        quota_remaining = 10000 - quota_used
+        remaining_uploads = quota_remaining // 1600
+        
+        # 할당량 정보 표시
+        console.print(f"📈 일일 할당량: 10,000 units", style="white")
+        console.print(f"📈 사용된 할당량: {quota_used:,} units ({quota_used/100:.1f}%)", style="cyan")
+        console.print(f"📈 남은 할당량: {quota_remaining:,} units", style="green")
+        console.print(f"📈 추가 업로드 가능: {remaining_uploads}개", style="yellow")
+        
+        # 제한 정보
+        console.print(f"\n⚡ 제한 정보:", style="bold")
+        console.print(f"  • 비디오 업로드 비용: 1,600 units/개", style="dim")
+        console.print(f"  • 일일 최대 업로드: 6개", style="dim")
+        console.print(f"  • 배치 최대 크기: 5개", style="dim")
+        console.print(f"  • 최소 업로드 간격: 30초", style="dim")
+        
+        # 경고 메시지
+        if quota_used > 8000:  # 80% 이상 사용
+            console.print(f"\n⚠️ 할당량의 80% 이상을 사용했습니다!", style="red bold")
+        elif quota_used > 6400:  # 64% 이상 사용 (4개 업로드)
+            console.print(f"\n💡 할당량 사용에 주의하세요.", style="yellow")
         
     except APIError as e:
         console.print(f"❌ API 오류: {e}", style="red")

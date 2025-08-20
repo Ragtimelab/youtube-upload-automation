@@ -49,7 +49,11 @@ class YouTubeAutomationAPI:
                         raise APIError(f"[{error_code}] {error_msg}")
                     
                     # 성공 응답에서 data 필드 반환 (하위 호환성 위해)
-                    return data.get('data', data)
+                    # data가 None인 경우 전체 응답 객체 반환 (health check 등)
+                    if data.get('data') is not None:
+                        return data.get('data')
+                    else:
+                        return data
                 else:
                     # 레거시 응답 형식 지원
                     return data

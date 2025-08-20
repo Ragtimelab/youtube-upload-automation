@@ -39,16 +39,17 @@ def system():
         upload_health = api.upload_health_check()
         
         # 기본 상태 패널
+        services = health.get('services', {})
         system_panel = f"""
-[bold]API 서버:[/bold] {health.get('status')}
-[bold]데이터베이스:[/bold] {health.get('database')}
+[bold]API 서버:[/bold] {services.get('api')}
+[bold]데이터베이스:[/bold] {services.get('database')}
 [bold]업로드 시스템:[/bold] {upload_health.get('upload_system')}
 [bold]YouTube API:[/bold] {upload_health.get('youtube_api')}
         """
         
         # 상태별 색상 결정
-        api_ok = health.get('status') == 'healthy'
-        db_ok = health.get('database') == 'connected'
+        api_ok = services.get('api') == 'operational'
+        db_ok = services.get('database') == 'connected'
         upload_ok = upload_health.get('upload_system') == 'operational'
         youtube_ok = upload_health.get('youtube_api') == 'connected'
         
@@ -262,9 +263,10 @@ def monitor(interval: int):
                 # 시스템 상태
                 health = api.health_check()
                 upload_health = api.upload_health_check()
+                services = health.get('services', {})
                 
                 system_status = f"""
-API: {health.get('status')} | DB: {health.get('database')} | Upload: {upload_health.get('upload_system')} | YouTube: {upload_health.get('youtube_api')}
+API: {services.get('api')} | DB: {services.get('database')} | Upload: {upload_health.get('upload_system')} | YouTube: {upload_health.get('youtube_api')}
                 """
                 console.print(Panel(system_status.strip(), title="시스템 상태"))
                 

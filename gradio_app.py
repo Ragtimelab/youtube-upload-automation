@@ -188,52 +188,140 @@ class YouTubeAutomationInterface:
         
         gr.Markdown("### 🎬 YouTube 업로드")
         
-        with gr.Row():
-            with gr.Column():
-                # 업로드 준비된 스크립트 선택
-                youtube_script_dropdown = gr.Dropdown(
-                    label="📺 업로드 준비된 스크립트",
-                    choices=[],
-                    interactive=True
-                )
-                
-                # YouTube 설정
-                with gr.Group():
-                    gr.Markdown("#### ⚙️ YouTube 업로드 설정")
-                    
-                    privacy_setting = gr.Radio(
-                        label="공개 설정",
-                        choices=["private", "unlisted", "public"],
-                        value="private"
-                    )
-                    
-                    category_setting = gr.Number(
-                        label="카테고리 ID",
-                        value=24,  # Entertainment
-                        precision=0
-                    )
-                
-                youtube_upload_btn = gr.Button(
-                    "🚀 YouTube 업로드",
-                    variant="primary"
-                )
-                
-                youtube_result = gr.Textbox(
-                    label="업로드 결과",
-                    interactive=False,
-                    lines=5
-                )
+        with gr.Tabs():
+            # 단일 업로드 탭
+            with gr.Tab("📺 단일 업로드"):
+                with gr.Row():
+                    with gr.Column():
+                        # 업로드 준비된 스크립트 선택
+                        youtube_script_dropdown = gr.Dropdown(
+                            label="📺 업로드 준비된 스크립트",
+                            choices=[],
+                            interactive=True
+                        )
+                        
+                        # YouTube 설정
+                        with gr.Group():
+                            gr.Markdown("#### ⚙️ YouTube 업로드 설정")
+                            
+                            privacy_setting = gr.Radio(
+                                label="공개 설정",
+                                choices=["private", "unlisted", "public"],
+                                value="private"
+                            )
+                            
+                            category_setting = gr.Number(
+                                label="카테고리 ID",
+                                value=24,  # Entertainment
+                                precision=0
+                            )
+                            
+                            # 예약 발행 설정 추가
+                            with gr.Row():
+                                schedule_upload = gr.Checkbox(
+                                    label="예약 발행 사용",
+                                    value=False
+                                )
+                                
+                                schedule_datetime = gr.Textbox(
+                                    label="예약 시간 (ISO 8601)",
+                                    placeholder="2025-08-21T09:00:00.000Z",
+                                    interactive=False
+                                )
+                        
+                        youtube_upload_btn = gr.Button(
+                            "🚀 YouTube 업로드",
+                            variant="primary"
+                        )
+                        
+                        youtube_result = gr.Textbox(
+                            label="업로드 결과",
+                            interactive=False,
+                            lines=5
+                        )
+            
+            # 배치 업로드 탭  
+            with gr.Tab("📦 배치 업로드"):
+                with gr.Row():
+                    with gr.Column():
+                        # 업로드 준비된 스크립트 다중 선택
+                        batch_refresh_btn = gr.Button("🔄 스크립트 목록 새로고침", size="sm")
+                        
+                        batch_scripts = gr.CheckboxGroup(
+                            label="📺 배치 업로드할 스크립트 선택",
+                            choices=[],
+                            interactive=True
+                        )
+                        
+                        # 배치 설정
+                        with gr.Group():
+                            gr.Markdown("#### ⚙️ 배치 업로드 설정")
+                            
+                            batch_privacy = gr.Radio(
+                                label="공개 설정",
+                                choices=["private", "unlisted", "public"],
+                                value="private"
+                            )
+                            
+                            batch_category = gr.Number(
+                                label="카테고리 ID",
+                                value=24,
+                                precision=0
+                            )
+                            
+                            batch_delay = gr.Slider(
+                                label="업로드 간격 (초)",
+                                minimum=10,
+                                maximum=300,
+                                value=30,
+                                step=10
+                            )
+                        
+                        batch_upload_btn = gr.Button(
+                            "🚀 배치 업로드 시작",
+                            variant="primary"
+                        )
+                        
+                        batch_progress = gr.HTML(
+                            value="",
+                            label="진행 상황"
+                        )
+                        
+                        batch_result = gr.Textbox(
+                            label="배치 업로드 결과",
+                            interactive=False,
+                            lines=8
+                        )
         
-        # 이벤트 핸들러
+        # 이벤트 핸들러 - 단일 업로드
         youtube_script_dropdown.focus(
             fn=self._get_video_ready_scripts,
             outputs=[youtube_script_dropdown]
         )
         
+        # 예약 발행 체크박스 상태에 따른 입력 필드 활성화
+        schedule_upload.change(
+            fn=lambda checked: gr.update(interactive=checked),
+            inputs=[schedule_upload],
+            outputs=[schedule_datetime]
+        )
+        
         youtube_upload_btn.click(
             fn=self._upload_to_youtube,
-            inputs=[youtube_script_dropdown, privacy_setting, category_setting],
+            inputs=[youtube_script_dropdown, privacy_setting, category_setting, schedule_upload, schedule_datetime],
             outputs=[youtube_result]
+        )
+        
+        # 배치 업로드 이벤트 핸들러
+        batch_refresh_btn.click(
+            fn=self._get_video_ready_scripts_for_batch,
+            outputs=[batch_scripts]
+        )
+        
+        batch_upload_btn.click(
+            fn=self._batch_upload_to_youtube,
+            inputs=[batch_scripts, batch_privacy, batch_category, batch_delay],
+            outputs=[batch_progress, batch_result]
         )
     
     def _create_dashboard_tab(self):
@@ -241,33 +329,112 @@ class YouTubeAutomationInterface:
         
         gr.Markdown("### 📊 전체 시스템 대시보드")
         
+        # 상단: 시스템 상태 및 통계
         with gr.Row():
-            with gr.Column():
-                # 시스템 통계
+            # 시스템 상태
+            with gr.Column(scale=1):
+                system_status = gr.HTML(
+                    value=self._get_initial_status(),
+                    label="시스템 상태"
+                )
+                
+                # 새로고침 및 제어 버튼들
+                with gr.Row():
+                    dashboard_refresh_btn = gr.Button("🔄 새로고침", variant="primary")
+                    health_check_btn = gr.Button("🩺 헬스체크", variant="secondary")
+                    clear_logs_btn = gr.Button("🗑️ 로그 정리", variant="secondary")
+            
+            # 시스템 통계
+            with gr.Column(scale=2):
                 stats_display = gr.HTML(
                     value="📊 통계 로딩 중...",
                     label="시스템 통계"
                 )
-                
-                # 새로고침 버튼
-                dashboard_refresh_btn = gr.Button("🔄 대시보드 새로고침")
-            
-            with gr.Column():
-                # 최근 활동
+        
+        # 중단: 상세 정보 탭
+        with gr.Tabs():
+            # 최근 활동 탭
+            with gr.Tab("📋 최근 활동"):
                 recent_activity = gr.Dataframe(
-                    headers=["시간", "활동", "상태"],
-                    datatype=["str", "str", "str"],
-                    label="최근 활동",
-                    interactive=False
+                    headers=["시간", "스크립트", "상태", "진행률"],
+                    datatype=["str", "str", "str", "str"],
+                    label="최근 활동 (실시간)",
+                    interactive=False,
+                    wrap=True
+                )
+            
+            # 업로드 현황 탭  
+            with gr.Tab("📈 업로드 현황"):
+                upload_analytics = gr.HTML(
+                    value="📈 업로드 현황 로딩 중...",
+                    label="업로드 분석"
+                )
+            
+            # 시스템 로그 탭
+            with gr.Tab("📜 시스템 로그"):
+                system_logs = gr.Textbox(
+                    label="시스템 로그 (최근 100줄)",
+                    lines=10,
+                    interactive=False,
+                    max_lines=20
+                )
+            
+            # 성능 모니터링 탭
+            with gr.Tab("⚡ 성능 모니터링"):
+                performance_metrics = gr.HTML(
+                    value="⚡ 성능 지표 로딩 중...",
+                    label="성능 모니터링"
                 )
         
-        # 대시보드 새로고침
+        # 하단: 빠른 액션
+        with gr.Row():
+            with gr.Column():
+                gr.Markdown("#### 🚀 빠른 액션")
+                
+                with gr.Row():
+                    quick_script_count = gr.Textbox(
+                        label="업로드할 스크립트 개수",
+                        value="1",
+                        interactive=True,
+                        scale=1
+                    )
+                    
+                    quick_batch_btn = gr.Button(
+                        "⚡ 빠른 배치 처리",
+                        variant="primary",
+                        scale=2
+                    )
+                
+                quick_result = gr.Textbox(
+                    label="빠른 액션 결과",
+                    interactive=False,
+                    lines=3
+                )
+        
+        # 이벤트 핸들러들
         dashboard_refresh_btn.click(
             fn=self._refresh_dashboard,
-            outputs=[stats_display, recent_activity]
+            outputs=[system_status, stats_display, recent_activity, upload_analytics, performance_metrics]
         )
         
-        # 대시보드 자동 새로고침은 전체 인터페이스 레벨에서 처리됩니다
+        health_check_btn.click(
+            fn=self._perform_health_check,
+            outputs=[system_status]
+        )
+        
+        clear_logs_btn.click(
+            fn=self._clear_system_logs,
+            outputs=[system_logs]
+        )
+        
+        quick_batch_btn.click(
+            fn=self._quick_batch_process,
+            inputs=[quick_script_count],
+            outputs=[quick_result]
+        )
+        
+        # 자동 새로고침 (5초마다)
+        # Gradio 5.x에서는 load 이벤트의 every 파라미터 사용법이 변경됨
     
     def _get_custom_css(self) -> str:
         """커스텀 CSS 스타일"""
@@ -319,13 +486,38 @@ class YouTubeAutomationInterface:
         """비디오 업로드"""
         return self.api_client.upload_video(script_id, video_file)
     
-    def _upload_to_youtube(self, script_id, privacy, category):
-        """YouTube 업로드"""
-        return self.api_client.upload_to_youtube(script_id, privacy, int(category))
+    def _upload_to_youtube(self, script_id, privacy, category, schedule_enabled, schedule_time):
+        """YouTube 업로드 (예약 발행 지원)"""
+        return self.api_client.upload_to_youtube(script_id, privacy, int(category), schedule_enabled, schedule_time)
+    
+    def _get_video_ready_scripts_for_batch(self):
+        """배치 업로드용 비디오 준비된 스크립트 목록"""
+        return self.api_client.get_script_choices_for_batch("video_ready")
+    
+    def _batch_upload_to_youtube(self, selected_scripts, privacy, category, delay):
+        """YouTube 배치 업로드"""
+        return self.api_client.batch_upload_to_youtube(selected_scripts, privacy, int(category), int(delay))
     
     def _refresh_dashboard(self):
         """대시보드 새로고침"""
-        return self.api_client.get_dashboard_data()
+        system_status = self.api_client.get_system_status_html()
+        stats_html, recent_activity = self.api_client.get_dashboard_data()
+        upload_analytics = self.api_client.get_upload_analytics()
+        performance_metrics = self.api_client.get_performance_metrics()
+        
+        return system_status, stats_html, recent_activity, upload_analytics, performance_metrics
+    
+    def _perform_health_check(self):
+        """시스템 헬스체크 수행"""
+        return self.api_client.perform_comprehensive_health_check()
+    
+    def _clear_system_logs(self):
+        """시스템 로그 정리"""
+        return self.api_client.clear_and_get_logs()
+    
+    def _quick_batch_process(self, count_str):
+        """빠른 배치 처리"""
+        return self.api_client.quick_batch_process(count_str)
 
 
 def create_app():

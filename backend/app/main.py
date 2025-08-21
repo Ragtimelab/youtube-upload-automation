@@ -1,3 +1,5 @@
+from typing import Any, Dict, Union
+
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -44,7 +46,7 @@ app.include_router(websocket.router)
 
 
 @app.get("/")
-def read_root():
+def read_root() -> Dict[str, str]:
     """API 상태 확인"""
     logger.info("루트 엔드포인트 접근")
     return {
@@ -55,7 +57,9 @@ def read_root():
 
 
 @app.get("/health")
-def health_check(db: Session = Depends(get_db)):
+def health_check(
+    db: Session = Depends(get_db),
+) -> Union[Dict[str, Any], HealthCheckResponse]:
     """헬스체크 엔드포인트"""
     try:
         # 데이터베이스 연결 테스트

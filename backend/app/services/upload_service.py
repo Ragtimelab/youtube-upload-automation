@@ -6,7 +6,7 @@ import os
 import time
 import uuid
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional
 
 from fastapi import UploadFile
 from sqlalchemy.orm import Session
@@ -488,45 +488,51 @@ class UploadService:
         privacy_status: str = "private",
         category_id: int = 24,
         delay_seconds: int = 30,
-        publish_at: Optional[str] = None
+        publish_at: Optional[str] = None,
     ) -> Dict[str, Any]:
         """여러 스크립트를 YouTube에 배치 업로드"""
-        
+
         # 배치 ID 생성
-        batch_id = f"batch_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+        batch_id = (
+            f"batch_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+        )
         start_time = datetime.now(timezone.utc)
-        
+
         # 결과 저장용
         results = []
         success_count = 0
         failed_count = 0
-        
+
         # 스크립트 유효성 검증
         valid_scripts = []
         for script_id in script_ids:
             script = self.repository.get_by_id(script_id)
             if not script:
-                results.append({
-                    "script_id": script_id,
-                    "status": "failed",
-                    "error": f"스크립트 ID {script_id}를 찾을 수 없습니다",
-                    "title": "Unknown"
-                })
+                results.append(
+                    {
+                        "script_id": script_id,
+                        "status": "failed",
+                        "error": f"스크립트 ID {script_id}를 찾을 수 없습니다",
+                        "title": "Unknown",
+                    }
+                )
                 failed_count += 1
                 continue
-            
+
             if script.status != "video_ready":
-                results.append({
-                    "script_id": script_id,
-                    "status": "failed", 
-                    "error": f"스크립트 상태가 'video_ready'가 아닙니다 (현재: {script.status})",
-                    "title": script.title
-                })
+                results.append(
+                    {
+                        "script_id": script_id,
+                        "status": "failed",
+                        "error": f"스크립트 상태가 'video_ready'가 아닙니다 (현재: {script.status})",
+                        "title": script.title,
+                    }
+                )
                 failed_count += 1
                 continue
-            
+
             valid_scripts.append(script)
-        
+
         # 유효한 스크립트들에 대해 순차 업로드
         for i, script in enumerate(valid_scripts):
             try:
@@ -535,39 +541,43 @@ class UploadService:
                     script_id=script.id,
                     privacy_status=privacy_status,
                     category_id=category_id,
-                    publish_at=publish_at
+                    publish_at=publish_at,
                 )
-                
+
                 # 성공 결과 저장
-                results.append({
-                    "script_id": script.id,
-                    "status": "success",
-                    "title": script.title,
-                    "youtube_video_id": upload_result.get("youtube_video_id"),
-                    "youtube_url": upload_result.get("youtube_url"),
-                    "message": "YouTube 업로드 성공"
-                })
+                results.append(
+                    {
+                        "script_id": script.id,
+                        "status": "success",
+                        "title": script.title,
+                        "youtube_video_id": upload_result.get("youtube_video_id"),
+                        "youtube_url": upload_result.get("youtube_url"),
+                        "message": "YouTube 업로드 성공",
+                    }
+                )
                 success_count += 1
-                
+
                 # 다음 업로드까지 지연 (마지막 제외)
                 if i < len(valid_scripts) - 1 and delay_seconds > 0:
                     time.sleep(delay_seconds)
-                    
+
             except Exception as e:
                 # 실패 결과 저장
-                results.append({
-                    "script_id": script.id,
-                    "status": "failed",
-                    "title": script.title,
-                    "error": str(e),
-                    "message": "YouTube 업로드 실패"
-                })
+                results.append(
+                    {
+                        "script_id": script.id,
+                        "status": "failed",
+                        "title": script.title,
+                        "error": str(e),
+                        "message": "YouTube 업로드 실패",
+                    }
+                )
                 failed_count += 1
-        
+
         # 배치 완료 시간 계산
         end_time = datetime.now(timezone.utc)
         duration = end_time - start_time
-        
+
         # 배치 결과 구성
         batch_result = {
             "batch_id": batch_id,
@@ -580,9 +590,11 @@ class UploadService:
                 "success_count": success_count,
                 "failed_count": failed_count,
                 "total_count": len(script_ids),
-                "success_rate": round(success_count / len(script_ids) * 100, 1) if script_ids else 0,
-                "delay_seconds": delay_seconds
-            }
+                "success_rate": (
+                    round(success_count / len(script_ids) * 100, 1) if script_ids else 0
+                ),
+                "delay_seconds": delay_seconds,
+            },
         }
-        
+
         return batch_result

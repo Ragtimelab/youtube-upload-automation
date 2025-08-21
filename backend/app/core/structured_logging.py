@@ -7,13 +7,13 @@ import logging
 import time
 from datetime import datetime, timezone
 from functools import wraps
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 
 class StructuredFormatter(logging.Formatter):
     """구조화된 JSON 로그 포맷터"""
 
-    def format(self, record):
+    def format(self, record: logging.LogRecord) -> str:
         # 기본 로그 데이터
         log_data = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -63,7 +63,7 @@ class PerformanceLogger:
         operation: str,
         duration_ms: float,
         context: Optional[Dict[str, Any]] = None,
-    ):
+    ) -> None:
         """작업 시간 로깅"""
         extra = {"duration": duration_ms, "context": context or {}}
 
@@ -76,7 +76,7 @@ class PerformanceLogger:
 
     def log_file_operation(
         self, operation: str, file_path: str, file_size: int, duration_ms: float
-    ):
+    ) -> None:
         """파일 작업 로깅"""
         extra = {
             "duration": duration_ms,
@@ -89,12 +89,12 @@ class PerformanceLogger:
         )
 
 
-def performance_monitor(operation_name: str = None):
+def performance_monitor(operation_name: Optional[str] = None) -> Callable:
     """성능 모니터링 데코레이터"""
 
-    def decorator(func):
+    def decorator(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             start_time = time.time()
             operation = operation_name or f"{func.__module__}.{func.__name__}"
 
@@ -128,11 +128,13 @@ def performance_monitor(operation_name: str = None):
 class ContextualLogger:
     """컨텍스트 정보를 포함한 로거"""
 
-    def __init__(self, logger: logging.Logger, context: Dict[str, Any] = None):
+    def __init__(
+        self, logger: logging.Logger, context: Optional[Dict[str, Any]] = None
+    ):
         self.logger = logger
         self.context = context or {}
 
-    def _log_with_context(self, level: int, message: str, **kwargs):
+    def _log_with_context(self, level: int, message: str, **kwargs: Any) -> None:
         """컨텍스트 정보와 함께 로그 기록"""
         extra = kwargs.get("extra", {})
         extra["context"] = {**self.context, **extra.get("context", {})}
@@ -140,28 +142,28 @@ class ContextualLogger:
 
         self.logger.log(level, message, **kwargs)
 
-    def debug(self, message: str, **kwargs):
+    def debug(self, message: str, **kwargs: Any) -> None:
         self._log_with_context(logging.DEBUG, message, **kwargs)
 
-    def info(self, message: str, **kwargs):
+    def info(self, message: str, **kwargs: Any) -> None:
         self._log_with_context(logging.INFO, message, **kwargs)
 
-    def warning(self, message: str, **kwargs):
+    def warning(self, message: str, **kwargs: Any) -> None:
         self._log_with_context(logging.WARNING, message, **kwargs)
 
-    def error(self, message: str, **kwargs):
+    def error(self, message: str, **kwargs: Any) -> None:
         self._log_with_context(logging.ERROR, message, **kwargs)
 
-    def critical(self, message: str, **kwargs):
+    def critical(self, message: str, **kwargs: Any) -> None:
         self._log_with_context(logging.CRITICAL, message, **kwargs)
 
-    def with_context(self, **additional_context) -> "ContextualLogger":
+    def with_context(self, **additional_context: Any) -> "ContextualLogger":
         """추가 컨텍스트와 함께 새로운 로거 생성"""
         new_context = {**self.context, **additional_context}
         return ContextualLogger(self.logger, new_context)
 
 
-def get_contextual_logger(name: str, **context) -> ContextualLogger:
+def get_contextual_logger(name: str, **context: Any) -> ContextualLogger:
     """컨텍스트 정보를 포함한 로거 생성"""
     logger = logging.getLogger(name)
     return ContextualLogger(logger, context)
@@ -195,21 +197,21 @@ def get_api_logger(endpoint: str, method: str = "GET") -> ContextualLogger:
 class LoggingMetrics:
     """로깅 메트릭 수집기"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.metrics = {
             "total_requests": 0,
             "error_count": 0,
-            "avg_response_time": 0,
+            "avg_response_time": 0.0,
             "slow_operations": 0,
         }
 
-    def increment_requests(self):
+    def increment_requests(self) -> None:
         self.metrics["total_requests"] += 1
 
-    def increment_errors(self):
+    def increment_errors(self) -> None:
         self.metrics["error_count"] += 1
 
-    def record_response_time(self, duration_ms: float):
+    def record_response_time(self, duration_ms: float) -> None:
         current_avg = self.metrics["avg_response_time"]
         total = self.metrics["total_requests"]
 

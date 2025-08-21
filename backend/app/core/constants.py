@@ -10,7 +10,7 @@ from .yaml_loader import channel_loader
 
 class ChannelConstants:
     """마음서랍 채널 기본 설정 (YAML 기반)"""
-    
+
     # 하위 호환성을 위한 클래스 속성들 (모듈 로드 시 YAML에서 설정)
     CHANNEL_NAME = channel_loader.get_channel_name()
     DESCRIPTION_FOOTER = channel_loader.get_video_footer()
@@ -29,15 +29,13 @@ class ChannelConstants:
         """
         # YAML에서 최신 푸터 가져오기
         footer = channel_loader.get_video_footer()
-        
+
         # 원본 설명이 비어있으면 채널 푸터만 반환
         if not original_description.strip():
             return footer.strip()
 
         # 원본 설명 + 채널 푸터 결합
-        combined_description = (
-            f"{original_description.strip()}\n{footer}"
-        )
+        combined_description = f"{original_description.strip()}\n{footer}"
 
         # YouTube API 5000바이트 제한 확인
         description_bytes = combined_description.encode("utf-8")
@@ -51,9 +49,9 @@ class ChannelConstants:
         )  # 여유분 10바이트
 
         if available_bytes > 100:  # 푸터를 위한 최소 공간 확보
-            truncated_footer = footer.encode("utf-8")[
-                :available_bytes
-            ].decode("utf-8", errors="ignore")
+            truncated_footer = footer.encode("utf-8")[:available_bytes].decode(
+                "utf-8", errors="ignore"
+            )
             return f"{original_description.strip()}\n{truncated_footer}"
         else:
             # 공간이 부족하면 원본 설명만 반환
@@ -134,7 +132,7 @@ class YouTubeConstants:
     VIDEO_UPLOAD_COST = 1600  # units per upload
     VIDEO_LIST_COST = 1  # units per request
     CHANNEL_INFO_COST = 1  # units per request
-    
+
     # 배치 업로드 제한 (일일 할당량 기반)
     MAX_DAILY_UPLOADS = 6  # 10,000 ÷ 1,600 = 6.25
     MAX_BATCH_SIZE = 5  # 한 번에 최대 5개까지 (효율성 향상)

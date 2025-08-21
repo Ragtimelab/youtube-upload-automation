@@ -1,6 +1,6 @@
 # 🔌 API 문서
 
-> **YouTube 업로드 자동화 시스템 REST API 가이드**
+> **YouTube 업로드 자동화 시스템 REST API 가이드 - Gradio 웹 인터페이스 호환**
 
 ## 📋 목차
 
@@ -23,6 +23,8 @@
 - **API 버전**: v1
 - **데이터 형식**: JSON
 - **문자 인코딩**: UTF-8
+- **웹 인터페이스**: Gradio (http://localhost:7860)
+- **CLI 호환성**: 완전 지원
 
 ### 지원 HTTP 메서드
 
@@ -41,7 +43,7 @@
 {
   "success": true,
   "message": "작업이 성공적으로 완료되었습니다",
-  "timestamp": "2025-08-19T16:58:53.321429+00:00",
+  "timestamp": "2025-08-22T01:39:57.321429+09:00",
   "data": {
     // 실제 데이터 객체
   }
@@ -54,7 +56,7 @@
 {
   "success": true,
   "message": "대본 목록을 조회했습니다. (총 5개)",
-  "timestamp": "2025-08-19T16:58:53.321429+00:00",
+  "timestamp": "2025-08-22T01:39:57.321429+09:00",
   "data": [
     // 데이터 배열
   ],
@@ -74,7 +76,7 @@
 {
   "success": false,
   "message": "대본 파싱 실패: 대본 내용이 없습니다",
-  "timestamp": "2025-08-19T16:58:53.379383+00:00",
+  "timestamp": "2025-08-22T01:39:57.379383+09:00",
   "error_code": "ScriptParsingError",
   "error_details": null
 }
@@ -166,7 +168,7 @@ GET /api/scripts/
 {
   "success": true,
   "message": "대본 목록을 조회했습니다. (총 10개)",
-  "timestamp": "2025-08-19T16:58:53.321429+00:00",
+  "timestamp": "2025-08-22T01:39:57.321429+09:00",
   "data": [
     {
       "id": 1,
@@ -200,7 +202,7 @@ GET /api/scripts/{script_id}
 {
   "success": true,
   "message": "대본을 조회했습니다. (ID: 1)",
-  "timestamp": "2025-08-19T16:58:53.335763+00:00",
+  "timestamp": "2025-08-22T01:39:57.335763+09:00",
   "data": {
     "id": 1,
     "title": "비디오 제목",
@@ -228,7 +230,7 @@ Content-Type: multipart/form-data
 
 **Form Data:**
 
-- `file`: 스크립트 파일 (.txt, .md)
+- `file`: 스크립트 파일 (.md 전용, 최대 10MB)
 
 **응답:**
 
@@ -236,13 +238,13 @@ Content-Type: multipart/form-data
 {
   "success": true,
   "message": "대본이 성공적으로 업로드되었습니다.",
-  "timestamp": "2025-08-19T16:58:53.335763+00:00",
+  "timestamp": "2025-08-22T01:39:57.335763+09:00",
   "data": {
     "id": 1,
     "title": "추출된 제목",
     "status": "script_ready",
     "filename": "script.txt",
-    "created_at": "2025-08-19T16:58:53.328977"
+    "created_at": "2025-08-22T01:39:57.328977"
   }
 }
 ```
@@ -274,8 +276,10 @@ DELETE /api/scripts/{script_id}
 
 ```json
 {
-  "status": "success",
-  "message": "스크립트 삭제 완료"
+  "success": true,
+  "message": "스크립트가 성공적으로 삭제되었습니다.",
+  "timestamp": "2025-08-22T01:39:57.335763+09:00",
+  "data": null
 }
 ```
 
@@ -289,7 +293,9 @@ GET /api/scripts/stats/summary
 
 ```json
 {
-  "status": "success",
+  "success": true,
+  "message": "통계를 조회했습니다.",
+  "timestamp": "2025-08-22T01:39:57.335763+09:00",
   "data": {
     "total_scripts": 25,
     "script_ready": 5,
@@ -408,7 +414,9 @@ GET /api/upload/progress/{script_id}
 
 ```json
 {
-  "status": "success",
+  "success": true,
+  "message": "업로드 진행률을 조회했습니다.",
+  "timestamp": "2025-08-22T01:39:57.335763+09:00",
   "data": {
     "script_id": 1,
     "progress_percentage": 75,
@@ -430,8 +438,10 @@ DELETE /api/upload/video/{script_id}
 
 ```json
 {
-  "status": "success",
-  "message": "비디오 파일 삭제 완료"
+  "success": true,
+  "message": "비디오 파일이 성공적으로 삭제되었습니다.",
+  "timestamp": "2025-08-22T01:39:57.335763+09:00",
+  "data": null
 }
 ```
 
@@ -795,11 +805,69 @@ curl -X GET "http://localhost:8000/api/upload/status/1"
 
 ### 파일 크기 제한
 
-- **스크립트 파일**: 최대 100MB
+- **스크립트 파일**: 최대 10MB (.md 전용)
 - **비디오 파일**: 최대 8GB
 - **지원 형식**: .mp4, .avi, .mov, .mkv, .webm
 
 ---
 
+## 🎨 Gradio 웹 인터페이스 통합
+
+### 개요
+
+Gradio 웹 인터페이스는 이 REST API를 완전히 활용하여 사용자 친화적인 GUI를 제공합니다.
+
+### 주요 특징
+
+- **완전한 API 호환성**: 모든 API 엔드포인트 활용
+- **실시간 상태 업데이트**: WebSocket 기반 실시간 모니터링
+- **4개 탭 구조**: 스크립트 관리, 비디오 업로드, YouTube 업로드, 대시보드
+- **드래그 앤 드롭**: 직관적인 파일 업로드 인터페이스
+- **배치 처리**: 최대 5개 영상 동시 업로드
+
+### Gradio-API 매핑
+
+| Gradio 기능 | API 엔드포인트 | 설명 |
+|------------|---------------|------|
+| 스크립트 업로드 | `POST /api/scripts/upload` | .md 파일 드래그 앤 드롭 |
+| 스크립트 목록 | `GET /api/scripts/` | 실시간 새로고침 |
+| 비디오 업로드 | `POST /api/upload/video/{id}` | 대용량 파일 지원 |
+| YouTube 업로드 | `POST /api/upload/youtube/{id}` | 단일/배치 업로드 |
+| 시스템 상태 | `GET /health` | 대시보드 모니터링 |
+| 실시간 업데이트 | `ws://localhost:8000/ws` | WebSocket 연결 |
+
+### 웹 인터페이스 접속
+
+```bash
+# Gradio 웹 인터페이스 실행
+poetry run python gradio_app.py
+
+# 브라우저 접속
+http://localhost:7860
+```
+
+### API 클라이언트 활용
+
+Gradio 인터페이스는 `cli.utils.api_client.YouTubeAutomationAPI` 클래스를 사용하여 백엔드와 통신합니다:
+
+```python
+from cli.utils.api_client import YouTubeAutomationAPI
+
+# API 클라이언트 초기화
+api = YouTubeAutomationAPI()
+
+# 스크립트 업로드
+result = api.upload_script("script.md")
+
+# 스크립트 목록 조회
+scripts = api.get_scripts()
+
+# YouTube 업로드
+youtube_result = api.upload_to_youtube(script_id, None, "private", 22)
+```
+
+---
+
 **API 문서 버전**: 1.0.0  
-**마지막 업데이트**: 2025-08-17
+**마지막 업데이트**: 2025-08-22  
+**Gradio 통합**: v5.43.1 완전 호환

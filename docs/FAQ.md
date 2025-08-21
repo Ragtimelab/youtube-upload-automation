@@ -1,4 +1,4 @@
-# 🙋‍♂️ Streamlit 대시보드 FAQ & 문제해결
+# 🙋‍♂️ Gradio 웹 인터페이스 FAQ & 문제해결
 
 > **자주 묻는 질문과 실전 문제해결 가이드**
 
@@ -15,7 +15,7 @@
 
 ## 🚀 설치 및 시작
 
-### Q: Streamlit 앱이 시작되지 않아요
+### Q: Gradio 웹 인터페이스가 시작되지 않아요
 
 **A: 다음 단계를 확인하세요**
 
@@ -26,11 +26,11 @@ poetry shell
 # 2. 의존성 설치 확인
 poetry install
 
-# 3. 백엔드 서버 먼저 시작
+# 3. 백엔드 서버 먼저 시작 (필수!)
 cd backend && make run
 
-# 4. Streamlit 앱 시작
-streamlit run streamlit_app/app.py
+# 4. Gradio 웹 인터페이스 시작
+poetry run python gradio_app.py
 ```
 
 ### Q: "ModuleNotFoundError" 오류가 발생해요
@@ -40,22 +40,25 @@ streamlit run streamlit_app/app.py
 ```bash
 # 프로젝트 루트에서 실행하세요
 cd /path/to/youtube-upload-automation
-streamlit run streamlit_app/app.py
+poetry run python gradio_app.py
 
 # 또는 절대 경로 사용
-PYTHONPATH=/path/to/project streamlit run streamlit_app/app.py
+PYTHONPATH=/path/to/project poetry run python gradio_app.py
 ```
 
-### Q: 포트 8503이 이미 사용 중이라고 나와요
+### Q: 포트 7860이 이미 사용 중이라고 나와요
 
-**A: 다른 포트를 사용하세요**
+**A: Gradio가 자동으로 다른 포트를 찾거나 수동 설정하세요**
 
 ```bash
-# 다른 포트로 실행
-streamlit run streamlit_app/app.py --server.port 8504
+# Gradio는 자동으로 다음 사용 가능한 포트 찾음 (7861, 7862 등)
+poetry run python gradio_app.py
 
 # 또는 기존 프로세스 종료
-lsof -ti:8503 | xargs kill -9
+lsof -ti:7860 | xargs kill -9
+
+# 특정 포트로 실행하려면 코드 수정 필요
+# gradio_app.py에서 demo.launch(server_port=7861)
 ```
 
 ---
@@ -267,21 +270,24 @@ make run
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-### Q: Streamlit이 계속 "Connecting..." 상태에요
+### Q: Gradio 웹페이지가 로딩되지 않아요
 
-**A: 방화벽과 네트워크를 확인하세요**
+**A: 네트워크와 브라우저를 확인하세요**
 
 ```bash
-# 1. 로컬 방화벽 확인
-sudo ufw status
+# 1. Gradio 서버 실행 확인
+curl http://localhost:7860
 
-# 2. 다른 포트로 시도
-streamlit run streamlit_app/app.py --server.port 8504
+# 2. 백엔드 API 연결 확인 
+curl http://localhost:8000/health
 
 # 3. 브라우저 캐시 삭제
 # Ctrl+Shift+R (또는 Cmd+Shift+R)
 
-# 4. 시크릿 모드에서 테스트
+# 4. 시크릿/프라이빗 모드에서 테스트
+
+# 5. 다른 포트로 Gradio 실행 (코드 수정 필요)
+# gradio_app.py에서 demo.launch(server_port=7861)
 ```
 
 ### Q: "세션 상태 오류"가 발생해요
@@ -368,6 +374,97 @@ wait
 
 ---
 
+## 🌐 Gradio 웹 인터페이스 특화 FAQ
+
+### Q: 드래그 앤 드롭이 작동하지 않아요
+
+**A: 브라우저와 파일 형식을 확인하세요**
+
+- **지원 브라우저**: Chrome, Firefox, Safari, Edge 최신 버전
+- **스크립트 파일**: .md 파일만 지원 (최대 10MB)
+- **비디오 파일**: .mp4, .avi, .mov, .mkv, .webm (최대 8GB)
+
+```bash
+# 파일 확장자 확인
+file my_script.md
+file my_video.mp4
+
+# 파일 크기 확인  
+ls -lh my_script.md
+ls -lh my_video.mp4
+```
+
+### Q: 4개 탭 중 일부가 비어있어요
+
+**A: 백엔드 API 연결을 확인하세요**
+
+```bash
+# 1. 백엔드 서버 상태 확인
+curl http://localhost:8000/health
+
+# 2. Gradio 콘솔에서 오류 메시지 확인
+# 터미널에서 gradio_app.py 실행한 곳에서 에러 로그 확인
+
+# 3. 브라우저 개발자 도구에서 API 요청 실패 확인
+# F12 → Network 탭 → 실패한 요청 확인
+```
+
+### Q: 배치 업로드가 중간에 멈춰요
+
+**A: API 할당량과 파일 검증을 확인하세요**
+
+- **최대 배치 크기**: 5개 영상 동시
+- **업로드 간격**: 30-300초 설정 권장
+- **할당량 체크**: 일일 10,000 units 고려
+
+```bash
+# 현재 상태 확인
+./youtube-cli status
+
+# 실패한 업로드 재시도
+./youtube-cli youtube upload [SCRIPT_ID] --privacy private
+```
+
+### Q: 실시간 새로고침이 작동하지 않아요
+
+**A: 네트워크 연결과 API 응답을 확인하세요**
+
+1. **🔄 새로고침 버튼** 수동 클릭
+2. **F5**로 페이지 전체 새로고침
+3. **시크릿 모드**에서 테스트
+4. **다른 브라우저**에서 테스트
+
+### Q: Gradio에서 업로드한 파일을 CLI에서 볼 수 없어요
+
+**A: 완전히 정상입니다! 실시간 동기화됩니다**
+
+```bash
+# Gradio에서 스크립트 업로드 후
+./youtube-cli script list  # 즉시 확인 가능
+
+# CLI에서 비디오 업로드 후  
+# Gradio 웹에서 🔄 새로고침 버튼 클릭하면 즉시 확인 가능
+```
+
+### Q: 업로드 진행률이 0%에서 변하지 않아요
+
+**A: 대용량 파일 업로드 시 정상입니다**
+
+- **초기 업로드**: 파일 검증 및 준비 과정 (1-2분)
+- **대용량 파일**: 8GB 파일은 10-30분 소요 가능
+- **네트워크 속도**: 업로드 속도에 따라 진행률 업데이트
+
+**해결책:**
+```bash
+# 터미널에서 실제 진행상황 확인
+tail -f backend/logs/app-$(date +%Y-%m-%d).log | grep upload
+
+# CLI로 상태 확인  
+./youtube-cli video status [SCRIPT_ID]
+```
+
+---
+
 ## 🔍 디버깅 팁
 
 ### 로그 확인 방법
@@ -409,9 +506,10 @@ SELECT * FROM scripts WHERE id = 1;
 
 ### 문서 참조
 
-- 📖 **STREAMLIT_USER_GUIDE.md**: 완전한 사용법
-- ⚡ **QUICK_START_GUIDE.md**: 5분 빠른 시작
-- 💻 **CLI_USAGE.md**: 명령줄 도구
+- 📖 **USER_GUIDE.md**: Gradio 완전한 사용법  
+- ⚡ **QUICK_START.md**: 5분 빠른 시작
+- 💻 **CLI_USAGE.md**: 명령줄 도구 및 Gradio 호환성
+- 🔌 **API.md**: REST API 및 Gradio 통합
 - 🏗️ **CLAUDE.md**: 전체 시스템 구조
 
 ### 문제 보고
@@ -433,3 +531,9 @@ cd backend && make migrate
 ---
 
 *💡 **팁**: 문제가 해결되지 않을 때는 브라우저 시크릿 모드에서 테스트해보세요. 대부분의 캐시 관련 문제가 해결됩니다.*
+
+---
+
+**FAQ & 문제해결 가이드**  
+**마지막 업데이트**: 2025-08-22  
+**Gradio 웹 인터페이스**: 완전 지원 ✅

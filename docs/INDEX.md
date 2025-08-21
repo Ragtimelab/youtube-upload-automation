@@ -29,14 +29,14 @@
 
 ## 📋 전체 문서 목록
 
-### 🎬 **Streamlit 대시보드 관련**
+### 🌐 **Gradio 웹 인터페이스 관련**
 
 | 문서 | 설명 | 대상 사용자 | 예상 시간 |
 |------|------|------------|----------|
 | [USER_GUIDE.md](./USER_GUIDE.md) | 💎 **완전한 사용법 가이드** | 모든 사용자 | 15분 |
 | [QUICK_START.md](./QUICK_START.md) | ⚡ **5분 빠른 시작** | 신규 사용자 | 5분 |
 | [FAQ.md](./FAQ.md) | 🙋‍♂️ **FAQ & 문제해결** | 문제 해결 | 상황별 |
-| [streamlit_app/README.md](./streamlit_app/README.md) | 📘 **기술 문서** | 개발자 | 10분 |
+| [GRADIO_IMPLEMENTATION_CHECKLIST.md](../GRADIO_IMPLEMENTATION_CHECKLIST.md) | 📘 **Gradio 구현 체크리스트** | 개발자 | 10분 |
 
 ### 🛠️ **시스템 & 개발**
 
@@ -61,11 +61,11 @@
 ### 📱 **신규 사용자 (처음 시작)**
 
 ```
-1. QUICK_START.md (필수)
+1. QUICK_START.md (필수) - Gradio 웹 인터페이스 실행
    ↓
-2. USER_GUIDE.md (권장)
+2. USER_GUIDE.md (권장) - 4개 탭 기능 상세 사용법
    ↓
-3. 필요시 FAQ.md (참조)
+3. 필요시 FAQ.md (참조) - Gradio 관련 문제해결
 ```
 
 ### 🔧 **문제 해결이 필요한 경우**
@@ -81,13 +81,13 @@
 ### 💻 **개발자/고급 사용자**
 
 ```
-1. CLAUDE.md (시스템 이해)
+1. CLAUDE.md (시스템 이해) - Gradio 구조 이해
    ↓
-2. API.md (API 연동)
+2. API.md (API 연동) - 표준화된 응답 구조
    ↓
-3. CLI_USAGE.md (도구 활용)
+3. CLI_USAGE.md (도구 활용) - CLI와 웹 호환성
    ↓
-4. USER_GUIDE.md (UI 기능)
+4. USER_GUIDE.md (UI 기능) - Gradio 4개 탭 기능
 ```
 
 ### 📊 **프로젝트 검토자/PM**
@@ -206,8 +206,8 @@
 
 ### 🎬 **테스트 결과**
 
-- `streamlit_basic_test.png` - 기본 기능 테스트
-- `streamlit_test_complete.png` - 전체 테스트 완료
+- `gradio_basic_test.png` - Gradio 기본 기능 테스트
+- `gradio_test_complete.png` - Gradio 전체 테스트 완료
 
 ---
 
@@ -239,12 +239,13 @@ curl http://localhost:8000/health
 
 | 날짜 | 문서 | 변경사항 |
 |------|------|----------|
-| 2025-08-17 | USER_GUIDE.md | 최초 작성 - 완전한 사용법 |
-| 2025-08-17 | QUICK_START.md | 5분 빠른 시작 가이드 |
+| 2025-08-22 | USER_GUIDE.md | Gradio 4개 탭 기반 완전 재작성 |
+| 2025-08-22 | QUICK_START.md | Gradio 웹 인터페이스 실행 가이드 |
+| 2025-08-22 | API.md | 표준화된 API 응답 구조 및 Gradio 통합 |
+| 2025-08-22 | IMPLEMENTATION_COMPLETE.md | Gradio 완료 상태 반영 |
+| 2025-08-22 | INDEX.md | Streamlit → Gradio 문서 동기화 |
 | 2025-08-17 | FAQ.md | FAQ와 문제해결 모음 |
-| 2025-08-17 | API.md | REST API 및 WebSocket 가이드 |
 | 2025-08-17 | CHANGELOG.md | 버전별 변경사항 |
-| 2025-08-17 | INDEX.md | 문서 총 인덱스 - docs/ 폴더로 이동 |
 
 ---
 

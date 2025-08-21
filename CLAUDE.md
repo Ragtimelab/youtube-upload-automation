@@ -12,14 +12,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 youtube-upload-automation/
 ├── backend/app/              # FastAPI 백엔드 (Clean Architecture)
 │   ├── core/                # 상수, 설정, 예외처리
-│   │   └── constants.py     # 모든 하드코딩 값 중앙화 (핵심!)
+│   │   ├── constants.py     # 모든 하드코딩 값 중앙화 (핵심!)
+│   │   ├── yaml_loader.py   # YAML 설정 싱글톤 로더
+│   │   └── responses.py     # 표준화된 API 응답 클래스
 │   ├── models/              # SQLAlchemy 모델
 │   ├── repositories/        # 데이터 접근 계층
 │   ├── services/            # 비즈니스 로직 (YouTube, WebSocket)
 │   └── routers/             # API 엔드포인트
 ├── cli/                     # CLI 도구 (주요 인터페이스)
 │   └── commands/            # script.py, video.py, youtube.py, status.py
+├── config/                  # YAML 기반 설정 파일
+│   └── channels.yaml        # 채널 브랜딩 중앙 관리 (핵심!)
 ├── .secrets/                # 인증 파일 (git에서 제외)
+├── gradio_app.py            # Gradio 웹 인터페이스
 └── uploads/                 # 업로드 파일 저장소
 ```
 
@@ -35,17 +40,20 @@ poetry install --with dev,test # 개발/테스트 의존성 포함
 # 직접 명령어 실행: poetry run [command]
 ```
 
-### Backend 개발 (backend/ 디렉토리에서)
+### Backend 개발 (IMPORTANT: 모든 make 명령어는 backend/ 디렉토리에서 실행)
 ```bash
+# 디렉토리 이동 필수
+cd backend/
+
 # 서버 실행
 make run                # 개발 서버 (auto-reload, uvicorn)
 make run-prod           # 프로덕션 서버
 
-# 코드 품질
-make format             # 코드 포매팅 (black + isort)
+# 코드 품질 (자동화된 도구 체인)
+make format             # 코드 포매팅 (black + isort + autoflake)
 make format-check       # 포매팅 검사 (CI용)
 make lint               # 린트 검사 (flake8 + mypy)
-make security           # 보안 취약점 검사
+make security           # 보안 취약점 검사 (bandit + safety)
 
 # 테스트
 make test               # 전체 테스트 실행 (backend/tests/)
@@ -65,6 +73,10 @@ make migrate-create     # 빈 마이그레이션 생성
 make clean              # 캐시 및 임시 파일 정리
 make deps-update        # 의존성 업데이트
 make deps-show          # 설치된 의존성 표시
+
+# Pre-commit 훅 (고급 코드 품질 자동화)
+make pre-commit         # pre-commit 훅 설치 (보안 검사, 커밋 메시지 검증 포함)
+make pre-commit-run     # 수동 실행 (모든 파일 대상)
 ```
 
 ### CLI 사용법
@@ -165,17 +177,18 @@ LOG_LEVEL=INFO
 script_ready → video_ready → uploaded → error
 ```
 
-### 🎭 채널 브랜딩 자동화 (YAML 기반)
-**모든 YouTube 업로드 시 자동으로 적용**:
+### 🎭 채널 브랜딩 자동화 (YAML 기반) - 핵심 아키텍처
+**이 시스템의 독특한 특징 중 하나입니다. 모든 YouTube 업로드 시 자동으로 적용**:
 - **설명 자동 확장**: 대본 설명 + 채널 기본 설명글 (구독 유도, 저작권 안내 등)
 - **태그 스마트 결합**: 대본 태그 + 채널 기본 태그 (중복 제거, 별도 필드)
 - **YouTube API 구조 준수**: Description(5,000바이트)와 Tags(500자) 완전 분리
 - **원본 콘텐츠 우선**: 대본 설명/태그가 우선적으로 보존됨
-- **YAML 기반 관리**: `config/channels.yaml`에서 중앙화된 채널 설정 관리
+- **YAML 기반 실시간 관리**: `config/channels.yaml`에서 중앙화된 채널 설정 관리
 
-**설정 파일**: `config/channels.yaml` (마음서랍 채널 완전 통합)
-**로더**: `backend/app/core/yaml_loader.py` (싱글톤 패턴)
-**상수 클래스**: `backend/app/core/constants.py` → `ChannelConstants`
+**핵심 파일들**:
+- **설정 파일**: `config/channels.yaml` (마음서랍 채널 완전 통합)
+- **로더**: `backend/app/core/yaml_loader.py` (싱글톤 패턴)
+- **상수 클래스**: `backend/app/core/constants.py` → `ChannelConstants`
 
 ```python
 # 사용 예시 - YAML 기반 동적 로딩
@@ -307,8 +320,8 @@ poetry run mypy backend/app/                               # 타입 체킹
 # 보안 검사 (backend/ 디렉토리에서)
 make security
 
-# Pre-commit 훅 (자동화된 코드 품질 검증)
-make pre-commit        # pre-commit 훅 설치
+# Pre-commit 훅 (고급 보안 및 품질 자동화)
+make pre-commit        # pre-commit 훅 설치 (bandit 보안 검사, safety 취약점 검사 포함)
 make pre-commit-run    # 수동 실행 (모든 파일 대상)
 ```
 
@@ -361,7 +374,10 @@ make pre-commit-run    # 수동 실행 (모든 파일 대상)
 - **autoflake**: 미사용 import 자동 제거
 - **flake8**: 린팅 (88자 제한, E203/W503 무시)
 - **mypy**: 타입 체킹
-- **pre-commit**: Git 훅
+- **pre-commit**: Git 훅 (고급 보안 검사 포함)
+- **bandit**: 보안 취약점 검사
+- **safety**: 의존성 취약점 검사
+- **commitizen**: 커밋 메시지 표준화
 
 ## 🎯 시스템 최적화 현황 (2025-08)
 

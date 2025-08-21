@@ -549,11 +549,16 @@ if __name__ == "__main__":
     app = create_clean_app()
     
     # 앱 실행
+    print(f"🚀 Gradio 서버 시작 중... 포트 {port}")
+    print(f"📱 브라우저에서 접속하세요: http://localhost:{port}")
+    print(f"🔗 백엔드 API 연결: http://localhost:8000")
+    print("=" * 60)
+    
     app.launch(
         server_name="0.0.0.0",
         server_port=port,
         share=False,
         show_error=True,
         favicon_path=None,
-        inbrowser=True
+        inbrowser=False  # macOS 호환성을 위해 브라우저 자동 실행 비활성화
     )

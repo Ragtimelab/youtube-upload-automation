@@ -40,8 +40,8 @@ class CleanGradioClient:
         """스크립트 목록 조회"""
         try:
             result = self.api.get_scripts()
-            # API 응답의 data 필드가 직접 스크립트 배열임
-            scripts = result if isinstance(result, list) else []
+            # API 응답에서 data 필드 추출
+            scripts = result.get('data', []) if isinstance(result, dict) else result if isinstance(result, list) else []
             return [[s['id'], s['title'], s['status'], s.get('created_at', '')] for s in scripts]
         except Exception as e:
             return [["오류", f"목록 조회 실패: {str(e)}", "", ""]]
@@ -50,8 +50,8 @@ class CleanGradioClient:
         """특정 상태의 스크립트 선택지"""
         try:
             result = self.api.get_scripts(status=status_filter)
-            # API 응답의 data 필드가 직접 스크립트 배열임
-            scripts = result if isinstance(result, list) else []
+            # API 응답에서 data 필드 추출
+            scripts = result.get('data', []) if isinstance(result, dict) else result if isinstance(result, list) else []
             choices = [f"[{s['id']}] {s['title']}" for s in scripts]
             return gr.update(choices=choices)
         except Exception as e:
@@ -361,6 +361,7 @@ class CleanYouTubeAutomationInterface:
             inputs=[script_dropdown, video_file],
             outputs=[video_result]
         )
+        
     
     def _create_youtube_tab(self):
         """YouTube 업로드 탭 구성 (개별 + 배치 업로드)"""

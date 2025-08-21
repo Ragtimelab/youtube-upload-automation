@@ -636,7 +636,10 @@ class GradioAPIClient:
     def quick_batch_process(self, count_str: str) -> str:
         """빠른 배치 처리"""
         try:
-            count = int(count_str.strip()) if count_str.strip().isdigit() else 1
+            if not count_str.strip().isdigit():
+                return "❌ 올바른 숫자를 입력해주세요."
+            
+            count = int(count_str.strip())
             
             if count <= 0 or count > 10:
                 return "❌ 처리할 스크립트 개수는 1-10개 사이여야 합니다."

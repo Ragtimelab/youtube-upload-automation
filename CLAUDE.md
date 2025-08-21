@@ -84,6 +84,22 @@ make deps-show          # 설치된 의존성 표시
 ./youtube-cli status                         # 상태 확인
 ```
 
+### Gradio Web Interface (GUI)
+```bash
+# 웹 인터페이스 실행 (백엔드 서버 필요)
+poetry run python gradio_app.py
+
+# 브라우저에서 접속
+# http://localhost:7860 (기본 Gradio 포트)
+
+# 주요 기능
+- 스크립트 업로드 (파일 드래그 앤 드롭)
+- 스크립트 목록 조회 (실시간 새로고침)
+- 비디오 업로드 (진행률 표시)
+- YouTube 업로드 (상태 모니터링)
+- 시스템 상태 확인
+```
+
 ## 📂 파일 명명 규칙 및 형식
 
 ### 날짜 기반 파일명 패턴
@@ -149,21 +165,29 @@ LOG_LEVEL=INFO
 script_ready → video_ready → uploaded → error
 ```
 
-### 🎭 채널 브랜딩 자동화 (NEW!)
+### 🎭 채널 브랜딩 자동화 (YAML 기반)
 **모든 YouTube 업로드 시 자동으로 적용**:
 - **설명 자동 확장**: 대본 설명 + 채널 기본 설명글 (구독 유도, 저작권 안내 등)
 - **태그 스마트 결합**: 대본 태그 + 채널 기본 태그 (중복 제거, 별도 필드)
 - **YouTube API 구조 준수**: Description(5,000바이트)와 Tags(500자) 완전 분리
 - **원본 콘텐츠 우선**: 대본 설명/태그가 우선적으로 보존됨
+- **YAML 기반 관리**: `config/channels.yaml`에서 중앙화된 채널 설정 관리
 
-**설정 위치**: `backend/app/core/constants.py` → `ChannelConstants`
+**설정 파일**: `config/channels.yaml` (마음서랍 채널 완전 통합)
+**로더**: `backend/app/core/yaml_loader.py` (싱글톤 패턴)
+**상수 클래스**: `backend/app/core/constants.py` → `ChannelConstants`
+
 ```python
-# 사용 예시 - 완전 분리된 구조
+# 사용 예시 - YAML 기반 동적 로딩
 final_description = ChannelConstants.combine_description("대본 설명")  # 순수 텍스트만
 final_tags = ChannelConstants.combine_tags("대본 태그")  # 태그만 별도 처리
+
+# 채널별 설정 접근
+from backend.app.core.yaml_loader import channel_loader
+channel_config = channel_loader.get_channel_config("maeum-seorab")
 ```
 
-**중요**: 해시태그는 `DESCRIPTION_FOOTER`에서 제거되어 `DEFAULT_TAGS`로 완전 분리 관리됩니다.
+**중요**: 모든 채널 브랜딩 자산(설명글, 태그, 메타데이터)이 YAML 파일에서 실시간 로드되어 즉시 반영됩니다.
 
 ### YouTube API 제한사항 (YouTubeConstants)
 - **일일 할당량**: 10,000 units
@@ -230,13 +254,16 @@ GET    /docs                         # API 문서 (Swagger)
 
 ### Constants 중앙화 시스템
 **핵심**: 모든 하드코딩 값은 `backend/app/core/constants.py`에 중앙화
-- `YouTubeConstants`: API 제한, 기본값
-- `FileConstants`: 파일 크기, 확장자 제한
+- `YouTubeConstants`: API 제한, 기본값, 배치 업로드 설정
+- `FileConstants`: 파일 크기, 확장자 제한, 업로드 청크 크기
 - `NetworkConstants`: 재시도, 타임아웃 설정
 - `PathConstants`: 디렉토리 경로, 파일명
 - `MessageConstants`: 사용자 메시지
 - `ValidationConstants`: 날짜 형식, 정규식
-- `ChannelConstants`: 채널 기본 설명글, 태그 (자동 추가)
+- `ChannelConstants`: YAML 기반 채널 브랜딩 (동적 로딩)
+- `LoggingConstants`: 로그 파일 크기, 백업 설정
+- `PaginationConstants`: API 페이지네이션 기본값
+- `TimeConstants`: 모니터링, 새로고침 간격
 
 ### CLI 명령 구조
 - `cli/commands/script.py`: 스크립트 관리
@@ -279,6 +306,10 @@ poetry run mypy backend/app/                               # 타입 체킹
 
 # 보안 검사 (backend/ 디렉토리에서)
 make security
+
+# Pre-commit 훅 (자동화된 코드 품질 검증)
+make pre-commit        # pre-commit 훅 설치
+make pre-commit-run    # 수동 실행 (모든 파일 대상)
 ```
 
 ## 🚨 트러블슈팅
@@ -292,6 +323,11 @@ make security
 - **Poetry 환경**: `poetry run python --version` 확인 (Poetry 2.0+ 권장)
 - **실행 권한**: `chmod +x youtube-cli`
 - **파일명 규칙**: YYYYMMDD_NN_story.md/mp4 패턴 확인
+
+### Gradio Web Interface 문제
+- **백엔드 의존성**: 백엔드 서버(port 8000)가 먼저 실행되어야 함
+- **포트 충돌**: 기본 포트 7860 사용, 충돌 시 자동으로 다른 포트 할당
+- **API 연결**: `curl http://localhost:8000/health`로 백엔드 상태 확인
 
 ### 인증 문제
 - **OAuth2 파일**: `.secrets/youtube-oauth2.json` 존재 확인
@@ -327,12 +363,16 @@ make security
 - **mypy**: 타입 체킹
 - **pre-commit**: Git 훅
 
-## 🎯 시스템 최적화 현황 (2025-01)
+## 🎯 시스템 최적화 현황 (2025-08)
 
 ### ✅ 최근 완료된 최적화
+- **YAML 기반 채널 브랜딩**: config/channels.yaml을 통한 중앙화된 채널 설정 관리 (싱글톤 패턴)
+- **Gradio Web Interface**: CLI와 동일한 기능의 사용자 친화적 웹 GUI 추가
 - **의존성 정리**: 미사용 패키지 3개 제거 (pydub, playwright, colorama) - 15-20% 크기 감소
 - **API 응답 표준화**: 모든 엔드포인트 SuccessResponse 형식 통일
 - **코드 품질 개선**: flake8 88자 제한, autoflake 자동 import 정리 도구 추가
+- **Pre-commit 훅 강화**: 보안 검사(bandit), 의존성 취약점 검사(safety), 커밋 메시지 표준화
+- **Constants 확장**: 로깅, 페이지네이션, 시간 관련 상수 추가로 완전한 중앙화 구현
 - **테스트 안정성**: 33개 핵심 테스트 100% 통과 상태 유지
 - **개발 환경 표준화**: Poetry 2.0+ 지원, 자동화된 코드 품질 검증 체계
 
@@ -342,6 +382,8 @@ make security
 - **코드 품질**: flake8/black/isort 규칙 준수 ✅
 - **의존성 상태**: 최적화 완료 ✅
 - **CLI 도구**: 정상 작동 ✅
+- **Web Interface**: Gradio 기반 GUI 완전 통합 ✅
+- **채널 브랜딩**: YAML 기반 동적 관리 ✅
 
 ---
 

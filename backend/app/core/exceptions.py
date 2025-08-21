@@ -108,6 +108,6 @@ class YouTubeQuotaExceededError(BaseAppException):
 
     def __init__(
         self,
-        message: str = "YouTube API 할당량이 초과되었습니다. 내일 다시 시도해주세요.",
+        message: str = "YouTube API 할당량이 초과되었습니다. Pacific Time 자정(한국시간 오후 4-5시)에 리셋됩니다.",
     ):
         super().__init__(message, 429)

@@ -297,6 +297,7 @@ def quota():
         console.print(f"📈 사용된 할당량: {quota_used:,} units ({quota_used/100:.1f}%)", style="cyan")
         console.print(f"📈 남은 할당량: {quota_remaining:,} units", style="green")
         console.print(f"📈 추가 업로드 가능: {remaining_uploads}개", style="yellow")
+        console.print(f"🕐 할당량 리셋: Pacific Time 자정 (한국시간 오후 4-5시)", style="bright_black")
         
         # 제한 정보
         console.print(f"\n⚡ 제한 정보:", style="bold")

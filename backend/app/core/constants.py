@@ -132,6 +132,11 @@ class YouTubeConstants:
     VIDEO_UPLOAD_COST = 1600  # units per upload
     VIDEO_LIST_COST = 1  # units per request
     CHANNEL_INFO_COST = 1  # units per request
+    # 할당량 초기화 시간 (YouTube API 공식 문서 기준)
+    QUOTA_RESET_TIME_PT = "00:00"  # Pacific Time
+    QUOTA_RESET_TIME_KST_STANDARD = "17:00"  # 한국시간 (표준시, UTC-8→UTC+9) 
+    QUOTA_RESET_TIME_KST_DAYLIGHT = "16:00"  # 한국시간 (일광절약시간, UTC-7→UTC+9)
+    QUOTA_RESET_DESCRIPTION = "Pacific Time (UTC-7/UTC-8) 자정에 리셋"
 
     # 배치 업로드 제한 (일일 할당량 기반)
     MAX_DAILY_UPLOADS = 6  # 10,000 ÷ 1,600 = 6.25

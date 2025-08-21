@@ -219,7 +219,7 @@ cd backend && make run
 
 **해결책:**
 
-- 다음 날까지 대기 (할당량은 UTC 기준 자정에 리셋)
+- 다음 날까지 대기 (할당량은 Pacific Time 자정에 리셋, 한국시간 오후 4-5시)
 - Google Cloud Console에서 할당량 증가 요청
 
 ### Q: "video_ready 상태 스크립트가 없습니다"라고 나와요

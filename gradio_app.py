@@ -120,6 +120,7 @@ class CleanGradioClient:
             # 할당량 정보 추가
             quota_used = success_count * 1600
             response += f"API 할당량 사용: {quota_used}/10,000 units ({quota_used/100:.1f}%)\n"
+            response += f"🕐 할당량 리셋: Pacific Time 자정 (한국시간 오후 4-5시)\n"
             
             # 상세 결과
             uploads = result.get('uploads', [])
@@ -414,6 +415,7 @@ class CleanYouTubeAutomationInterface:
         with gr.Tab("배치 업로드"):
             gr.Markdown("### 📚 YouTube 배치 업로드")
             gr.Markdown("⚠️ **할당량 제한**: 한 번에 최대 5개까지만 업로드 가능 (YouTube API 제한)")
+            gr.Markdown("🕐 **할당량 리셋**: Pacific Time 자정 (한국시간 오후 4-5시)")
             
             with gr.Row():
                 with gr.Column():

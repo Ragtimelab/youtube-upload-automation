@@ -2,12 +2,14 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import { Layout } from '@/components/layout/Layout'
 import { Toaster } from '@/components/Toaster'
+import { RealTimeNotifications } from '@/components/RealTimeNotifications'
 import { HomePage } from '@/pages/HomePage'
 import { ScriptsPage } from '@/pages/ScriptsPage'
 import { UploadPage } from '@/pages/UploadPage'
 import YouTubeUpload from '@/pages/YouTubeUpload'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { StatusPage } from '@/pages/StatusPage'
+import { PipelinePage } from '@/pages/PipelinePage'
 import { SettingsPage } from '@/pages/SettingsPage'
 
 function App() {
@@ -22,9 +24,11 @@ function App() {
             <Route path="/youtube" element={<YouTubeUpload />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/status" element={<StatusPage />} />
+            <Route path="/pipeline" element={<PipelinePage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </Layout>
+        <RealTimeNotifications />
         <Toaster />
       </Router>
     </QueryProvider>

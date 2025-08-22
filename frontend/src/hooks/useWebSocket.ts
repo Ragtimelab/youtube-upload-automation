@@ -36,6 +36,7 @@ export function useWebSocket(config: WebSocketConfig) {
   const reconnectTimer = useRef<NodeJS.Timeout | null>(null)
   const heartbeatTimer = useRef<NodeJS.Timeout | null>(null)
   const messageHandlers = useRef<Map<string, (data: any) => void>>(new Map())
+  const connectionChangeHandlers = useRef<((isConnected: boolean, status: string) => void)[]>([])
 
   const {
     url,
@@ -99,6 +100,11 @@ export function useWebSocket(config: WebSocketConfig) {
           reconnectAttempts: 0,
         }))
         
+        // 연결 상태 변화 핸들러 실행
+        connectionChangeHandlers.current.forEach(handler => {
+          handler(true, 'connected')
+        })
+        
         // 연결 후 구독 메시지 전송
         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
           ws.current.send(JSON.stringify({
@@ -140,6 +146,12 @@ export function useWebSocket(config: WebSocketConfig) {
           isConnected: false,
           connectionStatus: 'disconnected'
         }))
+        
+        // 연결 상태 변화 핸들러 실행
+        connectionChangeHandlers.current.forEach(handler => {
+          handler(false, 'disconnected')
+        })
+        
         stopHeartbeat()
         
         // 재연결 시도
@@ -215,6 +227,18 @@ export function useWebSocket(config: WebSocketConfig) {
     }
   }, [])
 
+  // 연결 상태 변화 핸들러 등록
+  const onConnectionChange = useCallback((handler: (isConnected: boolean, status: string) => void) => {
+    connectionChangeHandlers.current.push(handler)
+    
+    return () => {
+      const index = connectionChangeHandlers.current.indexOf(handler)
+      if (index > -1) {
+        connectionChangeHandlers.current.splice(index, 1)
+      }
+    }
+  }, [])
+
   // 상태 정보 요청
   const requestStatus = useCallback(() => {
     return sendMessage({
@@ -247,6 +271,7 @@ export function useWebSocket(config: WebSocketConfig) {
     disconnect,
     sendMessage,
     onMessage,
+    onConnectionChange,
     requestStatus,
   }
 }

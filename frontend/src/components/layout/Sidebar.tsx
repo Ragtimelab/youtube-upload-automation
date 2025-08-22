@@ -6,7 +6,8 @@ import {
   BarChart3, 
   Settings,
   Home,
-  Activity
+  Activity,
+  Workflow
 } from 'lucide-react'
 
 export function Sidebar() {
@@ -19,6 +20,7 @@ export function Sidebar() {
     { name: 'YouTube 업로드', href: '/youtube', icon: Youtube },
     { name: '대시보드', href: '/dashboard', icon: BarChart3 },
     { name: '실시간 상태', href: '/status', icon: Activity },
+    { name: '파이프라인', href: '/pipeline', icon: Workflow },
   ]
 
   const isActive = (href: string) => location.pathname === href

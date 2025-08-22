@@ -14,7 +14,8 @@
 8. [시스템 모니터링](#-시스템-모니터링)
 9. [실제 워크플로우](#-실제-워크플로우)
 10. [빠른 명령어](#-빠른-명령어)
-11. [문제 해결](#-문제-해결)
+11. [개발 도구](#-개발-도구)
+12. [문제 해결](#-문제-해결)
 
 ---
 
@@ -579,6 +580,27 @@ rm .secrets/token.pickle      # 토큰 재생성 (필요시)
 ls -lh my_video.mp4                  # 파일 크기 확인
 # 비디오 압축 필요 (외부 도구 사용)
 ffmpeg -i input.mp4 -crf 23 output.mp4
+```
+
+### 개발 도구
+
+#### 코드 품질 도구
+
+```bash
+# Backend 디렉토리에서 실행
+cd backend/
+
+# 코드 포매팅 (black + isort + autoflake)
+make format           # 전체 포매팅 파이프라인
+make format-check     # CI용 포매팅 검사
+
+# 린트 검사
+make lint            # flake8 + mypy
+
+# 개별 도구 실행 (프로젝트 루트에서)
+poetry run black backend/app/                     # 코드 포매팅
+poetry run isort backend/app/                     # import 정렬
+poetry run autoflake --remove-all-unused-imports --recursive backend/app/  # 미사용 import 제거
 ```
 
 ### 디버깅 도구

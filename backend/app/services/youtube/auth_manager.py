@@ -5,14 +5,14 @@ YouTube API 인증 관리자
 import os
 import pickle
 
-# Type hints for Google API
-
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow  # type: ignore
 
 from ...config import get_settings
 from ...core.exceptions import YouTubeAuthenticationError
+
+# Type hints for Google API
 
 
 class YouTubeAuthManager:

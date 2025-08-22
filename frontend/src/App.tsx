@@ -1,10 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import { Layout } from '@/components/layout/Layout'
+import { Toaster } from '@/components/Toaster'
 import { HomePage } from '@/pages/HomePage'
 import { ScriptsPage } from '@/pages/ScriptsPage'
 import { UploadPage } from '@/pages/UploadPage'
-import { YouTubePage } from '@/pages/YouTubePage'
+import YouTubeUpload from '@/pages/YouTubeUpload'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { StatusPage } from '@/pages/StatusPage'
 import { SettingsPage } from '@/pages/SettingsPage'
@@ -18,12 +19,13 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/scripts" element={<ScriptsPage />} />
             <Route path="/upload" element={<UploadPage />} />
-            <Route path="/youtube" element={<YouTubePage />} />
+            <Route path="/youtube" element={<YouTubeUpload />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/status" element={<StatusPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
         </Layout>
+        <Toaster />
       </Router>
     </QueryProvider>
   )

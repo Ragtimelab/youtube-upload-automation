@@ -44,7 +44,10 @@ class InvalidScriptStatusError(BaseAppException):
     """잘못된 대본 상태로 인한 예외"""
 
     def __init__(self, current_status: str, required_status: str):
-        message = f"현재 상태({current_status})에서는 해당 작업을 수행할 수 없습니다. 필요 상태: {required_status}"
+        message = (
+            f"현재 상태({current_status})에서는 해당 작업을 "
+            f"수행할 수 없습니다. 필요 상태: {required_status}"
+        )
         super().__init__(message, 400)
 
 
@@ -108,6 +111,9 @@ class YouTubeQuotaExceededError(BaseAppException):
 
     def __init__(
         self,
-        message: str = "YouTube API 할당량이 초과되었습니다. Pacific Time 자정(한국시간 오후 4-5시)에 리셋됩니다.",
+        message: str = (
+            "YouTube API 할당량이 초과되었습니다. "
+            "Pacific Time 자정(한국시간 오후 4-5시)에 리셋됩니다."
+        ),
     ):
         super().__init__(message, 429)

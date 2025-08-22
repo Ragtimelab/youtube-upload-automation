@@ -241,7 +241,11 @@ class ScriptParser:
         description_bytes = len(description.encode("utf-8"))
         if description_bytes > YouTubeConstants.DESCRIPTION_MAX_BYTES:
             errors.append(
-                f"설명이 너무 깁니다 ({description_bytes}/{YouTubeConstants.DESCRIPTION_MAX_BYTES} 바이트)"
+                (
+                    f"설명이 너무 깁니다 "
+                    f"({description_bytes}/{YouTubeConstants.DESCRIPTION_MAX_BYTES} "
+                    f"바이트)"
+                )
             )
 
         # 태그 길이 제한 (YouTube API)

@@ -44,7 +44,10 @@ class FileValidator:
 
         if file_extension not in self.settings.allowed_video_extensions:
             raise FileValidationError(
-                f"지원되지 않는 비디오 형식입니다. 지원 형식: {', '.join(self.settings.allowed_video_extensions)}"
+                (
+                    f"지원되지 않는 비디오 형식입니다. "
+                    f"지원 형식: {', '.join(self.settings.allowed_video_extensions)}"
+                )
             )
 
         # 파일 크기 검증 (예상 크기 체크)

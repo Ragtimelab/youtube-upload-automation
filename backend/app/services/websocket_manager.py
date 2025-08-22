@@ -187,7 +187,10 @@ class ConnectionManager:
                 await self.send_personal_message(connection_id, message)
 
             logger.debug(
-                f"업로드 진행률 브로드캐스트: script_id={script_id}, 진행률={progress_data.get('progress_percentage', 0)}%"
+                (
+                    f"업로드 진행률 브로드캐스트: script_id={script_id}, "
+                    f"진행률={progress_data.get('progress_percentage', 0)}%"
+                )
             )
 
     async def broadcast_system_notification(self, notification: dict):
@@ -229,7 +232,10 @@ class WebSocketNotificationService:
         await self.manager.broadcast_system_notification(
             {
                 "title": "새 스크립트 업로드",
-                "message": f"새로운 스크립트 '{script_data.get('title', 'Unknown')}'가 업로드되었습니다.",
+                "message": (
+                    f"새로운 스크립트 '{script_data.get('title', 'Unknown')}'가 "
+                    f"업로드되었습니다."
+                ),
                 "type": "info",
                 "script_id": script_data.get("id"),
                 "data": script_data,
@@ -284,7 +290,10 @@ class WebSocketNotificationService:
         await self.manager.broadcast_system_notification(
             {
                 "title": "YouTube 업로드 완료",
-                "message": f"'{script_data.get('title', 'Unknown')}'가 YouTube에 성공적으로 업로드되었습니다.",
+                "message": (
+                    f"'{script_data.get('title', 'Unknown')}'가 YouTube에 "
+                    f"성공적으로 업로드되었습니다."
+                ),
                 "type": "success",
                 "script_id": script_id,
                 "youtube_url": youtube_url,
@@ -307,7 +316,10 @@ class WebSocketNotificationService:
         await self.manager.broadcast_system_notification(
             {
                 "title": "업로드 오류",
-                "message": f"'{script_data.get('title', 'Unknown')}' 업로드 중 오류가 발생했습니다: {error_message}",
+                "message": (
+                    f"'{script_data.get('title', 'Unknown')}' 업로드 중 "
+                    f"오류가 발생했습니다: {error_message}"
+                ),
                 "type": "error",
                 "script_id": script_id,
             }

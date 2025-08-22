@@ -408,8 +408,11 @@ class UploadService:
             if video_file.size > self.settings.max_video_size_bytes:
                 size_mb = video_file.size / FileConstants.BYTES_PER_MB
                 raise FileValidationError(
-                    f"파일 크기가 너무 큽니다. 최대 {self.settings.max_video_size_mb}MB까지 업로드 가능합니다. "
-                    f"현재 파일 크기: {size_mb:.1f}MB"
+                    (
+                        f"파일 크기가 너무 큽니다. "
+                        f"최대 {self.settings.max_video_size_mb}MB까지 업로드 가능합니다. "
+                        f"현재 파일 크기: {size_mb:.1f}MB"
+                    )
                 )
 
         # 파일 내용 검증 (첫 바이트를 읽어서 파일이 비어있지 않은지 확인)

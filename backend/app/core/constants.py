@@ -134,7 +134,7 @@ class YouTubeConstants:
     CHANNEL_INFO_COST = 1  # units per request
     # 할당량 초기화 시간 (YouTube API 공식 문서 기준)
     QUOTA_RESET_TIME_PT = "00:00"  # Pacific Time
-    QUOTA_RESET_TIME_KST_STANDARD = "17:00"  # 한국시간 (표준시, UTC-8→UTC+9) 
+    QUOTA_RESET_TIME_KST_STANDARD = "17:00"  # 한국시간 (표준시, UTC-8→UTC+9)
     QUOTA_RESET_TIME_KST_DAYLIGHT = "16:00"  # 한국시간 (일광절약시간, UTC-7→UTC+9)
     QUOTA_RESET_DESCRIPTION = "Pacific Time (UTC-7/UTC-8) 자정에 리셋"
 
@@ -233,7 +233,10 @@ class MessageConstants:
 
     # 도움말 메시지
     CHECK_CREDENTIALS_HELP = "💡 credentials.json 파일을 확인하세요."
-    CHECK_SERVER_HELP = f"💡 백엔드 서버가 실행 중인지 확인하세요 ({NetworkConstants.DEFAULT_API_BASE_URL})"
+    CHECK_SERVER_HELP = (
+        f"💡 백엔드 서버가 실행 중인지 확인하세요 "
+        f"({NetworkConstants.DEFAULT_API_BASE_URL})"
+    )
 
 
 class ValidationConstants:

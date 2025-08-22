@@ -2,6 +2,8 @@
 전역 에러 핸들링 미들웨어
 """
 
+from typing import Optional
+
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -25,7 +27,9 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
 
             # 에러 타입별 응답 처리
             if isinstance(e, ValidationError):
-                error_response = ValidationErrorResponse.create(e.message)
+                error_response: ErrorResponse = ValidationErrorResponse.create(
+                    e.message
+                )
             else:
                 error_response = ErrorResponse.create(
                     message=e.message, error_code=e.__class__.__name__
@@ -36,28 +40,30 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
             )
         except HTTPException as e:
             logger.warning(f"HTTP error: {e.detail} (path: {request.url.path})")
-            error_response = ErrorResponse.create(
+            http_error_response = ErrorResponse.create(
                 message=str(e.detail), error_code="HTTP_EXCEPTION"
             )
             return JSONResponse(
-                status_code=e.status_code, content=error_response.model_dump()
+                status_code=e.status_code, content=http_error_response.model_dump()
             )
         except Exception as e:
             logger.error(
                 f"Unhandled error: {str(e)} (path: {request.url.path})", exc_info=True
             )
-            error_response = ErrorResponse.create(
+            general_error_response = ErrorResponse.create(
                 message="예기치 않은 서버 오류가 발생했습니다.",
                 error_code="INTERNAL_SERVER_ERROR",
                 error_details=(
                     {"original_error": str(e)} if logger.level <= 10 else None
                 ),  # DEBUG 레벨에서만 상세 에러 포함
             )
-            return JSONResponse(status_code=500, content=error_response.model_dump())
+            return JSONResponse(
+                status_code=500, content=general_error_response.model_dump()
+            )
 
 
 def create_error_response(
-    message: str, status_code: int = 400, error_code: str = None
+    message: str, status_code: int = 400, error_code: Optional[str] = None
 ) -> JSONResponse:
     """표준화된 에러 응답 생성"""
     error_response = ErrorResponse.create(

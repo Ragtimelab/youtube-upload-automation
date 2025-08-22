@@ -3,9 +3,9 @@ YouTube 업로드 관리자
 """
 
 import os
-from typing import Optional
+from typing import Any, Dict, Optional
 
-from googleapiclient.discovery import build
+from googleapiclient.discovery import Resource, build
 from googleapiclient.http import MediaFileUpload
 
 from ...config import get_settings
@@ -25,10 +25,10 @@ class YouTubeUploadManager:
 
     def __init__(self, auth_manager: YouTubeAuthManager):
         self.auth_manager = auth_manager
-        self.youtube = None
+        self.youtube: Optional[Resource] = None
         self.settings = get_settings()
 
-    def _ensure_authenticated(self):
+    def _ensure_authenticated(self) -> None:
         """인증 상태 확인 및 YouTube 클라이언트 초기화"""
         if not self.auth_manager.is_authenticated():
             raise YouTubeAuthenticationError("인증이 필요합니다.")
@@ -37,7 +37,14 @@ class YouTubeUploadManager:
             credentials = self.auth_manager.get_credentials()
             self.youtube = build("youtube", "v3", credentials=credentials)
 
-    def upload_video(self, video_path: str, metadata: dict) -> Optional[str]:
+    def _get_youtube_client(self) -> Resource:
+        """인증된 YouTube 클라이언트 반환 (타입 보장)"""
+        self._ensure_authenticated()
+        if self.youtube is None:
+            raise YouTubeAuthenticationError("YouTube 클라이언트 초기화 실패")
+        return self.youtube
+
+    def upload_video(self, video_path: str, metadata: Dict[str, Any]) -> Optional[str]:
         """YouTube에 비디오 업로드
 
         Args:
@@ -46,7 +53,9 @@ class YouTubeUploadManager:
                 - title: 제목 (필수)
                 - description: 설명
                 - tags: 태그 (문자열 또는 리스트)
-                - category_id: 카테고리 ID (기본: {YouTubeConstants.DEFAULT_CATEGORY_ID} - Entertainment)
+                - category_id: 카테고리 ID (
+                    기본: {YouTubeConstants.DEFAULT_CATEGORY_ID} - Entertainment
+                )
                 - privacy_status: 공개 설정 (private, unlisted, public)
                 - scheduled_time: 예약 발행 시간 (ISO 8601 형식)
 
@@ -83,7 +92,8 @@ class YouTubeUploadManager:
             media = MediaFileUpload(video_path, chunksize=chunk_size, resumable=True)
 
             # 업로드 요청 실행
-            request = self.youtube.videos().insert(
+            youtube_client = self._get_youtube_client()
+            request = youtube_client.videos().insert(
                 part=",".join(body.keys()), body=body, media_body=media
             )
 
@@ -113,12 +123,17 @@ class YouTubeUploadManager:
                         if chunk_size > FileConstants.CHUNK_SIZE_1MB:  # 1MB보다 큰 경우
                             chunk_size = chunk_size // 2
                             print(
-                                f"🔄 청크 크기를 {chunk_size // FileConstants.BYTES_PER_MB}MB로 줄여서 재시도..."
+                                (
+                                    f"🔄 청크 크기를 "
+                                    f"{chunk_size // FileConstants.BYTES_PER_MB}MB로 "
+                                    f"줄여서 재시도..."
+                                )
                             )
                             media = MediaFileUpload(
                                 video_path, chunksize=chunk_size, resumable=True
                             )
-                            request = self.youtube.videos().insert(
+                            youtube_client = self._get_youtube_client()
+                            request = youtube_client.videos().insert(
                                 part=",".join(body.keys()), body=body, media_body=media
                             )
                         else:
@@ -156,7 +171,8 @@ class YouTubeUploadManager:
         self._ensure_authenticated()
 
         try:
-            request = self.youtube.videos().list(
+            youtube_client = self._get_youtube_client()
+            request = youtube_client.videos().list(
                 part="snippet,status,statistics", id=video_id
             )
             response = request.execute()
@@ -182,7 +198,7 @@ class YouTubeUploadManager:
             print(f"❌ 비디오 정보 조회 실패: {e}")
             return None
 
-    def update_video_metadata(self, video_id: str, metadata: dict) -> bool:
+    def update_video_metadata(self, video_id: str, metadata: Dict[str, Any]) -> bool:
         """비디오 메타데이터 업데이트"""
         self._ensure_authenticated()
 
@@ -193,7 +209,7 @@ class YouTubeUploadManager:
                 return False
 
             # 업데이트할 메타데이터 구성
-            body = {
+            body: Dict[str, Any] = {
                 "id": video_id,
                 "snippet": {
                     "title": metadata.get("title", current_video["title"]),
@@ -211,14 +227,21 @@ class YouTubeUploadManager:
                     # 태그 문자열 전체 길이 제한
                     if len(tags) > 500:
                         tags = tags[:500]
-                    tags = [tag.strip() for tag in tags.split(",") if tag.strip()]
-                body["snippet"]["tags"] = tags
+                    tag_list = [tag.strip() for tag in tags.split(",") if tag.strip()]
+                elif isinstance(tags, list):
+                    tag_list = tags
+                else:
+                    tag_list = []
+
+                # snippet에 tags 할당
+                body["snippet"]["tags"] = tag_list
 
             # 공개 설정 업데이트
             if metadata.get("privacy_status"):
                 body["status"] = {"privacyStatus": metadata["privacy_status"]}
 
-            request = self.youtube.videos().update(
+            youtube_client = self._get_youtube_client()
+            request = youtube_client.videos().update(
                 part=",".join(body.keys()), body=body
             )
 
@@ -230,7 +253,7 @@ class YouTubeUploadManager:
             print(f"❌ 비디오 메타데이터 업데이트 실패: {e}")
             return False
 
-    def _build_upload_body(self, metadata: dict) -> dict:
+    def _build_upload_body(self, metadata: Dict[str, Any]) -> Dict[str, Any]:
         """업로드용 메타데이터 구성 (채널 기본 정보 자동 추가)"""
         # 원본 설명에 채널 기본 설명 추가
         original_description = metadata.get("description", "")
@@ -250,7 +273,7 @@ class YouTubeUploadManager:
         else:
             tags = []
 
-        body = {
+        body: Dict[str, Any] = {
             "snippet": {
                 "title": metadata["title"][: YouTubeConstants.TITLE_MAX_LENGTH],
                 "description": combined_description,

@@ -13,9 +13,9 @@ class BaseResponse(BaseModel):
 
     success: bool
     message: str
-    timestamp: datetime = None
+    timestamp: Optional[datetime] = None
 
-    def __init__(self, **data):
+    def __init__(self, **data: Any) -> None:
         if "timestamp" not in data:
             data["timestamp"] = datetime.now(timezone.utc)
         super().__init__(**data)
@@ -48,7 +48,10 @@ class ErrorResponse(BaseResponse):
 
     @classmethod
     def create(
-        cls, message: str, error_code: str = None, error_details: Dict[str, Any] = None
+        cls,
+        message: str,
+        error_code: Optional[str] = None,
+        error_details: Optional[Dict[str, Any]] = None,
     ) -> "ErrorResponse":
         return cls(message=message, error_code=error_code, error_details=error_details)
 
@@ -63,9 +66,16 @@ class ValidationErrorResponse(ErrorResponse):
     def create(
         cls,
         message: str = "입력 데이터 검증에 실패했습니다.",
-        validation_errors: List[Dict[str, str]] = None,
+        error_code: Optional[str] = None,
+        error_details: Optional[Dict[str, Any]] = None,
+        validation_errors: Optional[List[Dict[str, str]]] = None,
     ) -> "ValidationErrorResponse":
-        return cls(message=message, validation_errors=validation_errors or [])
+        return cls(
+            message=message,
+            error_code=error_code or "VALIDATION_ERROR",
+            error_details=error_details,
+            validation_errors=validation_errors or [],
+        )
 
 
 class PaginatedResponse(SuccessResponse):
@@ -76,21 +86,26 @@ class PaginatedResponse(SuccessResponse):
     @classmethod
     def create(
         cls,
-        data: List[Any],
-        total: int,
+        message: str = "조회가 완료되었습니다.",
+        data: Optional[Any] = None,
+        total: Optional[int] = None,
         skip: int = 0,
         limit: int = 100,
-        message: str = "조회가 완료되었습니다.",
     ) -> "PaginatedResponse":
+        if data is None:
+            data = []
+        if total is None:
+            total = len(data) if isinstance(data, list) else 0
+
         return cls(
             message=message,
             data=data,
             pagination={
                 "total": total,
-                "count": len(data),
+                "count": len(data) if isinstance(data, list) else 0,
                 "skip": skip,
                 "limit": limit,
-                "has_more": skip + len(data) < total,
+                "has_more": skip + (len(data) if isinstance(data, list) else 0) < total,
             },
         )
 
@@ -100,17 +115,15 @@ class ScriptResponse(SuccessResponse):
 
     @classmethod
     def created(cls, script_data: Dict[str, Any]) -> "ScriptResponse":
-        return cls.create(
-            message="대본이 성공적으로 업로드되었습니다.", data=script_data
-        )
+        return cls(message="대본이 성공적으로 업로드되었습니다.", data=script_data)
 
     @classmethod
     def updated(cls, script_data: Dict[str, Any]) -> "ScriptResponse":
-        return cls.create(message="대본이 성공적으로 수정되었습니다.", data=script_data)
+        return cls(message="대본이 성공적으로 수정되었습니다.", data=script_data)
 
     @classmethod
     def deleted(cls, script_id: int, title: str) -> "ScriptResponse":
-        return cls.create(
+        return cls(
             message=f"대본 '{title}'이 성공적으로 삭제되었습니다.",
             data={"id": script_id, "title": title},
         )
@@ -121,21 +134,17 @@ class UploadResponse(SuccessResponse):
 
     @classmethod
     def video_uploaded(cls, upload_data: Dict[str, Any]) -> "UploadResponse":
-        return cls.create(
-            message="비디오가 성공적으로 업로드되었습니다.", data=upload_data
-        )
+        return cls(message="비디오가 성공적으로 업로드되었습니다.", data=upload_data)
 
     @classmethod
     def youtube_uploaded(cls, youtube_data: Dict[str, Any]) -> "UploadResponse":
-        return cls.create(
+        return cls(
             message="YouTube 업로드가 성공적으로 완료되었습니다.", data=youtube_data
         )
 
     @classmethod
     def progress_update(cls, progress_data: Dict[str, Any]) -> "UploadResponse":
-        return cls.create(
-            message="업로드 진행률이 업데이트되었습니다.", data=progress_data
-        )
+        return cls(message="업로드 진행률이 업데이트되었습니다.", data=progress_data)
 
 
 class BatchUploadResponse(SuccessResponse):
@@ -151,7 +160,7 @@ class BatchUploadResponse(SuccessResponse):
         if failed_count > 0:
             message += f", {failed_count}개 실패"
 
-        return cls.create(message=message, data=batch_data)
+        return cls(message=message, data=batch_data)
 
 
 class HealthCheckResponse(SuccessResponse):
@@ -160,7 +169,9 @@ class HealthCheckResponse(SuccessResponse):
     services: Dict[str, str]
 
     @classmethod
-    def healthy(cls, services: Dict[str, str] = None) -> "HealthCheckResponse":
+    def healthy(
+        cls, services: Optional[Dict[str, str]] = None
+    ) -> "HealthCheckResponse":
         return cls(
             message="시스템이 정상 동작 중입니다.",
             services=services or {"api": "healthy", "database": "connected"},
@@ -169,7 +180,7 @@ class HealthCheckResponse(SuccessResponse):
     @classmethod
     def unhealthy(
         cls,
-        services: Dict[str, str] = None,
+        services: Optional[Dict[str, str]] = None,
         message: str = "시스템에 문제가 발생했습니다.",
     ) -> "HealthCheckResponse":
         response = cls(

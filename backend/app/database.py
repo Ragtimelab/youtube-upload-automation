@@ -1,5 +1,6 @@
+from typing import Generator, Any
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
 
 from .config import get_settings
 
@@ -16,10 +17,11 @@ engine = create_engine(
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-Base = declarative_base()
+# SQLAlchemy Base 클래스 (mypy 호환성을 위해 Any로 타입 설정)
+Base: Any = declarative_base()
 
 
-def get_db():
+def get_db() -> Generator[Session, None, None]:
     """데이터베이스 세션 의존성"""
     db = SessionLocal()
     try:
@@ -28,7 +30,7 @@ def get_db():
         db.close()
 
 
-def init_database():
+def init_database() -> None:
     """데이터베이스 초기화 - 테이블 생성"""
     from .models import script  # Import here to avoid circular imports  # noqa: F401
 

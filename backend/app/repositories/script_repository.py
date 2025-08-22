@@ -136,7 +136,7 @@ class ScriptRepository(BaseSQLAlchemyRepository[Script]):
     def has_video_file(self, script_id: int) -> bool:
         """비디오 파일 존재 여부 확인"""
         script = self.get_by_id(script_id)
-        return script and script.video_file_path is not None
+        return bool(script and script.video_file_path is not None)
 
     def update_status(self, script_id: int, new_status: str) -> Optional[Script]:
         """대본 상태 업데이트"""

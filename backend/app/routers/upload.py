@@ -18,9 +18,7 @@ logger = get_router_logger("upload")
 class BatchUploadRequest(BaseModel):
     """배치 업로드 요청 모델"""
 
-    script_ids: List[int] = Field(
-        ..., description="업로드할 스크립트 ID 목록", max_items=5
-    )
+    script_ids: List[int] = Field(description="업로드할 스크립트 ID 목록", max_length=5)
     privacy_status: str = Field("private", description="공개 설정")
     category_id: int = Field(24, description="YouTube 카테고리 ID")
     delay_seconds: int = Field(30, ge=30, le=300, description="업로드 간격(초)")
@@ -83,7 +81,10 @@ async def batch_upload_to_youtube(
 
         if request.delay_seconds < YouTubeConstants.MIN_BATCH_DELAY_SECONDS:
             raise BaseAppException(
-                f"업로드 간격이 너무 짧습니다. 최소 {YouTubeConstants.MIN_BATCH_DELAY_SECONDS}초 이상 설정하세요.",
+                (
+                    f"업로드 간격이 너무 짧습니다. "
+                    f"최소 {YouTubeConstants.MIN_BATCH_DELAY_SECONDS}초 이상 설정하세요."
+                ),
                 400,
             )
 
@@ -102,11 +103,12 @@ async def batch_upload_to_youtube(
             publish_at=request.publish_at,
         )
 
+        quota = result["summary"]["success_count"] * YouTubeConstants.VIDEO_UPLOAD_COST
         logger.info(
             f"배치 업로드 완료: batch_id={result['batch_id']}, "
             f"성공={result['summary']['success_count']}, "
             f"실패={result['summary']['failed_count']} "
-            f"(API 할당량 사용: {result['summary']['success_count'] * YouTubeConstants.VIDEO_UPLOAD_COST} units)"
+            f"(API 할당량 사용: {quota} units)"
         )
 
         return BatchUploadResponse.batch_completed(result)
@@ -150,7 +152,10 @@ async def upload_to_youtube(
         )
 
         logger.info(
-            f"YouTube 업로드 성공: script_id={script_id}, video_id={result['youtube_video_id']}"
+            (
+                f"YouTube 업로드 성공: script_id={script_id}, "
+                f"video_id={result['youtube_video_id']}"
+            )
         )
         return result
 

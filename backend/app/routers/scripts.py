@@ -44,7 +44,8 @@ async def upload_script(file: UploadFile = File(...), db: Session = Depends(get_
 
         # 서비스를 통해 대본 생성
         script_service = ScriptService(db)
-        script = script_service.create_script_from_file(content_str, file.filename)
+        filename = file.filename or "untitled.md"
+        script = script_service.create_script_from_file(content_str, filename)
 
         logger.info(f"대본 업로드 성공: ID={script.id}, 제목={script.title}")
 

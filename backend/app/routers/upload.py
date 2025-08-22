@@ -11,7 +11,7 @@ from ..core.responses import BatchUploadResponse
 from ..database import get_db
 from ..services.upload_service import UploadService
 
-router = APIRouter(prefix="/api/upload", tags=["upload"])
+router = APIRouter(prefix="/upload", tags=["upload"])
 logger = get_router_logger("upload")
 
 

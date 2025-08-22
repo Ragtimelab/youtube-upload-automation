@@ -62,15 +62,11 @@ async def scripts_page(request: Request, db: Session = Depends(get_db)):
     """스크립트 관리 페이지"""
     try:
         script_service = ScriptService(db)
-        scripts_result = script_service.get_scripts(limit=100)
+        result = script_service.get_scripts(skip=0, limit=100)
         
-        # 응답 구조 확인 및 처리
-        if hasattr(scripts_result, 'success'):
-            scripts = scripts_result.data if scripts_result.success else []
-        elif isinstance(scripts_result, list):
-            scripts = scripts_result
-        else:
-            scripts = []
+        # ScriptService는 딕셔너리를 반환함 (API와 동일한 구조)
+        scripts = result.get("scripts", [])
+        total = result.get("total", 0)
         
         return templates.TemplateResponse("pages/scripts.html", {
             "request": request,
@@ -94,20 +90,12 @@ async def videos_page(request: Request, db: Session = Depends(get_db)):
         script_service = ScriptService(db)
         
         # 각 상태별 스크립트 조회
-        script_ready_result = script_service.get_scripts_by_status("script_ready")
-        video_ready_result = script_service.get_scripts_by_status("video_ready")
+        script_ready_result = script_service.get_scripts(skip=0, limit=100, status="script_ready")
+        video_ready_result = script_service.get_scripts(skip=0, limit=100, status="video_ready")
         
-        # 응답 구조 확인 및 처리
-        def extract_scripts(result):
-            if hasattr(result, 'success'):
-                return result.data if result.success else []
-            elif isinstance(result, list):
-                return result
-            else:
-                return []
-        
-        script_ready_scripts = extract_scripts(script_ready_result)
-        video_ready_scripts = extract_scripts(video_ready_result)
+        # ScriptService.get_scripts는 딕셔너리를 반환
+        script_ready_scripts = script_ready_result.get("scripts", [])
+        video_ready_scripts = video_ready_result.get("scripts", [])
         
         # 통계 계산
         script_ready_count = len(script_ready_scripts)
@@ -138,15 +126,10 @@ async def youtube_page(request: Request, db: Session = Depends(get_db)):
     """YouTube 관리 페이지"""
     try:
         script_service = ScriptService(db)
-        uploaded_result = script_service.get_scripts_by_status("uploaded")
+        uploaded_result = script_service.get_scripts(skip=0, limit=100, status="uploaded")
         
-        # 응답 구조 확인 및 처리
-        if hasattr(uploaded_result, 'success'):
-            uploaded_scripts = uploaded_result.data if uploaded_result.success else []
-        elif isinstance(uploaded_result, list):
-            uploaded_scripts = uploaded_result
-        else:
-            uploaded_scripts = []
+        # ScriptService.get_scripts는 딕셔너리를 반환
+        uploaded_scripts = uploaded_result.get("scripts", [])
         
         return templates.TemplateResponse("pages/youtube.html", {
             "request": request,
@@ -168,15 +151,11 @@ async def status_page(request: Request, db: Session = Depends(get_db)):
     """상태 모니터링 페이지"""
     try:
         script_service = ScriptService(db)
-        stats_result = script_service.get_scripts_statistics()
+        stats_result = script_service.get_statistics()
         
-        # 응답 구조 확인 및 처리
-        if hasattr(stats_result, 'success'):
-            stats = stats_result.data if stats_result.success else {}
-        elif isinstance(stats_result, dict):
-            stats = stats_result
-        else:
-            stats = {}
+        # ScriptService.get_statistics()는 딕셔너리를 직접 반환
+        stats = stats_result.get("statistics", {})
+        recent_script = stats_result.get("recent_script", {})
         
         from datetime import datetime
         current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

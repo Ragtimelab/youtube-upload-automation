@@ -70,7 +70,7 @@
                                 <div class="text-truncate" style="max-width: 200px;" title="{{ script.title }}">
                                     {{ script.title }}
                                 </div>
-                                <small class="text-muted">{{ script.created_at.strftime('%Y-%m-%d') if script.created_at else '-' }}</small>
+                                <small class="text-muted">{{ script.created_at[:10] if script.created_at else '-' }}</small>
                             </div>
                             <div class="btn-group btn-group-sm">
                                 <button class="btn btn-primary" onclick="uploadVideo({{ script.id }}, '{{ script.title }}')">

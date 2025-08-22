@@ -112,7 +112,7 @@
                                     </td>
                                     <td>
                                         <small class="text-muted">
-                                            {{ script.updated_at.strftime('%Y-%m-%d') if script.updated_at else '-' }}
+                                            {{ script.updated_at[:10] if script.created_at else '-' }}
                                         </small>
                                     </td>
                                     <td>

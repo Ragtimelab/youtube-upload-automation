@@ -1,0 +1,12 @@
+<div style="padding: 15px; border-radius: 8px; background: #f0f9ff; border: 1px solid #0ea5e9;">
+    <h4 style="margin: 0 0 10px 0; color: #0369a1;">📊 스크립트 통계</h4>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        {% for stat_name, count in stats.items() %}
+        {% if count is number %}
+        <div>
+            <strong>{{ stat_labels.get(stat_name, stat_name) }}:</strong> {{ count }}개
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>

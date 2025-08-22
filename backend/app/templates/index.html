@@ -96,7 +96,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <small class="text-muted">{{ script.created_at.strftime('%Y-%m-%d') if script.created_at else '-' }}</small>
+                                            <small class="text-muted">{{ script.created_at[:10] if script.created_at else '-' }}</small>
                                         </td>
                                     </tr>
                                     {% endfor %}

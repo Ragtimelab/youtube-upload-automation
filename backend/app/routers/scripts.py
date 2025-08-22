@@ -10,7 +10,7 @@ from ..core.validators import file_validator
 from ..database import get_db
 from ..services.script_service import ScriptService
 
-router = APIRouter(prefix="/api/scripts", tags=["scripts"])
+router = APIRouter(prefix="/scripts", tags=["scripts"])
 logger = get_router_logger("scripts")
 
 

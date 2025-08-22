@@ -8,6 +8,11 @@ build/
 develop-eggs/
 dist/
 downloads/
+
+# Backups
+backups/
+*.backup
+*.bak
 eggs/
 .eggs/
 lib/

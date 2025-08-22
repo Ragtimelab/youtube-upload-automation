@@ -1,6 +1,6 @@
 # YouTube 업로드 자동화 시스템 - Poetry 기반 Makefile
 
-.PHONY: help install dev test lint format clean run migrate
+.PHONY: help install dev test lint format clean run migrate backup
 
 help:  ## 사용 가능한 명령어 목록 표시
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -100,3 +100,15 @@ docker-run:  ## Docker 컨테이너 실행
 api-docs:  ## API 문서 브라우저에서 열기
 	@echo "API 문서가 http://localhost:8000/docs 에서 제공됩니다"
 	@echo "서버가 실행 중인지 확인하세요: make run"
+
+backup:  ## 데이터베이스 자동 백업 실행
+	cd .. && python scripts/backup_database.py
+
+backup-info:  ## 현재 백업 상태 확인
+	@echo "백업 디렉토리: ../backups/database"
+	@if [ -d "../backups/database" ]; then \
+		echo "백업 파일 목록:"; \
+		ls -lah ../backups/database/; \
+	else \
+		echo "백업 디렉토리가 없습니다. 'make backup'을 실행하세요."; \
+	fi

@@ -63,9 +63,9 @@ async def websocket_endpoint(
         assigned_client_id = await websocket_manager.connect(websocket, client_id)
         logger.info(f"WebSocket 연결 성공: {assigned_client_id}")
         
-        # 메시지 수신 루프
-        while True:
-            try:
+        # 메시지 수신 루프 (FastAPI 공식 패턴 적용)
+        try:
+            while True:
                 # 클라이언트로부터 메시지 수신 (검증 우선)
                 raw_message = await websocket.receive_text()
                 logger.debug(f"메시지 수신: {assigned_client_id} -> {raw_message}")
@@ -75,27 +75,30 @@ async def websocket_endpoint(
                     message_data = json.loads(raw_message)
                     request = WebSocketRequest(**message_data)
                 except (json.JSONDecodeError, ValidationError) as e:
-                    # 잘못된 형식 메시지 처리
-                    await send_error_response(
-                        websocket, 
-                        f"잘못된 메시지 형식: {str(e)}",
-                        message_data.get('correlation_id') if isinstance(message_data, dict) else None
-                    )
+                    # 잘못된 형식 메시지 처리 - 연결 상태 확인
+                    if websocket.client_state.name == "CONNECTED":
+                        await send_error_response(
+                            websocket, 
+                            f"잘못된 메시지 형식: {str(e)}",
+                            message_data.get('correlation_id') if isinstance(message_data, dict) else None
+                        )
                     continue
                 
                 # 액션 처리
                 await handle_websocket_action(websocket, assigned_client_id, request)
                 
-            except WebSocketDisconnect:
-                logger.info(f"클라이언트 연결 종료: {assigned_client_id}")
-                break
-                
-            except Exception as e:
-                logger.error(f"메시지 처리 중 오류: {assigned_client_id}, {e}")
-                await send_error_response(
-                    websocket,
-                    f"메시지 처리 실패: {str(e)}"
-                )
+        except WebSocketDisconnect:
+            logger.info(f"클라이언트 정상 연결 종료: {assigned_client_id}")
+            
+        except Exception as e:
+            logger.error(f"WebSocket 연결 처리 중 오류: {assigned_client_id}, {e}")
+            # 에러 발생 시 연결 상태 확인 후 에러 응답
+            if websocket.client_state.name == "CONNECTED":
+                try:
+                    await send_error_response(websocket, f"연결 처리 실패: {str(e)}")
+                except Exception:
+                    # 연결이 끊어진 경우 무시
+                    pass
                 
     except WebSocketDisconnect:
         logger.info(f"WebSocket 연결 해제: {assigned_client_id}")
@@ -158,15 +161,17 @@ async def handle_websocket_action(
             
     except Exception as e:
         logger.error(f"액션 처리 실패: {action}, {e}")
-        await websocket_manager.send_message(
-            client_id,
-            MessageType.ERROR,
-            {
-                "error": f"액션 처리 실패: {str(e)}",
-                "action": action
-            },
-            correlation_id
-        )
+        # 연결 상태 확인 후 에러 메시지 전송
+        if client_id in websocket_manager.active_connections:
+            await websocket_manager.send_message(
+                client_id,
+                MessageType.ERROR,
+                {
+                    "error": f"액션 처리 실패: {str(e)}",
+                    "action": action
+                },
+                correlation_id
+            )
 
 
 async def handle_subscribe_action(client_id: str, data: Dict[str, Any], correlation_id: Optional[str]):
@@ -389,6 +394,11 @@ async def send_error_response(websocket: WebSocket, error_message: str, correlat
     """에러 응답 전송"""
     
     try:
+        # 연결 상태 확인
+        if websocket.client_state.name != "CONNECTED":
+            logger.debug("WebSocket 연결이 끊어져 에러 응답 전송 건너뜀")
+            return
+            
         response = WebSocketResponse(
             success=False,
             message=error_message,
@@ -398,7 +408,7 @@ async def send_error_response(websocket: WebSocket, error_message: str, correlat
         await websocket.send_text(response.model_dump_json())
         
     except Exception as e:
-        logger.error(f"에러 응답 전송 실패: {e}")
+        logger.debug(f"에러 응답 전송 실패 (정상적일 수 있음): {e}")
 
 
 # HTTP 엔드포인트 (WebSocket 상태 조회용)

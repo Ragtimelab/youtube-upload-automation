@@ -192,6 +192,13 @@ class WebSocketConnectionManager:
             return False
         
         try:
+            # 연결 상태 재확인 (FastAPI 공식 패턴)
+            connection = self.active_connections[client_id]
+            if connection.websocket.client_state.name != "CONNECTED":
+                logger.warning(f"연결 상태가 CONNECTED가 아님: {client_id} -> {connection.websocket.client_state.name}")
+                await self.disconnect(client_id)
+                return False
+            
             # 메시지 생성 (실시간 정보 활용)
             message = WebSocketMessage(
                 type=message_type,
@@ -205,7 +212,6 @@ class WebSocketConnectionManager:
             message_json = message.model_dump_json()
             
             # WebSocket으로 전송
-            connection = self.active_connections[client_id]
             await connection.websocket.send_text(message_json)
             
             # 하트비트 업데이트

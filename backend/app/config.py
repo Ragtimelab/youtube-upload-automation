@@ -44,7 +44,7 @@ class Settings(BaseSettings):
         default="http://localhost:3000", validation_alias="FRONTEND_URL"
     )
     cors_origins: List[str] = Field(
-        default=["http://localhost:3000", "http://127.0.0.1:3000"],
+        default=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5174", "http://127.0.0.1:5174"],
         validation_alias="CORS_ORIGINS",
     )
 

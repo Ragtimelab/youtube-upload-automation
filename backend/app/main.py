@@ -2,6 +2,7 @@ from typing import Any, Dict, Union
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from .config import get_settings
@@ -9,7 +10,7 @@ from .core.logging import configure_logging, get_logger
 from .core.responses import HealthCheckResponse
 from .database import get_db, init_database
 from .middleware.error_handler import ErrorHandlerMiddleware
-from .routers import scripts, upload, websocket
+from .routers import scripts, upload, websocket, web
 
 # 로깅 시스템 초기화
 configure_logging()
@@ -39,16 +40,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 라우터 등록
-app.include_router(scripts.router)
-app.include_router(upload.router)
-app.include_router(websocket.router)
+# 정적 파일 서빙
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+# 라우터 등록 - API 라우터들
+app.include_router(scripts.router, prefix="/api")
+app.include_router(upload.router, prefix="/api") 
+app.include_router(websocket.router, prefix="/api")
+
+# 웹 인터페이스 라우터 (루트 경로)
+app.include_router(web.router)
 
 
-@app.get("/")
-def read_root() -> Dict[str, str]:
-    """API 상태 확인"""
-    logger.info("루트 엔드포인트 접근")
+@app.get("/api")
+def api_info() -> Dict[str, str]:
+    """API 정보 확인"""
+    logger.info("API 정보 엔드포인트 접근")
     return {
         "message": f"{settings.app_name} API",
         "version": settings.app_version,

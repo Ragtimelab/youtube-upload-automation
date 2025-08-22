@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }} - 비디오 관리{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <!-- 상태별 요약 카드 -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <i class="fas fa-file-text fa-2x text-warning mb-2"></i>
+                        <h6>스크립트 준비됨</h6>
+                        <h4 class="text-warning" id="script-ready-count">{{ script_ready_count or '-' }}</h4>
+                        <small class="text-muted">비디오 업로드 대기</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-info">
+                    <div class="card-body text-center">
+                        <i class="fas fa-video fa-2x text-info mb-2"></i>
+                        <h6>비디오 준비됨</h6>
+                        <h4 class="text-info" id="video-ready-count">{{ video_ready_count or '-' }}</h4>
+                        <small class="text-muted">YouTube 업로드 대기</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-primary">
+                    <div class="card-body text-center">
+                        <i class="fas fa-upload fa-2x text-primary mb-2"></i>
+                        <h6>업로드 중</h6>
+                        <h4 class="text-primary" id="uploading-count">{{ uploading_count or '-' }}</h4>
+                        <small class="text-muted">진행 중</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        <i class="fab fa-youtube fa-2x text-success mb-2"></i>
+                        <h6>업로드 완료</h6>
+                        <h4 class="text-success" id="uploaded-count">{{ uploaded_count or '-' }}</h4>
+                        <small class="text-muted">YouTube 게시됨</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 비디오 업로드 대기 목록 -->
+    <div class="col-md-6">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>비디오 업로드 대기 ({{ script_ready_scripts|length }}개)
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if script_ready_scripts %}
+                    <div id="script-ready-list">
+                        {% for script in script_ready_scripts %}
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <div>
+                                <strong>#{{ script.id }}</strong>
+                                <div class="text-truncate" style="max-width: 200px;" title="{{ script.title }}">
+                                    {{ script.title }}
+                                </div>
+                                <small class="text-muted">{{ script.created_at.strftime('%Y-%m-%d') if script.created_at else '-' }}</small>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-primary" onclick="uploadVideo({{ script.id }}, '{{ script.title }}')">
+                                    <i class="fas fa-upload me-1"></i>업로드
+                                </button>
+                                <button class="btn btn-outline-info" onclick="viewScript({{ script.id }})">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state py-4">
+                        <i class="fas fa-inbox"></i>
+                        <h6>비디오 업로드를 기다리는 스크립트가 없습니다</h6>
+                        <p class="text-muted">먼저 스크립트를 업로드하세요.</p>
+                        <a href="/scripts" class="btn btn-outline-primary btn-sm">스크립트 관리</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- YouTube 업로드 대기 목록 -->
+    <div class="col-md-6">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fab fa-youtube me-2"></i>YouTube 업로드 대기 ({{ video_ready_scripts|length }}개)
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if video_ready_scripts %}
+                    <div id="video-ready-list">
+                        {% for script in video_ready_scripts %}
+                        <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                            <div>
+                                <strong>#{{ script.id }}</strong>
+                                <div class="text-truncate" style="max-width: 200px;" title="{{ script.title }}">
+                                    {{ script.title }}
+                                </div>
+                                <small class="text-muted">
+                                    비디오: {{ script.video_file_path.split('/')[-1] if script.video_file_path else '없음' }}
+                                </small>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <button class="btn btn-success" onclick="uploadYouTube({{ script.id }}, '{{ script.title }}')">
+                                    <i class="fab fa-youtube me-1"></i>YouTube
+                                </button>
+                                <button class="btn btn-outline-info" onclick="checkProgress({{ script.id }})">
+                                    <i class="fas fa-chart-line"></i>
+                                </button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- 배치 업로드 버튼 -->
+                    <div class="mt-3 pt-3 border-top">
+                        <button class="btn btn-success btn-sm w-100" onclick="batchUpload()">
+                            <i class="fas fa-rocket me-2"></i>모두 YouTube에 업로드
+                        </button>
+                        <small class="text-muted d-block text-center mt-1">
+                            할당량: 1회당 1,600 units 소모
+                        </small>
+                    </div>
+                {% else %}
+                    <div class="empty-state py-4">
+                        <i class="fab fa-youtube"></i>
+                        <h6>YouTube 업로드를 기다리는 비디오가 없습니다</h6>
+                        <p class="text-muted">먼저 비디오를 업로드하세요.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 업로드 진행률 표시 -->
+<div class="row mt-4" id="upload-progress-section" style="display: none;">
+    <div class="col-md-12">
+        <div class="card border-primary">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0">
+                    <i class="fas fa-spinner fa-spin me-2"></i>업로드 진행중
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="progress mb-3">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                         id="upload-progress-bar" role="progressbar" style="width: 0%">
+                        0%
+                    </div>
+                </div>
+                <div id="upload-status-text">준비 중...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 비디오 업로드 모달 -->
+<div class="modal fade" id="video-upload-modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">비디오 파일 업로드</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <strong>스크립트:</strong> <span id="upload-script-title"></span>
+                </div>
+                
+                <form id="video-upload-form" enctype="multipart/form-data">
+                    <input type="hidden" id="video-script-id" name="script_id">
+                    
+                    <div class="mb-3">
+                        <label for="video-file" class="form-label">비디오 파일 선택</label>
+                        <input type="file" class="form-control form-control-lg" id="video-file" name="file" 
+                               accept=".mp4,.avi,.mov,.mkv,.flv" required>
+                        <div class="form-text">
+                            <strong>지원 형식:</strong> MP4, AVI, MOV, MKV, FLV<br>
+                            <strong>최대 크기:</strong> 8GB
+                        </div>
+                    </div>
+                    
+                    <!-- 업로드 설정 -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="upload-quality" class="form-label">품질 설정</label>
+                            <select class="form-select" id="upload-quality">
+                                <option value="auto">자동</option>
+                                <option value="high">고화질</option>
+                                <option value="medium" selected>중간</option>
+                                <option value="low">저화질</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="upload-priority" class="form-label">우선순위</label>
+                            <select class="form-select" id="upload-priority">
+                                <option value="normal" selected>보통</option>
+                                <option value="high">높음</option>
+                                <option value="low">낮음</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+                
+                <div class="progress mt-3" style="display: none;" id="modal-upload-progress">
+                    <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" id="submit-upload-btn" onclick="submitVideoUpload()">
+                    <i class="fas fa-upload me-1"></i>업로드 시작
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- YouTube 설정 모달 -->
+<div class="modal fade" id="youtube-settings-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">YouTube 업로드 설정</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="youtube-settings-form">
+                    <div class="mb-3">
+                        <label for="privacy-status" class="form-label">공개 설정</label>
+                        <select class="form-select" id="privacy-status" required>
+                            <option value="private" selected>비공개</option>
+                            <option value="unlisted">링크 공유</option>
+                            <option value="public">공개</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="category-id" class="form-label">카테고리</label>
+                        <select class="form-select" id="category-id">
+                            <option value="22" selected>사람 및 블로그</option>
+                            <option value="24">엔터테인먼트</option>
+                            <option value="27">교육</option>
+                            <option value="26">하우투 및 스타일</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-success" onclick="confirmYouTubeUpload()">
+                    <i class="fab fa-youtube me-1"></i>업로드
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let currentScriptId = null;
+let currentScriptTitle = null;
+
+// 비디오 업로드 모달 열기
+function uploadVideo(scriptId, title) {
+    currentScriptId = scriptId;
+    currentScriptTitle = title;
+    
+    document.getElementById('video-script-id').value = scriptId;
+    document.getElementById('upload-script-title').textContent = title;
+    
+    const modal = new bootstrap.Modal(document.getElementById('video-upload-modal'));
+    modal.show();
+}
+
+// 비디오 업로드 실행
+async function submitVideoUpload() {
+    const fileInput = document.getElementById('video-file');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        Utils.showAlert('파일을 선택해주세요.', 'warning');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const submitBtn = document.getElementById('submit-upload-btn');
+    const originalText = submitBtn.innerHTML;
+    Utils.showLoading(submitBtn);
+    
+    // 진행률 표시
+    const progressContainer = document.getElementById('modal-upload-progress');
+    const progressBar = progressContainer.querySelector('.progress-bar');
+    progressContainer.style.display = 'block';
+    
+    try {
+        // XMLHttpRequest로 진행률 모니터링
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                progressBar.style.width = percentComplete + '%';
+                progressBar.textContent = Math.round(percentComplete) + '%';
+            }
+        });
+        
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    Utils.showAlert('비디오가 성공적으로 업로드되었습니다!', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('video-upload-modal')).hide();
+                    location.reload(); // 페이지 새로고침
+                } else {
+                    throw new Error(response.message);
+                }
+            } else {
+                throw new Error('업로드 실패');
+            }
+        };
+        
+        xhr.open('POST', `/api/upload/video/${currentScriptId}`);
+        xhr.send(formData);
+        
+    } catch (error) {
+        console.error('비디오 업로드 실패:', error);
+        Utils.showAlert(`비디오 업로드 실패: ${error.message}`, 'danger');
+    } finally {
+        Utils.hideLoading(submitBtn, originalText);
+        progressContainer.style.display = 'none';
+        progressBar.style.width = '0%';
+        progressBar.textContent = '0%';
+    }
+}
+
+// YouTube 업로드
+function uploadYouTube(scriptId, title) {
+    currentScriptId = scriptId;
+    currentScriptTitle = title;
+    
+    const modal = new bootstrap.Modal(document.getElementById('youtube-settings-modal'));
+    modal.show();
+}
+
+// YouTube 업로드 확인
+async function confirmYouTubeUpload() {
+    const privacy = document.getElementById('privacy-status').value;
+    const category = parseInt(document.getElementById('category-id').value);
+    
+    try {
+        await YouTubeManager.uploadToYouTube(currentScriptId, {
+            privacy: privacy,
+            category: category
+        });
+        
+        bootstrap.Modal.getInstance(document.getElementById('youtube-settings-modal')).hide();
+        location.reload();
+        
+    } catch (error) {
+        console.error('YouTube 업로드 실패:', error);
+    }
+}
+
+// 배치 YouTube 업로드
+async function batchUpload() {
+    const videoReadyScripts = document.querySelectorAll('#video-ready-list .d-flex');
+    const scriptIds = Array.from(videoReadyScripts).map(element => {
+        const strongElement = element.querySelector('strong');
+        return parseInt(strongElement.textContent.replace('#', ''));
+    });
+    
+    if (scriptIds.length === 0) {
+        Utils.showAlert('업로드할 비디오가 없습니다.', 'warning');
+        return;
+    }
+    
+    const confirmed = confirm(`${scriptIds.length}개의 비디오를 모두 YouTube에 업로드하시겠습니까?\n\n할당량: ${scriptIds.length * 1600} units 소모`);
+    
+    if (confirmed) {
+        try {
+            await YouTubeManager.batchUploadToYouTube(scriptIds, {
+                privacy: 'private',
+                category: 22,
+                delay: 60
+            });
+            
+            location.reload();
+            
+        } catch (error) {
+            console.error('배치 업로드 실패:', error);
+        }
+    }
+}
+
+// 스크립트 상세 보기
+async function viewScript(scriptId) {
+    // scripts.html의 viewScript 함수 재사용
+    try {
+        const response = await Utils.apiCall(`/scripts/${scriptId}`);
+        if (response.success) {
+            const script = response.data;
+            alert(`스크립트 #${script.id}\n제목: ${script.title}\n상태: ${script.status}\n생성일: ${new Date(script.created_at).toLocaleDateString('ko-KR')}`);
+        }
+    } catch (error) {
+        Utils.showAlert('스크립트 정보를 불러올 수 없습니다.', 'danger');
+    }
+}
+
+// 업로드 진행률 확인
+async function checkProgress(scriptId) {
+    try {
+        const progress = await VideoManager.getUploadProgress(scriptId);
+        if (progress) {
+            alert(`업로드 진행률: ${progress.progress_percent}%\n상태: ${progress.status}`);
+        } else {
+            alert('진행률 정보를 사용할 수 없습니다.');
+        }
+    } catch (error) {
+        Utils.showAlert('진행률을 확인할 수 없습니다.', 'danger');
+    }
+}
+
+// 페이지 로드 시 초기화
+document.addEventListener('DOMContentLoaded', function() {
+    // 5초마다 상태 업데이트
+    setInterval(async function() {
+        try {
+            const data = await Utils.apiCall('/scripts/stats');
+            if (data.success) {
+                const stats = data.data;
+                document.getElementById('script-ready-count').textContent = stats.script_ready || 0;
+                document.getElementById('video-ready-count').textContent = stats.video_ready || 0;
+                document.getElementById('uploading-count').textContent = stats.uploading || 0;
+                document.getElementById('uploaded-count').textContent = stats.uploaded || 0;
+            }
+        } catch (error) {
+            console.error('상태 업데이트 실패:', error);
+        }
+    }, 5000);
+});
+</script>
+{% endblock %}

@@ -24,7 +24,6 @@ youtube-upload-automation/
 ├── config/                  # YAML 기반 설정 파일
 │   └── channels.yaml        # 채널 브랜딩 중앙 관리 (핵심!)
 ├── .secrets/                # 인증 파일 (git에서 제외)
-├── gradio_app.py            # Gradio 웹 인터페이스
 └── uploads/                 # 업로드 파일 저장소
 ```
 
@@ -96,21 +95,6 @@ make pre-commit-run     # 수동 실행 (모든 파일 대상)
 ./youtube-cli status                         # 상태 확인
 ```
 
-### Gradio Web Interface (GUI)
-```bash
-# 웹 인터페이스 실행 (백엔드 서버 필요)
-poetry run python gradio_app.py
-
-# 브라우저에서 접속
-# http://localhost:7860 (기본 Gradio 포트)
-
-# 주요 기능
-- 스크립트 업로드 (파일 드래그 앤 드롭)
-- 스크립트 목록 조회 (실시간 새로고침)
-- 비디오 업로드 (진행률 표시)
-- YouTube 업로드 (상태 모니터링)
-- 시스템 상태 확인
-```
 
 ## 📂 파일 명명 규칙 및 형식
 
@@ -337,10 +321,6 @@ make pre-commit-run    # 수동 실행 (모든 파일 대상)
 - **실행 권한**: `chmod +x youtube-cli`
 - **파일명 규칙**: YYYYMMDD_NN_story.md/mp4 패턴 확인
 
-### Gradio Web Interface 문제
-- **백엔드 의존성**: 백엔드 서버(port 8000)가 먼저 실행되어야 함
-- **포트 충돌**: 기본 포트 7860 사용, 충돌 시 자동으로 다른 포트 할당
-- **API 연결**: `curl http://localhost:8000/health`로 백엔드 상태 확인
 
 ### 인증 문제
 - **OAuth2 파일**: `.secrets/youtube-oauth2.json` 존재 확인
@@ -383,7 +363,6 @@ make pre-commit-run    # 수동 실행 (모든 파일 대상)
 
 ### ✅ 최근 완료된 최적화
 - **YAML 기반 채널 브랜딩**: config/channels.yaml을 통한 중앙화된 채널 설정 관리 (싱글톤 패턴)
-- **Gradio Web Interface**: CLI와 동일한 기능의 사용자 친화적 웹 GUI 추가
 - **의존성 정리**: 미사용 패키지 3개 제거 (pydub, playwright, colorama) - 15-20% 크기 감소
 - **API 응답 표준화**: 모든 엔드포인트 SuccessResponse 형식 통일
 - **코드 품질 개선**: flake8 88자 제한, autoflake 자동 import 정리 도구 추가
@@ -398,7 +377,6 @@ make pre-commit-run    # 수동 실행 (모든 파일 대상)
 - **코드 품질**: flake8/black/isort 규칙 준수 ✅
 - **의존성 상태**: 최적화 완료 ✅
 - **CLI 도구**: 정상 작동 ✅
-- **Web Interface**: Gradio 기반 GUI 완전 통합 ✅
 - **채널 브랜딩**: YAML 기반 동적 관리 ✅
 
 ---

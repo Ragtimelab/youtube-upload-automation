@@ -24,8 +24,11 @@ from ..core.exceptions import (
 )
 from ..models.script import Script
 from ..repositories.script_repository import ScriptRepository
-from .websocket_manager import websocket_notification_service
+# WebSocket 관련 임포트 제거됨
 from .youtube_client import YouTubeClient
+from ..core.logging import get_logger
+
+logger = get_logger("upload_service")
 
 
 class UploadService:
@@ -71,14 +74,8 @@ class UploadService:
                 "saved_filename": os.path.basename(file_path),
             }
 
-            # 비디오 업로드 완료 알림
-            try:
-                await websocket_notification_service.notify_video_uploaded(
-                    script_id, script_data
-                )
-            except Exception as e:
-                # WebSocket 알림 실패는 메인 프로세스에 영향주지 않음
-                print(f"WebSocket 알림 전송 실패: {e}")
+            # 비디오 업로드 완료 로깅 (WebSocket 알림 제거됨)
+            logger.info(f"비디오 업로드 완료: script_id={script_id}, title={updated_script.title}")
 
             return {
                 "id": updated_script.id,
@@ -147,12 +144,8 @@ class UploadService:
                 "scheduled_publish": publish_at is not None,
             }
 
-            try:
-                await websocket_notification_service.notify_youtube_upload_started(
-                    script_id, script_data
-                )
-            except Exception as e:
-                print(f"WebSocket 알림 전송 실패: {e}")
+            # YouTube 업로드 시작 로깅 (WebSocket 알림 제거됨)
+            logger.info(f"YouTube 업로드 시작: script_id={script_id}, title={script.title}")
 
             # YouTube 클라이언트 초기화 및 인증
             youtube_client = YouTubeClient()
@@ -192,12 +185,8 @@ class UploadService:
                 "youtube_url": youtube_url,
             }
 
-            try:
-                await websocket_notification_service.notify_youtube_upload_completed(
-                    script_id, final_script_data, youtube_url
-                )
-            except Exception as e:
-                print(f"WebSocket 알림 전송 실패: {e}")
+            # YouTube 업로드 완료 로깅 (WebSocket 알림 제거됨)
+            logger.info(f"YouTube 업로드 완료: script_id={script_id}, url={youtube_url}")
 
             return {
                 "id": updated_script.id,
@@ -217,13 +206,8 @@ class UploadService:
             script.updated_at = datetime.utcnow()
             self.repository.update(script)
 
-            # 에러 알림 전송
-            try:
-                await websocket_notification_service.notify_upload_error(
-                    script_id, str(e), {"id": script.id, "title": script.title}
-                )
-            except Exception as notify_error:
-                print(f"WebSocket 에러 알림 전송 실패: {notify_error}")
+            # 에러 로깅 (WebSocket 알림 제거됨)
+            logger.error(f"YouTube 업로드 실패: script_id={script_id}, error={str(e)}")
 
             raise
         except Exception as e:
@@ -232,13 +216,8 @@ class UploadService:
             script.updated_at = datetime.utcnow()
             self.repository.update(script)
 
-            # 에러 알림 전송
-            try:
-                await websocket_notification_service.notify_upload_error(
-                    script_id, str(e), {"id": script.id, "title": script.title}
-                )
-            except Exception as notify_error:
-                print(f"WebSocket 에러 알림 전송 실패: {notify_error}")
+            # 에러 로깅 (WebSocket 알림 제거됨)
+            logger.error(f"업로드 실패: script_id={script_id}, error={str(e)}")
 
             raise YouTubeUploadError(str(e))
 
@@ -375,13 +354,8 @@ class UploadService:
                 "scheduled_time": script.scheduled_time,
             }
 
-        # WebSocket으로 진행률 브로드캐스트
-        try:
-            await websocket_notification_service.send_upload_progress(
-                script_id, progress
-            )
-        except Exception as e:
-            print(f"WebSocket 진행률 브로드캐스트 실패: {e}")
+        # 진행률 로깅 (WebSocket 브로드캐스트 제거됨)
+        logger.debug(f"업로드 진행률: script_id={script_id}, progress={progress['progress_percentage']}%")
 
         return progress
 

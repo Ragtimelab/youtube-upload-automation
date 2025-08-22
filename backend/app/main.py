@@ -9,7 +9,7 @@ from .core.logging import configure_logging, get_logger
 from .core.responses import HealthCheckResponse
 from .database import get_db, init_database
 from .middleware.error_handler import ErrorHandlerMiddleware
-from .routers import scripts, upload
+from .routers import scripts, upload, websocket
 
 # 로깅 시스템 초기화
 configure_logging()
@@ -43,6 +43,7 @@ app.add_middleware(
 # 라우터 등록 - API 라우터들
 app.include_router(scripts.router, prefix="/api")
 app.include_router(upload.router, prefix="/api")
+app.include_router(websocket.router)  # WebSocket은 prefix 없음 (/ws에서 시작)
 
 
 @app.get("/api")

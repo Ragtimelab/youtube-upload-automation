@@ -24,7 +24,7 @@ from ..core.exceptions import (
 )
 from ..models.script import Script
 from ..repositories.script_repository import ScriptRepository
-# WebSocket 관련 임포트 제거됨
+from .websocket_manager import notify_upload_progress, notify_status_change, notify_system_event
 from .youtube_client import YouTubeClient
 from ..core.logging import get_logger
 
@@ -56,25 +56,42 @@ class UploadService:
         file_path = self._save_video_file(script_id, video_file)
 
         try:
+            # 업로드 시작 알림
+            await notify_upload_progress(
+                script_id, 0, "starting", 
+                message="비디오 파일 처리 시작", 
+                filename=video_file.filename
+            )
+            
             # DB 업데이트
             script.video_file_path = file_path
+            old_status = script.status
             script.status = "video_ready"
             script.updated_at = datetime.utcnow()
 
+            # 진행률 업데이트 (50% - 파일 저장 완료)
+            await notify_upload_progress(
+                script_id, 50, "processing", 
+                message="파일 저장 완료, 데이터베이스 업데이트 중"
+            )
+
             updated_script = self.repository.update(script)
 
-            # WebSocket 알림 전송
-            script_data = {
-                "id": updated_script.id,
-                "title": updated_script.title,
-                "status": updated_script.status,
-                "video_file_path": file_path,
-                "file_size": os.path.getsize(file_path),
-                "uploaded_filename": video_file.filename,
-                "saved_filename": os.path.basename(file_path),
-            }
+            # 완료 알림 (100%)
+            await notify_upload_progress(
+                script_id, 100, "completed", 
+                message="비디오 업로드 완료",
+                file_size=os.path.getsize(file_path),
+                saved_filename=os.path.basename(file_path)
+            )
+            
+            # 상태 변경 알림
+            await notify_status_change(
+                script_id, old_status, updated_script.status,
+                title=updated_script.title,
+                video_file_path=file_path
+            )
 
-            # 비디오 업로드 완료 로깅 (WebSocket 알림 제거됨)
             logger.info(f"비디오 업로드 완료: script_id={script_id}, title={updated_script.title}")
 
             return {
@@ -137,34 +154,65 @@ class UploadService:
 
         try:
             # YouTube 업로드 시작 알림
-            script_data = {
-                "id": script.id,
-                "title": script.title,
-                "status": script.status,
-                "scheduled_publish": publish_at is not None,
-            }
+            await notify_upload_progress(
+                script_id, 0, "starting", 
+                message="YouTube 업로드 시작", 
+                privacy_status=privacy_status,
+                category_id=category_id,
+                scheduled=publish_at is not None
+            )
+            
+            await notify_system_event(
+                "youtube_upload_started", 
+                f"YouTube 업로드 시작: {script.title}"
+            )
 
-            # YouTube 업로드 시작 로깅 (WebSocket 알림 제거됨)
             logger.info(f"YouTube 업로드 시작: script_id={script_id}, title={script.title}")
 
             # YouTube 클라이언트 초기화 및 인증
             youtube_client = YouTubeClient()
+            
+            # 인증 단계 진행률
+            await notify_upload_progress(
+                script_id, 10, "authenticating", 
+                message="YouTube API 인증 중"
+            )
 
             if not youtube_client.authenticate():
                 raise YouTubeUploadError("YouTube API 인증에 실패했습니다.")
 
+            # 메타데이터 구성 단계
+            await notify_upload_progress(
+                script_id, 20, "preparing", 
+                message="업로드 메타데이터 구성 중"
+            )
+            
             # 업로드 메타데이터 구성 (publishAt 포함)
             metadata = self._build_upload_metadata(
                 script, privacy_status, category_id, publish_at
             )
 
+            # YouTube 업로드 시작
+            await notify_upload_progress(
+                script_id, 30, "uploading", 
+                message="YouTube 업로드 진행 중"
+            )
+            
             # YouTube 업로드 실행
             video_id = youtube_client.upload_video(script.video_file_path, metadata)
 
             if not video_id:
                 raise YouTubeUploadError("업로드 실패: 비디오 ID를 받을 수 없습니다.")
 
+            # DB 업데이트 진행률
+            await notify_upload_progress(
+                script_id, 80, "finalizing", 
+                message="데이터베이스 업데이트 중",
+                youtube_video_id=video_id
+            )
+            
             # DB 업데이트
+            old_status = script.status
             script.youtube_video_id = video_id
             script.status = "scheduled" if publish_at else "uploaded"
             if publish_at:
@@ -174,18 +222,34 @@ class UploadService:
             script.updated_at = datetime.utcnow()
 
             updated_script = self.repository.update(script)
-
+            
             # YouTube 업로드 완료 알림
             youtube_url = f"https://www.youtube.com/watch?v={video_id}"
-            final_script_data = {
-                "id": updated_script.id,
-                "title": updated_script.title,
-                "status": updated_script.status,
-                "youtube_video_id": video_id,
-                "youtube_url": youtube_url,
-            }
+            
+            # 최종 완료 (100%)
+            await notify_upload_progress(
+                script_id, 100, "completed", 
+                message="YouTube 업로드 완료",
+                youtube_video_id=video_id,
+                youtube_url=youtube_url
+            )
+            
+            # 상태 변경 알림
+            await notify_status_change(
+                script_id, old_status, updated_script.status,
+                title=updated_script.title,
+                youtube_video_id=video_id,
+                youtube_url=youtube_url,
+                scheduled=publish_at is not None
+            )
+            
+            # 시스템 알림
+            await notify_system_event(
+                "youtube_upload_completed", 
+                f"YouTube 업로드 완료: {script.title} ({youtube_url})",
+                "info"
+            )
 
-            # YouTube 업로드 완료 로깅 (WebSocket 알림 제거됨)
             logger.info(f"YouTube 업로드 완료: script_id={script_id}, url={youtube_url}")
 
             return {

@@ -412,12 +412,14 @@ class QuickActions:
         """View scripts with details"""
         console.print("📝 스크립트 목록 보기", style="bold cyan")
         
-        # Select status filter
+        # Select status filter - Backend 5개 상태 완전 지원
         status_options = {
             '1': None,
             '2': 'script_ready',
-            '3': 'video_ready',
-            '4': 'uploaded'
+            '3': 'video_ready', 
+            '4': 'uploaded',
+            '5': 'scheduled',
+            '6': 'error'
         }
         
         console.print("📊 상태별 필터링:", style="bold")
@@ -425,8 +427,10 @@ class QuickActions:
         console.print("2. 스크립트 준비")
         console.print("3. 비디오 준비")
         console.print("4. 업로드 완료")
+        console.print("5. 예약 발행")
+        console.print("6. 오류")
         
-        status_choice = Prompt.ask("선택하세요", choices=['1', '2', '3', '4'], default='1')
+        status_choice = Prompt.ask("선택하세요", choices=['1', '2', '3', '4', '5', '6'], default='1')
         status_filter = status_options[status_choice]
         
         # Get and display scripts

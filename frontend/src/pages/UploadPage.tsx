@@ -44,26 +44,60 @@ export function UploadPage() {
     
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0]
-      if (isVideoFile(file)) {
-        setSelectedFile(file)
-      } else {
+      
+      // CLI와 동일한 검증 순서: 파일 타입 → 파일 크기
+      if (!isVideoFile(file)) {
         alert('비디오 파일만 업로드할 수 있습니다.')
+        return
       }
+      
+      const sizeValidation = validateFileSize(file)
+      if (!sizeValidation.valid) {
+        alert(sizeValidation.error)
+        return
+      }
+      
+      setSelectedFile(file)
     }
   }, [])
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
-    if (file && isVideoFile(file)) {
-      setSelectedFile(file)
-    } else if (file) {
+    if (!file) return
+    
+    // CLI와 동일한 검증 순서: 파일 타입 → 파일 크기
+    if (!isVideoFile(file)) {
       alert('비디오 파일만 업로드할 수 있습니다.')
+      return
     }
+    
+    const sizeValidation = validateFileSize(file)
+    if (!sizeValidation.valid) {
+      alert(sizeValidation.error)
+      return
+    }
+    
+    setSelectedFile(file)
   }
 
   const isVideoFile = (file: File) => {
     const allowedTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska', 'video/x-flv']
     return allowedTypes.includes(file.type) || file.name.match(/\.(mp4|avi|mov|mkv|flv)$/i)
+  }
+
+  // CLI와 동일한 파일 크기 검증 (FileConstants.MAX_VIDEO_SIZE_MB = 8GB)
+  const validateFileSize = (file: File): { valid: boolean; error?: string } => {
+    const MAX_VIDEO_SIZE_MB = 8192 // 8GB, Backend FileConstants와 동일
+    const fileSizeMB = file.size / (1024 * 1024)
+    
+    if (fileSizeMB > MAX_VIDEO_SIZE_MB) {
+      return {
+        valid: false,
+        error: `비디오 파일은 ${MAX_VIDEO_SIZE_MB.toLocaleString()}MB를 초과할 수 없습니다. 현재 크기: ${fileSizeMB.toFixed(1)}MB`
+      }
+    }
+    
+    return { valid: true }
   }
 
   const formatFileSize = (bytes: number) => {

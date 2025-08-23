@@ -1,5 +1,5 @@
 // API 공통 응답 타입
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   message: string
@@ -61,8 +61,30 @@ export interface YouTubeUploadStatus {
 }
 
 // WebSocket 메시지 타입
-export interface WebSocketMessage {
-  type: 'upload_progress' | 'youtube_status' | 'system_status' | 'heartbeat'
-  data: any
+export type WebSocketMessageType = 
+  | 'upload_progress' 
+  | 'youtube_status' 
+  | 'system_status' 
+  | 'heartbeat'
+  | 'error'
+  | 'notification'
+
+export interface WebSocketMessage<T = unknown> {
+  type: WebSocketMessageType
+  data: T
   timestamp: string
+}
+
+// WebSocket 상태 관련 타입
+export type WebSocketConnectionStatus = 
+  | 'connecting' 
+  | 'connected' 
+  | 'disconnected' 
+  | 'error'
+
+export interface WebSocketState {
+  isConnected: boolean
+  connectionStatus: WebSocketConnectionStatus
+  error: string | null
+  reconnectAttempts: number
 }

@@ -1,4 +1,3 @@
-import React from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Wifi, WifiOff, AlertTriangle, Loader2 } from 'lucide-react'
 
@@ -11,7 +10,7 @@ interface WebSocketStatusProps {
 }
 
 export function WebSocketStatus({ 
-  isConnected, 
+  isConnected: _isConnected, 
   connectionStatus, 
   error, 
   reconnectAttempts = 0,

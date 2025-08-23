@@ -1,4 +1,3 @@
-import React from 'react'
 import { useToast } from '@/hooks/useToast'
 import { Toast, ToastClose, ToastDescription, ToastTitle } from '@/components/ui/toast'
 import { CheckCircle, AlertCircle, AlertTriangle, Info } from 'lucide-react'

@@ -1,26 +1,26 @@
 import { useState, useRef, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useScripts } from '@/hooks/useScripts'
 import { useUploadVideo } from '@/hooks/useUpload'
 import { 
   Upload, 
-  Video, 
   AlertCircle,
   FileText,
   CheckCircle2,
   Clock,
   Loader2,
   X,
-  Play,
   Calendar,
   FileVideo
 } from 'lucide-react'
 
 export function UploadPage() {
+  const navigate = useNavigate()
   const [selectedScript, setSelectedScript] = useState<number | null>(null)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [dragActive, setDragActive] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState(0)
+  const [_uploadProgress, _setUploadProgress] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   const { data: scriptsData, isLoading: scriptsLoading } = useScripts(1, 50)
@@ -98,16 +98,21 @@ export function UploadPage() {
   }
 
   const getScriptStatus = (status: string) => {
+    // CLI 기준 유효한 상태값만 사용 (TTS 잔재 완전 제거)
     switch (status) {
-      case 'script_ready': return { icon: Clock, color: 'text-yellow-600', text: '스크립트 준비' }
-      case 'video_ready': return { icon: CheckCircle2, color: 'text-blue-600', text: '비디오 준비' }
-      case 'uploaded': return { icon: CheckCircle2, color: 'text-green-600', text: '업로드 완료' }
-      default: return { icon: Clock, color: 'text-gray-600', text: '알 수 없음' }
+      case 'script_ready': return { icon: Clock, color: 'text-yellow-600', text: 'script_ready' }
+      case 'video_ready': return { icon: CheckCircle2, color: 'text-blue-600', text: 'video_ready' }
+      case 'uploaded': return { icon: CheckCircle2, color: 'text-green-600', text: 'uploaded' }
+      case 'scheduled': return { icon: Clock, color: 'text-purple-600', text: 'scheduled' }
+      case 'error': return { icon: AlertCircle, color: 'text-red-600', text: 'error' }
+      default: return { icon: Clock, color: 'text-gray-600', text: status || 'unknown' }
     }
   }
 
   // script_ready 상태인 스크립트만 필터링
-  const availableScripts = scriptsData?.items.filter(script => script.status === 'script_ready') || []
+  const availableScripts = scriptsData?.items.filter(script => 
+    script.status === 'script_ready'
+  ) || []
 
   return (
     <div className="space-y-6">
@@ -130,7 +135,7 @@ export function UploadPage() {
             <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
             <h4 className="text-lg font-medium text-gray-900 mb-2">업로드 가능한 스크립트가 없습니다</h4>
             <p className="text-gray-600 mb-4">먼저 스크립트를 업로드해주세요.</p>
-            <Button variant="outline">스크립트 관리로 이동</Button>
+            <Button variant="outline" onClick={() => navigate('/scripts')}>스크립트 관리로 이동</Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -269,12 +274,12 @@ export function UploadPage() {
           <div className="mt-4">
             <div className="flex justify-between text-sm text-gray-600 mb-1">
               <span>업로드 진행률</span>
-              <span>{uploadProgress}%</span>
+              <span>{_uploadProgress}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${uploadProgress}%` }}
+                style={{ width: `${_uploadProgress}%` }}
               ></div>
             </div>
           </div>

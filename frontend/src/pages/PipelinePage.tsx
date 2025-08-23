@@ -6,7 +6,6 @@ import { PipelineFlow } from '@/components/PipelineFlow'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { 
   Workflow, 
   FileText, 
@@ -15,17 +14,13 @@ import {
   CheckCircle2, 
   AlertTriangle, 
   Clock, 
-  ArrowRight, 
   Activity,
   RefreshCw,
   Play,
   Pause,
   TrendingUp,
-  TrendingDown,
   Target,
   Zap,
-  Database,
-  Youtube,
   Monitor,
   BarChart3
 } from 'lucide-react'
@@ -36,7 +31,7 @@ interface PipelineStage {
   count: number
   percentage: number
   status: 'normal' | 'warning' | 'error' | 'processing'
-  icon: React.ComponentType<any>
+  icon: React.ComponentType<{ className?: string }>
   description: string
   avgProcessingTime: number
   lastProcessed?: string
@@ -56,12 +51,12 @@ export function PipelinePage() {
     isLoading,
     isRealTimeEnabled,
     lastRefresh,
-    overallStatus,
+    overallStatus: _overallStatus,
     toggleRealTime,
     refreshAll,
   } = useSystemStatus()
 
-  const { webSocketState, globalStats, getActiveUploads } = useUploadProgress()
+  const { webSocketState, globalStats, getActiveUploads: _getActiveUploads } = useUploadProgress()
   
   const [selectedStage, setSelectedStage] = useState<string | null>(null)
   const [animationEnabled, setAnimationEnabled] = useState(true)
@@ -76,8 +71,8 @@ export function PipelinePage() {
       status: 'normal',
       icon: FileText,
       description: '업로드된 스크립트 파일들',
-      avgProcessingTime: 2,
-      lastProcessed: '2분 전'
+      avgProcessingTime: 0,
+      lastProcessed: '-'
     },
     {
       id: 'video_ready',
@@ -87,8 +82,8 @@ export function PipelinePage() {
       status: 'processing',
       icon: Video,
       description: '비디오 파일이 연결된 스크립트',
-      avgProcessingTime: 15,
-      lastProcessed: '5분 전'
+      avgProcessingTime: 0,
+      lastProcessed: '-'
     },
     {
       id: 'uploading',
@@ -98,8 +93,8 @@ export function PipelinePage() {
       status: globalStats.activeUploads > 0 ? 'processing' : 'normal',
       icon: Upload,
       description: 'YouTube에 업로드 진행 중',
-      avgProcessingTime: 45,
-      lastProcessed: '방금 전'
+      avgProcessingTime: 0,
+      lastProcessed: '-'
     },
     {
       id: 'uploaded',
@@ -110,14 +105,14 @@ export function PipelinePage() {
       icon: CheckCircle2,
       description: '성공적으로 업로드된 비디오',
       avgProcessingTime: 0,
-      lastProcessed: '1시간 전'
+      lastProcessed: '-'
     },
     {
       id: 'error',
       name: '오류 발생',
       count: systemMetrics?.scriptsByStatus.error || 0,
       percentage: 0,
-      status: systemMetrics?.scriptsByStatus.error > 0 ? 'error' : 'normal',
+      status: (systemMetrics?.scriptsByStatus.error || 0) > 0 ? 'error' : 'normal',
       icon: AlertTriangle,
       description: '처리 중 오류가 발생한 항목',
       avgProcessingTime: 0,
@@ -143,12 +138,12 @@ export function PipelinePage() {
       from: 'video_ready',
       to: 'uploading',
       throughput: globalStats.activeUploads || 0,
-      status: globalStats.activeUploads > 0 ? 'active' : 'normal'
+      status: (globalStats.activeUploads > 0 ? 'active' : 'blocked') as 'active' | 'blocked' | 'slow'
     },
     {
       from: 'uploading',
-      to: 'uploaded',
-      throughput: Math.floor(Math.random() * 3), // 시뮬레이션
+      to: 'uploaded', 
+      throughput: Math.max(0, globalStats.completedUploads - (systemMetrics?.scriptsByStatus.uploaded || 0)),
       status: 'active'
     }
   ]
@@ -169,23 +164,20 @@ export function PipelinePage() {
     return 'text-green-600'
   }
 
-  const getFlowStatus = (flow: PipelineFlow) => {
-    if (flow.throughput === 0) return 'opacity-30'
-    if (flow.status === 'active') return 'opacity-100 animate-pulse'
-    if (flow.status === 'blocked') return 'opacity-50 text-red-500'
-    return 'opacity-70'
-  }
+  // const _getFlowStatus = (_flow: PipelineFlow) => {
+  //   if (_flow.throughput === 0) return 'opacity-30'
+  //   if (_flow.status === 'active') return 'opacity-100 animate-pulse'
+  //   if (_flow.status === 'blocked') return 'opacity-50 text-red-500'
+  //   return 'opacity-70'
+  // }
 
-  // 실시간 처리량 시뮬레이션
+  // 실제 파이프라인 데이터 새로고침 (의미있는 업데이트만)
   useEffect(() => {
     if (!animationEnabled) return
 
-    const interval = setInterval(() => {
-      // 파이프라인 애니메이션 효과를 위한 리렌더링
-      setSelectedStage(prev => prev) // 강제 리렌더링
-    }, 2000)
-
-    return () => clearInterval(interval)
+    // 실제 데이터가 변경될 때만 업데이트하도록 수정
+    // 현재는 불필요한 강제 리렌더링 제거
+    
   }, [animationEnabled])
 
   if (isLoading) {

@@ -1,6 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { uploadApi } from '@/services/api'
-import type { UploadProgress, YouTubeUploadStatus } from '@/types/api'
 
 // 비디오 업로드
 export function useUploadVideo() {

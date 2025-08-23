@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { UI_CONSTANTS } from '@/constants/ui'
 
 export interface Toast {
   id: string
@@ -10,12 +11,12 @@ export interface Toast {
 
 export interface ToastContextValue {
   toasts: Toast[]
-  toast: (props: Omit<Toast, 'id'>) => string
-  dismiss: (toastId?: string) => void
+  toast: (_props: Omit<Toast, 'id'>) => string
+  dismiss: (_toastId?: string) => void
 }
 
-const TOAST_LIMIT = 5
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = UI_CONSTANTS.LIMITS.MAX_TOAST_COUNT
+// const TOAST_REMOVE_DELAY = 1000000
 
 let toastCount = 0
 
@@ -29,7 +30,7 @@ export function useToast() {
 
   const toast = useCallback((props: Omit<Toast, 'id'>) => {
     const id = genId()
-    const { duration = 5000, ...rest } = props
+    const { duration = UI_CONSTANTS.TOAST_DURATION.default, ...rest } = props
 
     const newToast: Toast = {
       ...rest,
@@ -51,7 +52,7 @@ export function useToast() {
     // Auto dismiss
     if (duration && duration > 0) {
       setTimeout(() => {
-        dismiss(id)
+        setToasts((prev) => prev.filter((toast) => toast.id !== id))
       }, duration)
     }
 
@@ -82,7 +83,7 @@ export function useToast() {
       title,
       description,
       variant: 'destructive',
-      duration: 8000, // Show errors longer
+      duration: UI_CONSTANTS.TOAST_DURATION.error,
     })
   }, [toast])
 

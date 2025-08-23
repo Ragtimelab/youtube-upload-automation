@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useWebSocket } from './useWebSocket'
+import { UI_CONSTANTS } from '@/constants/ui'
 
 export interface UploadProgressData {
   script_id: number
@@ -44,7 +45,7 @@ export function useUploadProgress() {
 
   // WebSocket 연결 설정
   const webSocket = useWebSocket({
-    url: 'ws://localhost:8000/ws/',
+    url: UI_CONSTANTS.API.WEBSOCKET_URL,
     clientId: `youtube-upload-${Date.now()}`,
     enableHeartbeat: true,
   })
@@ -94,47 +95,49 @@ export function useUploadProgress() {
 
   // 업로드 진행률 메시지 핸들러
   useEffect(() => {
-    const unsubscribe = webSocket.onMessage('upload_progress', (data: UploadProgressData) => {
+    const unsubscribe = webSocket.onMessage('upload_progress', (data) => {
+      const typedData = data as UploadProgressData
       console.log('Upload progress received:', data)
       
-      updateUploadState(data.script_id, {
-        progress: data.progress,
-        status: data.status,
-        message: data.message,
-        currentStep: data.current_step,
-        totalSteps: data.total_steps,
-        isUploading: data.status !== 'completed' && data.status !== 'error',
-        error: data.status === 'error' ? data.error_message : undefined,
+      updateUploadState(typedData.script_id, {
+        progress: typedData.progress,
+        status: typedData.status,
+        message: typedData.message,
+        currentStep: typedData.current_step,
+        totalSteps: typedData.total_steps,
+        isUploading: typedData.status !== 'completed' && typedData.status !== 'error',
+        error: typedData.status === 'error' ? typedData.error_message : undefined,
       })
     })
 
     return unsubscribe
-  }, [webSocket.onMessage, updateUploadState])
+  }, [webSocket, updateUploadState])
 
   // YouTube 업로드 상태 메시지 핸들러
   useEffect(() => {
-    const unsubscribe = webSocket.onMessage('youtube_status', (data: YouTubeUploadData) => {
+    const unsubscribe = webSocket.onMessage('youtube_status', (data) => {
+      const typedData = data as YouTubeUploadData
       console.log('YouTube status received:', data)
       
-      updateUploadState(data.script_id, {
-        progress: data.progress,
-        status: data.status,
-        message: data.status === 'completed' ? 'YouTube 업로드 완료' :
-                data.status === 'error' ? 'YouTube 업로드 실패' :
-                data.status === 'uploading' ? 'YouTube 업로드 중...' : '업로드 대기 중',
-        isUploading: data.status === 'uploading' || data.status === 'pending',
-        error: data.error_message,
-        youtubeUrl: data.youtube_url,
+      updateUploadState(typedData.script_id, {
+        progress: typedData.progress,
+        status: typedData.status,
+        message: typedData.status === 'completed' ? 'YouTube 업로드 완료' :
+                typedData.status === 'error' ? 'YouTube 업로드 실패' :
+                typedData.status === 'uploading' ? 'YouTube 업로드 중...' : '업로드 대기 중',
+        isUploading: typedData.status === 'uploading' || typedData.status === 'pending',
+        error: typedData.error_message,
+        youtubeUrl: typedData.youtube_url,
       })
 
       // YouTube 업로드 완료 시 전역 통계 업데이트
-      if (data.status === 'completed') {
+      if (typedData.status === 'completed') {
         setGlobalStats(prev => ({
           ...prev,
           activeUploads: Math.max(0, prev.activeUploads - 1),
           completedUploads: prev.completedUploads + 1,
         }))
-      } else if (data.status === 'error') {
+      } else if (typedData.status === 'error') {
         setGlobalStats(prev => ({
           ...prev,
           activeUploads: Math.max(0, prev.activeUploads - 1),
@@ -144,15 +147,15 @@ export function useUploadProgress() {
     })
 
     return unsubscribe
-  }, [webSocket.onMessage, updateUploadState])
+  }, [webSocket, updateUploadState])
 
   // 시스템 알림 핸들러
   useEffect(() => {
-    const unsubscribe = webSocket.onMessage('system_notification', (data: any) => {
+    const unsubscribe = webSocket.onMessage('system_notification', (data: unknown) => {
       console.log('System notification:', data)
       
       // 시스템 알림을 통해 전역 상태 업데이트
-      if (data.type === 'upload_started') {
+      if ((data as { type?: string }).type === 'upload_started') {
         setGlobalStats(prev => ({
           ...prev,
           totalUploads: prev.totalUploads + 1,
@@ -162,7 +165,7 @@ export function useUploadProgress() {
     })
 
     return unsubscribe
-  }, [webSocket.onMessage])
+  }, [webSocket])
 
   // 특정 스크립트의 업로드 상태 조회
   const getUploadState = useCallback((scriptId: number) => {

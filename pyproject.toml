@@ -1,31 +1,10 @@
-[project]
+[tool.poetry]
 name = "youtube-upload-automation"
 version = "1.0.0"
 description = "YouTube 업로드 자동화 시스템 - 1인 개발자를 위한 콘텐츠 제작 완전 자동화 솔루션"
-authors = [
-    {name = "Ragtime Lab", email = "ragtime1260@gmail.com"}
-]
+authors = ["Ragtime Lab <ragtime1260@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = [
-    "fastapi>=0.116.0",
-    "uvicorn[standard]>=0.35.0",
-    "sqlalchemy>=2.0.23",
-    "alembic>=1.12.1",
-    "google-auth>=2.25.2",
-    "google-auth-oauthlib>=1.1.0",
-    "google-auth-httplib2>=0.2.0",
-    "google-api-python-client>=2.179.0",
-    "python-dotenv>=1.0.0",
-    "pydantic>=2.5.0",
-    "pydantic-settings>=2.10.1",
-    "click>=8.2.1",
-    "rich>=14.1.0",
-    "requests>=2.32.4",
-    "pyyaml>=6.0.0",
-    "websockets>=12.0",
-    "python-multipart>=0.0.9",
-]
+license = "MIT"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -33,37 +12,48 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Multimedia :: Video",
 ]
+packages = [{include = "app", from = "backend"}]
 
-[project.urls]
+[tool.poetry.urls]
 Homepage = "https://github.com/ragtime1260/youtube-upload-automation"
 Repository = "https://github.com/ragtime1260/youtube-upload-automation"
 Documentation = "https://github.com/ragtime1260/youtube-upload-automation#readme"
 "Bug Tracker" = "https://github.com/ragtime1260/youtube-upload-automation/issues"
 
-[tool.poetry]
-packages = [{include = "app", from = "backend"}]
-
 [tool.poetry.dependencies]
 python = "^3.13"
+fastapi = "^0.116.0"
+uvicorn = {extras = ["standard"], version = "^0.35.0"}
+sqlalchemy = "^2.0.23"
+alembic = "^1.12.1"
+google-auth = "^2.25.2"
+google-auth-oauthlib = "^1.1.0"
+google-auth-httplib2 = "^0.2.0"
+google-api-python-client = "^2.179.0"
+python-dotenv = "^1.0.0"
+pydantic = "^2.5.0"
+pydantic-settings = "^2.10.1"
+click = "^8.2.1"
+rich = "^14.1.0"
+requests = "^2.32.4"
+PyYAML = "^6.0.0"
+websockets = "^12.0"
+python-multipart = "^0.0.9"
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=8.4.0",
-    "pytest-asyncio>=1.1.0", 
-    "httpx>=0.28.0",
-    "black>=25.0.0",
-    "isort>=6.0.0",
-    "flake8>=7.0.0",
-    "mypy>=1.6.0",
-    "pre-commit>=4.3.0",
-    "autoflake>=2.3.1",
-    "types-pyyaml>=6.0.12.20250809",
-]
-test = [
-    "coverage>=7.3.0",
-    "pytest-cov>=6.2.0",
-    "factory-boy>=3.3.0",
-]
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.0"
+pytest-asyncio = "^1.1.0"
+httpx = "^0.28.0"
+black = "^25.0.0"
+isort = "^6.0.0"
+flake8 = "^7.0.0"
+mypy = "^1.6.0"
+pre-commit = "^4.3.0"
+autoflake = "^2.3.1"
+types-PyYAML = "^6.0.12.20250809"
+coverage = "^7.3.0"
+pytest-cov = "^6.2.0"
+factory-boy = "^3.3.0"
 
 [build-system]
 requires = ["poetry-core"]

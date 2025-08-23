@@ -2,26 +2,44 @@ import axios from 'axios'
 import type { 
   ApiResponse, 
   Script, 
-  ScriptUploadRequest, 
   PaginatedResponse,
   UploadProgress,
   YouTubeUploadStatus 
 } from '@/types/api'
+import { UI_CONSTANTS } from '@/constants/ui'
 
-// Axios 인스턴스 설정
+// Axios 인스턴스 설정 - 비즈니스 로직 API용
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
-  timeout: 30000,
+  baseURL: UI_CONSTANTS.API.BASE_URL,
+  timeout: UI_CONSTANTS.API.TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-// 응답 인터셉터로 에러 처리
+// 인프라성 API용 별도 인스턴스 (prefix 없음)
+const infraApi = axios.create({
+  baseURL: UI_CONSTANTS.API.BASE_URL.replace('/api', ''),
+  timeout: UI_CONSTANTS.API.TIMEOUT,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// 응답 인터셉터로 에러 처리 - 비즈니스 API
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', error)
+    console.error('Business API Error:', error)
+    return Promise.reject(error)
+  }
+)
+
+// 응답 인터셉터로 에러 처리 - 인프라 API
+infraApi.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.error('Infrastructure API Error:', error)
     return Promise.reject(error)
   }
 )
@@ -30,10 +48,21 @@ api.interceptors.response.use(
 export const scriptApi = {
   // 스크립트 목록 조회
   async getScripts(page = 1, perPage = 10): Promise<PaginatedResponse<Script>> {
-    const response = await api.get<ApiResponse<PaginatedResponse<Script>>>('/scripts/', {
+    const response = await api.get<ApiResponse<Script[]>>('/scripts/', {
       params: { page, per_page: perPage }
     })
-    return response.data.data!
+    
+    // 백엔드 응답 구조에 맞게 변환
+    const scripts = response.data.data!
+    const pagination = (response.data as { pagination: { total: number } }).pagination
+    
+    return {
+      items: scripts,
+      total: pagination.total,
+      page: page,
+      per_page: perPage,
+      total_pages: Math.ceil(pagination.total / perPage)
+    }
   },
 
   // 특정 스크립트 조회
@@ -63,6 +92,40 @@ export const scriptApi = {
   // 스크립트 수정
   async updateScript(id: number, data: Partial<Script>): Promise<Script> {
     const response = await api.put<ApiResponse<Script>>(`/scripts/${id}`, data)
+    return response.data.data!
+  },
+
+  // 스크립트 통계 조회
+  async getStatistics(): Promise<{
+    statistics: {
+      total: number
+      script_ready: number
+      video_ready: number
+      uploaded: number
+      scheduled: number
+      error: number
+    }
+    recent_script: {
+      id: number
+      title: string
+      created_at: string
+    } | null
+  }> {
+    const response = await api.get<ApiResponse<{
+      statistics: {
+        total: number
+        script_ready: number
+        video_ready: number
+        uploaded: number
+        scheduled: number
+        error: number
+      }
+      recent_script: {
+        id: number
+        title: string
+        created_at: string
+      } | null
+    }>>('/scripts/stats/summary')
     return response.data.data!
   }
 }
@@ -95,17 +158,17 @@ export const uploadApi = {
   }
 }
 
-// 시스템 API
+// 시스템 API - 완전 표준화
 export const systemApi = {
-  // 헬스 체크
+  // 헬스 체크 - 인프라 API 인스턴스 사용
   async healthCheck(): Promise<{ status: string }> {
-    const response = await api.get('/health')
+    const response = await infraApi.get('/health')
     return response.data
   },
 
-  // 시스템 상태 조회
-  async getSystemStatus(): Promise<any> {
-    const response = await api.get('/status')
+  // 시스템 상태 조회 - 비즈니스 API 인스턴스 사용
+  async getSystemStatus(): Promise<unknown> {
+    const response = await api.get('/system/status')
     return response.data
   }
 }

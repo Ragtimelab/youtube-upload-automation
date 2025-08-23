@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { systemApi, scriptApi } from '@/services/api'
 import type { Script } from '@/types/api'
@@ -54,7 +54,6 @@ export interface PipelineStats {
 
 export function useSystemStatus() {
   const [isRealTimeEnabled, setIsRealTimeEnabled] = useState(true)
-  const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null)
   const [lastRefresh, setLastRefresh] = useState(new Date())
 
   // 헬스체크 쿼리
@@ -208,7 +207,7 @@ export function useSystemStatus() {
     if (!healthData || !statusData) return 'unknown'
     
     if (healthData.status === 'ok') return 'healthy'
-    if (statusData.error) return 'error'
+    if ((statusData as { error?: unknown })?.error) return 'error'
     return 'degraded'
   }, [healthData, statusData])
 

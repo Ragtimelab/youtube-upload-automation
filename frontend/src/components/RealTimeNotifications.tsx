@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,7 +12,6 @@ import {
   Settings,
   Volume2,
   VolumeX,
-  Filter,
   Clock
 } from 'lucide-react'
 import { useWebSocket } from '@/hooks/useWebSocket'
@@ -28,6 +27,31 @@ export interface Notification {
   progress?: number
   isRead: boolean
   persistent?: boolean // 수동으로 닫아야 하는 알림
+}
+
+interface UploadProgressMessage {
+  script_id: number
+  message: string
+  progress: number
+  status: string
+}
+
+interface YouTubeStatusMessage {
+  script_id: number
+  status: 'completed' | 'error' | 'uploading' | 'pending'
+  error_message?: string
+  youtube_url?: string
+  progress?: number
+}
+
+interface SystemNotificationMessage {
+  level: 'info' | 'warning' | 'error'
+  title?: string
+  message: string
+}
+
+interface SystemHealthMessage {
+  status: string
 }
 
 interface RealTimeNotificationsProps {
@@ -59,7 +83,9 @@ export function RealTimeNotifications({
     
     // Web Audio API 사용하여 간단한 알림 소리 생성
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+      const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
+      if (!AudioContextClass) return
+      const audioContext = new AudioContextClass()
       const oscillator = audioContext.createOscillator()
       const gainNode = audioContext.createGain()
       
@@ -119,51 +145,55 @@ export function RealTimeNotifications({
   useEffect(() => {
     const unsubscribers = [
       // 업로드 진행률 알림
-      webSocket.onMessage('upload_progress', (data: any) => {
+      webSocket.onMessage('upload_progress', (data) => {
+        const typedData = data as UploadProgressMessage
         addNotification({
           type: 'upload',
-          title: `스크립트 #${data.script_id} 업로드`,
-          message: data.message,
-          scriptId: data.script_id,
-          progress: data.progress,
-          persistent: data.status === 'error',
+          title: `스크립트 #${typedData.script_id} 업로드`,
+          message: typedData.message,
+          scriptId: typedData.script_id,
+          progress: typedData.progress,
+          persistent: typedData.status === 'error',
         })
       }),
 
       // YouTube 업로드 상태 알림
-      webSocket.onMessage('youtube_status', (data: any) => {
+      webSocket.onMessage('youtube_status', (data) => {
+        const typedData = data as YouTubeStatusMessage
         addNotification({
-          type: data.status === 'completed' ? 'success' : 
-                data.status === 'error' ? 'error' : 'info',
-          title: `YouTube 업로드 #${data.script_id}`,
-          message: data.status === 'completed' ? 'YouTube 업로드가 완료되었습니다.' :
-                  data.status === 'error' ? `업로드 실패: ${data.error_message}` :
-                  data.status === 'uploading' ? 'YouTube에 업로드 중입니다.' :
+          type: typedData.status === 'completed' ? 'success' : 
+                typedData.status === 'error' ? 'error' : 'info',
+          title: `YouTube 업로드 #${typedData.script_id}`,
+          message: typedData.status === 'completed' ? 'YouTube 업로드가 완료되었습니다.' :
+                  typedData.status === 'error' ? `업로드 실패: ${typedData.error_message}` :
+                  typedData.status === 'uploading' ? 'YouTube에 업로드 중입니다.' :
                   '업로드 대기 중입니다.',
-          scriptId: data.script_id,
-          youtubeUrl: data.youtube_url,
-          progress: data.progress,
-          persistent: data.status === 'error',
+          scriptId: typedData.script_id,
+          youtubeUrl: typedData.youtube_url,
+          progress: typedData.progress,
+          persistent: typedData.status === 'error',
         })
       }),
 
       // 시스템 알림
-      webSocket.onMessage('system_notification', (data: any) => {
+      webSocket.onMessage('system_notification', (data) => {
+        const typedData = data as SystemNotificationMessage
         addNotification({
-          type: data.level || 'info',
-          title: data.title || '시스템 알림',
-          message: data.message,
-          persistent: data.level === 'error',
+          type: typedData.level || 'info',
+          title: typedData.title || '시스템 알림',
+          message: typedData.message,
+          persistent: typedData.level === 'error',
         })
       }),
 
       // 시스템 상태 변화 알림
-      webSocket.onMessage('system_health', (data: any) => {
-        if (data.status !== 'ok') {
+      webSocket.onMessage('system_health', (data) => {
+        const typedData = data as SystemHealthMessage
+        if (typedData.status !== 'ok') {
           addNotification({
             type: 'warning',
             title: '시스템 상태 변화',
-            message: `시스템 상태: ${data.status}`,
+            message: `시스템 상태: ${typedData.status}`,
             persistent: true,
           })
         }
@@ -227,7 +257,6 @@ export function RealTimeNotifications({
   })
 
   const unreadCount = notifications.filter(n => !n.isRead).length
-  const errorCount = notifications.filter(n => n.type === 'error').length
 
   const getNotificationIcon = (type: Notification['type']) => {
     switch (type) {
@@ -314,7 +343,7 @@ export function RealTimeNotifications({
 
                 <select
                   value={filter}
-                  onChange={(e) => setFilter(e.target.value as any)}
+                  onChange={(e) => setFilter(e.target.value as 'all' | 'unread' | 'errors')}
                   className="text-sm border rounded px-2 py-1"
                 >
                   <option value="all">전체</option>

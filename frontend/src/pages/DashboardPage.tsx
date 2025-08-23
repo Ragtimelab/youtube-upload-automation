@@ -1,4 +1,3 @@
-import React from 'react'
 import { useSystemStatus } from '@/hooks/useSystemStatus'
 import { useUploadProgress } from '@/hooks/useUploadProgress'
 import { WebSocketStatus } from '@/components/WebSocketStatus'
@@ -7,40 +6,26 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  PieChart, Pie, Cell, AreaChart, Area, LineChart, Line
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell
 } from 'recharts'
 import {
   Activity,
-  TrendingUp,
-  TrendingDown,
   RefreshCw,
   Clock,
   CheckCircle,
-  AlertCircle,
   AlertTriangle,
   FileText,
   Video,
-  Upload,
-  Zap,
   Server,
   Database,
   Wifi,
   Youtube,
   BarChart3,
   PieChart as PieChartIcon,
-  Timer,
   Target
 } from 'lucide-react'
-
-const COLORS = {
-  primary: '#3B82F6',
-  success: '#10B981',
-  warning: '#F59E0B', 
-  error: '#EF4444',
-  secondary: '#6B7280',
-  accent: '#8B5CF6'
-}
+import { UI_CONSTANTS } from '@/constants/ui'
 
 export function DashboardPage() {
   const {
@@ -52,8 +37,8 @@ export function DashboardPage() {
     overallStatus,
     toggleRealTime,
     refreshAll,
-    healthData,
-    statusData
+    healthData: _healthData,
+    statusData: _statusData
   } = useSystemStatus()
 
   const { webSocketState, globalStats } = useUploadProgress()
@@ -100,10 +85,10 @@ export function DashboardPage() {
 
   // 차트 데이터 준비
   const statusDistributionData = systemMetrics ? [
-    { name: '스크립트만', value: systemMetrics.scriptsByStatus.script_ready, color: COLORS.secondary },
-    { name: '비디오 준비', value: systemMetrics.scriptsByStatus.video_ready, color: COLORS.warning },
-    { name: '업로드 완료', value: systemMetrics.scriptsByStatus.uploaded, color: COLORS.success },
-    { name: '오류', value: systemMetrics.scriptsByStatus.error, color: COLORS.error }
+    { name: '스크립트만', value: systemMetrics.scriptsByStatus.script_ready, color: UI_CONSTANTS.COLORS.secondary },
+    { name: '비디오 준비', value: systemMetrics.scriptsByStatus.video_ready, color: UI_CONSTANTS.COLORS.warning },
+    { name: '업로드 완료', value: systemMetrics.scriptsByStatus.uploaded, color: UI_CONSTANTS.COLORS.success },
+    { name: '오류', value: systemMetrics.scriptsByStatus.error, color: UI_CONSTANTS.COLORS.error }
   ] : []
 
   const pipelineData = pipelineStats?.stages.map(stage => ({
@@ -113,8 +98,8 @@ export function DashboardPage() {
   })) || []
 
   const performanceData = systemMetrics ? [
-    { name: '성공률', value: systemMetrics.performance.successRate, color: COLORS.success },
-    { name: '오류율', value: systemMetrics.performance.errorRate, color: COLORS.error }
+    { name: '성공률', value: systemMetrics.performance.successRate, color: UI_CONSTANTS.COLORS.success },
+    { name: '오류율', value: systemMetrics.performance.errorRate, color: UI_CONSTANTS.COLORS.error }
   ] : []
 
   // 로딩 상태
@@ -288,7 +273,7 @@ export function DashboardPage() {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Bar dataKey="count" fill={COLORS.primary} />
+                  <Bar dataKey="count" fill={UI_CONSTANTS.COLORS.primary} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>

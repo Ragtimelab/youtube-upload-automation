@@ -1,17 +1,47 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { 
   FileText, 
   Upload, 
   Youtube, 
   BarChart3,
-  TrendingUp,
   Clock,
   CheckCircle2,
-  Activity
+  Activity,
+  AlertTriangle
 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { scriptApi } from '@/services/api'
 
 export function HomePage() {
+  const navigate = useNavigate()
+  const [statistics, setStatistics] = useState<{
+    total: number
+    script_ready: number
+    video_ready: number
+    uploaded: number
+    scheduled: number
+    error: number
+  } | null>(null)
+  
+  const [isLoading, setIsLoading] = useState(true)
+
+  // API 데이터 로드
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      try {
+        const data = await scriptApi.getStatistics()
+        setStatistics(data.statistics)
+      } catch (error) {
+        console.error('통계 데이터 로드 실패:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchStatistics()
+  }, [])
+
   const quickActions = [
     {
       title: '새 스크립트 업로드',
@@ -36,11 +66,17 @@ export function HomePage() {
     },
   ]
 
-  const recentStats = [
-    { label: '전체 스크립트', value: '24', icon: FileText },
-    { label: '업로드 완료', value: '18', icon: CheckCircle2 },
-    { label: '처리 중', value: '3', icon: Clock },
-    { label: '이번 달 조회수', value: '12.5K', icon: TrendingUp },
+  // 실제 데이터 기반 통계 (더미 데이터 제거)
+  const recentStats = statistics ? [
+    { label: '전체 스크립트', value: statistics.total.toString(), icon: FileText },
+    { label: '업로드 완료', value: statistics.uploaded.toString(), icon: CheckCircle2 },
+    { label: '처리 중', value: (statistics.script_ready + statistics.video_ready).toString(), icon: Clock },
+    { label: '오류 발생', value: statistics.error.toString(), icon: AlertTriangle },
+  ] : [
+    { label: '전체 스크립트', value: '-', icon: FileText },
+    { label: '업로드 완료', value: '-', icon: CheckCircle2 },
+    { label: '처리 중', value: '-', icon: Clock },
+    { label: '오류 발생', value: '-', icon: AlertTriangle },
   ]
 
   return (
@@ -68,7 +104,11 @@ export function HomePage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">{stat.label}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  {isLoading ? (
+                    <div className="h-8 w-12 bg-gray-200 rounded animate-pulse"></div>
+                  ) : (
+                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  )}
                 </div>
                 <Icon className="h-8 w-8 text-gray-400" />
               </div>
@@ -82,28 +122,28 @@ export function HomePage() {
         {quickActions.map((action, index) => {
           const Icon = action.icon
           return (
-            <Link
-              key={index}
-              to={action.href}
-              className="group block bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-            >
+            <div key={index} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
               <div className="text-center space-y-4">
                 <div className={`inline-flex p-4 rounded-full ${action.color} text-white`}>
                   <Icon className="h-8 w-8" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 group-hover:text-gray-700">
+                  <h3 className="text-lg font-semibold text-gray-900">
                     {action.title}
                   </h3>
                   <p className="text-gray-600 mt-2">
                     {action.description}
                   </p>
                 </div>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full" 
+                  onClick={() => navigate(action.href)}
+                >
                   시작하기
                 </Button>
               </div>
-            </Link>
+            </div>
           )
         })}
       </div>
@@ -112,12 +152,14 @@ export function HomePage() {
       <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">실시간 상태</h2>
-          <Link to="/status">
-            <Button variant="outline" size="sm">
-              <BarChart3 className="h-4 w-4 mr-2" />
-              상세 보기
-            </Button>
-          </Link>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('/status')}
+          >
+            <BarChart3 className="h-4 w-4 mr-2" />
+            상세 보기
+          </Button>
         </div>
         <div className="text-center py-8 text-gray-500">
           <Activity className="h-12 w-12 mx-auto mb-4 text-gray-300" />

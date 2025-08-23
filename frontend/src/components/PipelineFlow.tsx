@@ -8,7 +8,7 @@ interface PipelineFlowProps {
     name: string
     count: number
     status: 'normal' | 'warning' | 'error' | 'processing'
-    icon: React.ComponentType<any>
+    icon: React.ComponentType<{ className?: string }>
     avgProcessingTime: number
   }>
   flows: Array<{
@@ -18,11 +18,11 @@ interface PipelineFlowProps {
     status: 'active' | 'blocked' | 'slow'
   }>
   isAnimated: boolean
-  onStageClick?: (stageId: string) => void
+  onStageClick?: (_stageId: string) => void
 }
 
 export function PipelineFlow({ stages, flows, isAnimated, onStageClick }: PipelineFlowProps) {
-  const [flowAnimation, setFlowAnimation] = useState<{ [key: string]: boolean }>({})
+  const [_flowAnimation, setFlowAnimation] = useState<{ [key: string]: boolean }>({})
 
   useEffect(() => {
     if (!isAnimated) return
@@ -31,7 +31,7 @@ export function PipelineFlow({ stages, flows, isAnimated, onStageClick }: Pipeli
       // 플로우 애니메이션 토글
       setFlowAnimation(prev => {
         const newState: { [key: string]: boolean } = {}
-        flows.forEach((flow, index) => {
+        flows.forEach((flow) => {
           if (flow.status === 'active' && flow.throughput > 0) {
             newState[`${flow.from}-${flow.to}`] = !prev[`${flow.from}-${flow.to}`]
           }
@@ -66,7 +66,7 @@ export function PipelineFlow({ stages, flows, isAnimated, onStageClick }: Pipeli
     return 'text-gray-400'
   }
 
-  const renderFlowParticles = (flowKey: string, flow: any) => {
+  const renderFlowParticles = (_flowKey: string, flow: { status: string; throughput: number }) => {
     if (!isAnimated || flow.status !== 'active' || flow.throughput === 0) return null
 
     return (
@@ -89,7 +89,7 @@ export function PipelineFlow({ stages, flows, isAnimated, onStageClick }: Pipeli
 
   return (
     <div className="relative p-8">
-      <style jsx>{`
+      <style>{`
         @keyframes flowParticle {
           0% {
             left: 0%;

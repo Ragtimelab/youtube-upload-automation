@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { scriptApi, uploadApi } from '@/services/api'
-import type { Script, YouTubeUploadStatus } from '@/types/api'
+import type { Script } from '@/types/api'
 import { useUploadProgress } from '@/hooks/useUploadProgress'
 import { useToast } from '@/hooks/useToast'
 import { WebSocketStatus } from '@/components/WebSocketStatus'
@@ -14,17 +14,13 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { 
   Upload, 
-  Play, 
   CheckCircle, 
   AlertCircle, 
   Clock,
   Search,
-  Filter,
   ExternalLink,
   FileText,
   Video,
-  Wifi,
-  WifiOff,
   Activity
 } from 'lucide-react'
 
@@ -34,7 +30,7 @@ export default function YouTubeUpload() {
     globalStats, 
     webSocketState, 
     startUpload, 
-    getUploadState,
+    getUploadState: _getUploadState,
     getActiveUploads 
   } = useUploadProgress()
   const { success, error, info } = useToast()
@@ -50,7 +46,7 @@ export default function YouTubeUpload() {
   // 업로드 상태별 필터링
   const filteredScripts = scriptsData?.items.filter(script => {
     const matchesSearch = script.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         script.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (script.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                          script.filename.toLowerCase().includes(searchTerm.toLowerCase())
     
     if (statusFilter === 'all') return matchesSearch
@@ -81,9 +77,9 @@ export default function YouTubeUpload() {
       
       // 스크립트 목록 새로고침
       refetch()
-    } catch (apiError: any) {
+    } catch (apiError: unknown) {
       console.error('YouTube upload API error:', apiError)
-      const errorMessage = apiError.response?.data?.message || '알 수 없는 오류가 발생했습니다.'
+      const errorMessage = (apiError as { response?: { data?: { message?: string } } })?.response?.data?.message || '알 수 없는 오류가 발생했습니다.'
       error('업로드 실패', errorMessage)
     }
   }
@@ -123,13 +119,13 @@ export default function YouTubeUpload() {
         return {
           icon: <AlertCircle className="h-4 w-4" />,
           color: "red" as const,
-          text: "오류 발생"
+          text: "error"
         }
       default:
         return {
           icon: <AlertCircle className="h-4 w-4" />,
           color: "gray" as const,
-          text: "알 수 없음"
+          text: "unknown"
         }
     }
   }
@@ -330,8 +326,8 @@ export default function YouTubeUpload() {
                     <div className="flex-1">
                       <CardTitle className="text-lg mb-2">{script.title}</CardTitle>
                       <CardDescription className="text-sm text-gray-600 mb-3">
-                        {script.description.substring(0, 100)}
-                        {script.description.length > 100 && '...'}
+                        {(script.description || '설명 없음').substring(0, 100)}
+                        {(script.description || '').length > 100 && '...'}
                       </CardDescription>
                     </div>
                     <Badge 
@@ -361,7 +357,7 @@ export default function YouTubeUpload() {
                   </div>
 
                   {/* 태그 */}
-                  {script.tags.length > 0 && (
+                  {(script.tags && script.tags.length > 0) && (
                     <div className="mb-4">
                       <div className="flex flex-wrap gap-1">
                         {script.tags.slice(0, 3).map((tag, index) => (

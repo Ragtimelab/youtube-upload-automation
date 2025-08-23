@@ -1,10 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-
-interface WebSocketMessage {
-  type: string
-  data: any
-  timestamp: string
-}
+import type { WebSocketMessage, WebSocketConnectionStatus, WebSocketState } from '@/types/api'
+import { UI_CONSTANTS } from '@/constants/ui'
 
 interface WebSocketConfig {
   url: string
@@ -15,16 +11,12 @@ interface WebSocketConfig {
   heartbeatInterval?: number
 }
 
-interface WebSocketState {
-  isConnected: boolean
-  connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'error'
+interface ExtendedWebSocketState extends WebSocketState {
   lastMessage: WebSocketMessage | null
-  error: string | null
-  reconnectAttempts: number
 }
 
-export function useWebSocket(config: WebSocketConfig) {
-  const [state, setState] = useState<WebSocketState>({
+export function useWebSocket(config: WebSocketConfig, shouldConnect: boolean = true) {
+  const [state, setState] = useState<ExtendedWebSocketState>({
     isConnected: false,
     connectionStatus: 'disconnected',
     lastMessage: null,
@@ -35,19 +27,19 @@ export function useWebSocket(config: WebSocketConfig) {
   const ws = useRef<WebSocket | null>(null)
   const reconnectTimer = useRef<NodeJS.Timeout | null>(null)
   const heartbeatTimer = useRef<NodeJS.Timeout | null>(null)
-  const messageHandlers = useRef<Map<string, (data: any) => void>>(new Map())
-  const connectionChangeHandlers = useRef<((isConnected: boolean, status: string) => void)[]>([])
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  const messageHandlers = useRef<Map<string, (data: unknown) => void>>(new Map())
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  const connectionChangeHandlers = useRef<((isConnected: boolean, status: WebSocketConnectionStatus) => void)[]>([])
 
   const {
     url,
     clientId,
-    reconnectInterval = 3000,
-    maxReconnectAttempts = 5,
     enableHeartbeat = true,
-    heartbeatInterval = 30000
+    heartbeatInterval = UI_CONSTANTS.INTERVALS.HEARTBEAT
   } = config
 
-  // WebSocket URL 생성
+  // WebSocket URL 생성 - 안정적인 memoization
   const buildWebSocketUrl = useCallback(() => {
     const wsUrl = new URL(url)
     if (clientId) {
@@ -56,11 +48,11 @@ export function useWebSocket(config: WebSocketConfig) {
     return wsUrl.toString()
   }, [url, clientId])
 
-  // 하트비트 시작
+  // 하트비트 관리
   const startHeartbeat = useCallback(() => {
-    if (enableHeartbeat && ws.current && ws.current.readyState === WebSocket.OPEN) {
+    if (enableHeartbeat && ws.current?.readyState === WebSocket.OPEN) {
       heartbeatTimer.current = setInterval(() => {
-        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        if (ws.current?.readyState === WebSocket.OPEN) {
           ws.current.send(JSON.stringify({
             action: 'heartbeat',
             timestamp: new Date().toISOString()
@@ -70,7 +62,6 @@ export function useWebSocket(config: WebSocketConfig) {
     }
   }, [enableHeartbeat, heartbeatInterval])
 
-  // 하트비트 중지
   const stopHeartbeat = useCallback(() => {
     if (heartbeatTimer.current) {
       clearInterval(heartbeatTimer.current)
@@ -80,18 +71,23 @@ export function useWebSocket(config: WebSocketConfig) {
 
   // 연결 함수
   const connect = useCallback(() => {
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      return // Already connected
+    if (ws.current?.readyState === WebSocket.OPEN) {
+      return
+    }
+
+    if (ws.current) {
+      ws.current.close()
+      ws.current = null
     }
 
     setState(prev => ({ ...prev, connectionStatus: 'connecting' }))
 
     try {
       const wsUrl = buildWebSocketUrl()
+      console.log('Connecting to WebSocket:', wsUrl)
       ws.current = new WebSocket(wsUrl)
 
-      ws.current.onopen = (event) => {
-        console.log('WebSocket connected:', event)
+      ws.current.onopen = () => {
         setState(prev => ({
           ...prev,
           isConnected: true,
@@ -100,13 +96,11 @@ export function useWebSocket(config: WebSocketConfig) {
           reconnectAttempts: 0,
         }))
         
-        // 연결 상태 변화 핸들러 실행
         connectionChangeHandlers.current.forEach(handler => {
           handler(true, 'connected')
         })
         
-        // 연결 후 구독 메시지 전송
-        if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+        if (ws.current?.readyState === WebSocket.OPEN) {
           ws.current.send(JSON.stringify({
             action: 'subscribe',
             message_types: ['upload_progress', 'youtube_status', 'system_notification']
@@ -119,17 +113,14 @@ export function useWebSocket(config: WebSocketConfig) {
       ws.current.onmessage = (event) => {
         try {
           const message: WebSocketMessage = JSON.parse(event.data)
-          console.log('WebSocket message received:', message)
           
           setState(prev => ({ ...prev, lastMessage: message }))
           
-          // 메시지 타입별 핸들러 실행
           const handler = messageHandlers.current.get(message.type)
           if (handler) {
             handler(message.data)
           }
           
-          // 범용 핸들러 실행
           const allHandler = messageHandlers.current.get('*')
           if (allHandler) {
             allHandler(message)
@@ -139,36 +130,21 @@ export function useWebSocket(config: WebSocketConfig) {
         }
       }
 
-      ws.current.onclose = (event) => {
-        console.log('WebSocket disconnected:', event)
+      ws.current.onclose = () => {
         setState(prev => ({
           ...prev,
           isConnected: false,
           connectionStatus: 'disconnected'
         }))
         
-        // 연결 상태 변화 핸들러 실행
         connectionChangeHandlers.current.forEach(handler => {
           handler(false, 'disconnected')
         })
         
         stopHeartbeat()
-        
-        // 재연결 시도
-        if (state.reconnectAttempts < maxReconnectAttempts) {
-          setState(prev => ({ 
-            ...prev, 
-            reconnectAttempts: prev.reconnectAttempts + 1 
-          }))
-          
-          reconnectTimer.current = setTimeout(() => {
-            connect()
-          }, reconnectInterval)
-        }
       }
 
-      ws.current.onerror = (event) => {
-        console.error('WebSocket error:', event)
+      ws.current.onerror = () => {
         setState(prev => ({
           ...prev,
           connectionStatus: 'error',
@@ -184,7 +160,7 @@ export function useWebSocket(config: WebSocketConfig) {
         error: error instanceof Error ? error.message : 'Unknown error'
       }))
     }
-  }, [buildWebSocketUrl, state.reconnectAttempts, maxReconnectAttempts, reconnectInterval, startHeartbeat, stopHeartbeat])
+  }, [buildWebSocketUrl, startHeartbeat, stopHeartbeat])
 
   // 연결 해제
   const disconnect = useCallback(() => {
@@ -196,7 +172,7 @@ export function useWebSocket(config: WebSocketConfig) {
     stopHeartbeat()
     
     if (ws.current) {
-      ws.current.close()
+      ws.current.close(1000, 'Client disconnect')
       ws.current = null
     }
     
@@ -209,17 +185,17 @@ export function useWebSocket(config: WebSocketConfig) {
   }, [stopHeartbeat])
 
   // 메시지 전송
-  const sendMessage = useCallback((message: any) => {
-    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+  const sendMessage = useCallback((message: unknown) => {
+    if (ws.current?.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(message))
       return true
     }
-    console.warn('WebSocket is not connected')
     return false
   }, [])
 
   // 메시지 핸들러 등록
-  const onMessage = useCallback((messageType: string, handler: (data: any) => void) => {
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  const onMessage = useCallback((messageType: string, handler: (data: unknown) => void) => {
     messageHandlers.current.set(messageType, handler)
     
     return () => {
@@ -228,7 +204,8 @@ export function useWebSocket(config: WebSocketConfig) {
   }, [])
 
   // 연결 상태 변화 핸들러 등록
-  const onConnectionChange = useCallback((handler: (isConnected: boolean, status: string) => void) => {
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  const onConnectionChange = useCallback((handler: (isConnected: boolean, status: WebSocketConnectionStatus) => void) => {
     connectionChangeHandlers.current.push(handler)
     
     return () => {
@@ -246,24 +223,19 @@ export function useWebSocket(config: WebSocketConfig) {
     })
   }, [sendMessage])
 
-  // 컴포넌트 마운트/언마운트 시 처리
+  // 초기 연결
   useEffect(() => {
-    connect()
+    if (shouldConnect) {
+      connect()
+    } else {
+      disconnect()
+    }
     
     return () => {
       disconnect()
     }
-  }, []) // connect, disconnect는 의존성에서 제외 (무한 루프 방지)
-
-  // 정리 함수
-  useEffect(() => {
-    return () => {
-      if (reconnectTimer.current) {
-        clearTimeout(reconnectTimer.current)
-      }
-      stopHeartbeat()
-    }
-  }, [stopHeartbeat])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldConnect])
 
   return {
     ...state,

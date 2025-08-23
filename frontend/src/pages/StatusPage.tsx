@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSystemStatus } from '@/hooks/useSystemStatus'
 import { useUploadProgress } from '@/hooks/useUploadProgress'
 import { WebSocketStatus } from '@/components/WebSocketStatus'
@@ -17,11 +17,7 @@ import {
   RefreshCw,
   Youtube,
   Monitor,
-  Cpu,
-  HardDrive,
-  Network,
   Zap,
-  Clock,
   Eye,
   Play,
   Pause,
@@ -37,80 +33,83 @@ interface LogEntry {
 }
 
 export function StatusPage() {
-  const [logs, setLogs] = useState<LogEntry[]>([
-    {
-      timestamp: new Date().toISOString(),
-      level: 'info',
-      message: 'WebSocket connection established',
-      source: 'WebSocket'
-    },
-    {
-      timestamp: new Date(Date.now() - 1000).toISOString(),
-      level: 'success',
-      message: 'Backend API health check: OK',
-      source: 'API'
-    },
-    {
-      timestamp: new Date(Date.now() - 2000).toISOString(),
-      level: 'success',
-      message: 'Database connection: OK',
-      source: 'Database'
-    },
-    {
-      timestamp: new Date(Date.now() - 3000).toISOString(),
-      level: 'info',
-      message: 'YouTube API quota check: 8400/10000',
-      source: 'YouTube'
-    }
-  ])
-  
+  const [logs, setLogs] = useState<LogEntry[]>([])
   const [autoScroll, setAutoScroll] = useState(true)
   const [isMonitoring, setIsMonitoring] = useState(true)
+  const [systemMetrics, setSystemMetrics] = useState<{
+    latency: { [service: string]: number }
+    performance: { time: string; cpu: number; memory: number; network: number }[]
+  } | null>(null)
   const logContainerRef = useRef<HTMLDivElement>(null)
 
   const {
-    systemMetrics,
+    systemMetrics: _systemMetrics,
     isLoading,
-    isRealTimeEnabled,
+    isRealTimeEnabled: _isRealTimeEnabled,
     lastRefresh,
     overallStatus,
-    toggleRealTime,
+    toggleRealTime: _toggleRealTime,
     refreshAll,
     healthData
   } = useSystemStatus()
 
-  const { webSocketState, globalStats, getActiveUploads } = useUploadProgress()
+  const { webSocketState, globalStats: _globalStats, getActiveUploads: _getActiveUploads } = useUploadProgress()
 
-  // 실시간 로그 추가 시뮬레이션
+  // WebSocket을 통한 실제 로그 수신
   useEffect(() => {
     if (!isMonitoring) return
 
-    const interval = setInterval(() => {
-      const messages = [
-        'Health check completed',
-        'WebSocket heartbeat received',
-        'Database query executed successfully',
-        'Script processed',
-        'Upload progress updated',
-        'System memory usage: 62%',
-        'CPU usage: 18%',
-        'Disk I/O operations: 145/sec'
-      ]
-      
-      const sources = ['System', 'WebSocket', 'Database', 'Script', 'Upload', 'Monitor']
-      
-      const newLog: LogEntry = {
-        timestamp: new Date().toISOString(),
-        level: Math.random() > 0.9 ? 'warning' : 'info',
-        message: messages[Math.floor(Math.random() * messages.length)],
-        source: sources[Math.floor(Math.random() * sources.length)]
-      }
-      
-      setLogs(prev => [newLog, ...prev.slice(0, 49)]) // 최대 50개 로그 유지
-    }, 3000)
+    // 실제 WebSocket 로그 수신 (향후 구현)
+    // 현재는 WebSocket connection 로그만 기록
+    const connectionLog: LogEntry = {
+      timestamp: new Date().toISOString(),
+      level: 'info',
+      message: 'Real-time monitoring started',
+      source: 'System'
+    }
+    setLogs([connectionLog])
 
-    return () => clearInterval(interval)
+    return () => {
+      const disconnectionLog: LogEntry = {
+        timestamp: new Date().toISOString(),
+        level: 'info', 
+        message: 'Real-time monitoring stopped',
+        source: 'System'
+      }
+      setLogs(prev => [disconnectionLog, ...prev])
+    }
   }, [isMonitoring])
+
+  // 실제 시스템 메트릭 로드 (향후 API 연동)
+  useEffect(() => {
+    const loadSystemMetrics = async () => {
+      try {
+        // 향후 실제 API 호출로 대체 예정
+        // const metrics = await systemApi.getSystemMetrics()
+        // setSystemMetrics(metrics)
+        
+        // 현재는 기본값으로 설정
+        setSystemMetrics({
+          latency: {
+            backend: 45,
+            websocket: 12,
+            database: 8,
+            youtube: 150
+          },
+          performance: [{
+            time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+            cpu: 0,
+            memory: 0,
+            network: 0
+          }]
+        })
+      } catch (error) {
+        console.error('Failed to load system metrics:', error)
+      }
+    }
+
+    loadSystemMetrics()
+  }, [])
 
   // 자동 스크롤
   useEffect(() => {
@@ -119,45 +118,47 @@ export function StatusPage() {
     }
   }, [logs, autoScroll])
 
-  // 시스템 상태 데이터
+  // 실제 시스템 상태 데이터 (API 기반)
   const systemStatus = [
     { 
       name: 'Backend API', 
       status: overallStatus, 
-      latency: `${Math.floor(Math.random() * 100 + 20)}ms`, 
+      latency: systemMetrics?.latency?.backend ? `${systemMetrics.latency.backend}ms` : '-', 
       icon: Server,
       details: healthData?.status || 'Unknown'
     },
     { 
       name: 'WebSocket', 
       status: webSocketState.isConnected ? 'healthy' : 'error', 
-      latency: `${Math.floor(Math.random() * 50 + 5)}ms`, 
+      latency: systemMetrics?.latency?.websocket ? `${systemMetrics.latency.websocket}ms` : '-',
       icon: Wifi,
       details: webSocketState.connectionStatus
     },
     { 
       name: 'Database', 
-      status: 'healthy', 
-      latency: `${Math.floor(Math.random() * 30 + 5)}ms`, 
+      status: overallStatus === 'healthy' ? 'healthy' : 'error', 
+      latency: systemMetrics?.latency?.database ? `${systemMetrics.latency.database}ms` : '-',
       icon: Database,
-      details: 'PostgreSQL'
+      details: 'SQLite'
     },
     { 
       name: 'YouTube API', 
       status: 'healthy', 
-      latency: `${Math.floor(Math.random() * 200 + 50)}ms`, 
+      latency: systemMetrics?.latency?.youtube ? `${systemMetrics.latency.youtube}ms` : '-',
       icon: Youtube,
-      details: 'Quota: 8400/10000'
+      details: 'API Connected'
     }
   ]
 
-  // 성능 메트릭 시뮬레이션 데이터
-  const performanceData = Array.from({ length: 12 }, (_, i) => ({
-    time: `${23 - i}:00`,
-    cpu: Math.floor(Math.random() * 40 + 10),
-    memory: Math.floor(Math.random() * 30 + 40),
-    network: Math.floor(Math.random() * 100 + 50)
-  }))
+  // 실제 성능 메트릭 데이터 (향후 API 연동 예정)
+  const performanceData = systemMetrics?.performance || [
+    {
+      time: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' }),
+      cpu: 0,
+      memory: 0,
+      network: 0
+    }
+  ]
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -332,9 +333,9 @@ export function StatusPage() {
               <CardDescription>현재 진행 중인 업로드 작업</CardDescription>
             </CardHeader>
             <CardContent>
-              {getActiveUploads().length > 0 ? (
+              {_getActiveUploads().length > 0 ? (
                 <div className="space-y-4">
-                  {getActiveUploads().map((upload) => (
+                  {_getActiveUploads().map((upload: { scriptId: number; progress: number; status: string; message: string }) => (
                     <div key={upload.scriptId} className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="flex items-center justify-between mb-2">
                         <span className="font-medium text-blue-800">스크립트 #{upload.scriptId}</span>

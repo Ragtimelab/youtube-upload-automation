@@ -1,7 +1,9 @@
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Youtube, Upload, CheckCircle2, Clock, AlertTriangle } from 'lucide-react'
 
 export function YouTubePage() {
+  const navigate = useNavigate()
   return (
     <div className="space-y-6">
       <div>
@@ -39,8 +41,8 @@ export function YouTubePage() {
             <h4 className="text-lg font-medium text-gray-900 mb-2">업로드 대기 중인 항목이 없습니다</h4>
             <p className="text-gray-600 mb-6">스크립트와 비디오를 먼저 준비해주세요.</p>
             <div className="flex justify-center space-x-4">
-              <Button variant="outline">스크립트 관리</Button>
-              <Button variant="outline">비디오 업로드</Button>
+              <Button variant="outline" onClick={() => navigate('/scripts')}>스크립트 관리</Button>
+              <Button variant="outline" onClick={() => navigate('/upload')}>비디오 업로드</Button>
             </div>
           </div>
         </div>

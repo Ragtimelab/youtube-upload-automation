@@ -4,8 +4,7 @@ import { useScripts, useUploadScript, useDeleteScript } from '@/hooks/useScripts
 import { 
   FileText, 
   Plus, 
-  Search, 
-  Upload,
+  Search,
   Trash2,
   Eye,
   Calendar,
@@ -21,7 +20,7 @@ export function ScriptsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
   
-  const { data: scriptsData, isLoading, error } = useScripts(page, 10)
+  const { data: scriptsData, isLoading, error, refetch } = useScripts(page, 10)
   const uploadScript = useUploadScript()
   const deleteScript = useDeleteScript()
 
@@ -55,18 +54,21 @@ export function ScriptsPage() {
       case 'script_ready': return <Clock className="h-4 w-4 text-yellow-600" />
       case 'video_ready': return <CheckCircle2 className="h-4 w-4 text-blue-600" />
       case 'uploaded': return <CheckCircle2 className="h-4 w-4 text-green-600" />
+      case 'scheduled': return <Clock className="h-4 w-4 text-purple-600" />
       case 'error': return <AlertCircle className="h-4 w-4 text-red-600" />
       default: return <Clock className="h-4 w-4 text-gray-600" />
     }
   }
 
   const getStatusText = (status: string) => {
+    // CLI 기준 유효한 상태값만 사용 (TTS 잔재 완전 제거)
     switch (status) {
-      case 'script_ready': return '스크립트 준비'
-      case 'video_ready': return '비디오 준비'
-      case 'uploaded': return '업로드 완료'
-      case 'error': return '오류'
-      default: return '알 수 없음'
+      case 'script_ready': return 'script_ready'
+      case 'video_ready': return 'video_ready'
+      case 'uploaded': return 'uploaded'
+      case 'scheduled': return 'scheduled'
+      case 'error': return 'error'
+      default: return status || 'unknown'
     }
   }
 
@@ -75,6 +77,7 @@ export function ScriptsPage() {
       case 'script_ready': return 'bg-yellow-100 text-yellow-800'
       case 'video_ready': return 'bg-blue-100 text-blue-800'
       case 'uploaded': return 'bg-green-100 text-green-800'
+      case 'scheduled': return 'bg-purple-100 text-purple-800'
       case 'error': return 'bg-red-100 text-red-800'
       default: return 'bg-gray-100 text-gray-800'
     }
@@ -135,7 +138,7 @@ export function ScriptsPage() {
             <AlertCircle className="h-12 w-12 mx-auto text-red-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">오류가 발생했습니다</h3>
             <p className="text-gray-600 mb-4">스크립트를 불러올 수 없습니다.</p>
-            <Button onClick={() => window.location.reload()}>다시 시도</Button>
+            <Button onClick={() => refetch()}>다시 시도</Button>
           </div>
         ) : !scriptsData?.items.length ? (
           <div className="p-8 text-center">
@@ -172,7 +175,7 @@ export function ScriptsPage() {
                         <FileText className="h-4 w-4" />
                         <span>{script.filename}</span>
                       </div>
-                      {script.tags.length > 0 && (
+                      {script.tags && script.tags.length > 0 && (
                         <div className="flex items-center space-x-1">
                           <Tag className="h-4 w-4" />
                           <span>{script.tags.slice(0, 3).join(', ')}</span>

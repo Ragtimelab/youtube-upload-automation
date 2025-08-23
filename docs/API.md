@@ -1,6 +1,6 @@
 # 🔌 API 문서
 
-> **YouTube 업로드 자동화 시스템 REST API 가이드 - Gradio 웹 인터페이스 호환**
+> **YouTube 업로드 자동화 시스템 REST API + WebSocket 가이드 - React 웹 인터페이스 완전 통합**
 
 ## 📋 목차
 
@@ -23,8 +23,9 @@
 - **API 버전**: v1
 - **데이터 형식**: JSON
 - **문자 인코딩**: UTF-8
-- **웹 인터페이스**: Gradio (http://localhost:7860)
-- **CLI 호환성**: 완전 지원
+- **웹 인터페이스**: React (http://localhost:5174)
+- **WebSocket 통신**: 실시간 업로드 진행률 및 상태 업데이트
+- **CLI 호환성**: 18개 명령어 100% 웹 매핑 완료
 
 ### 지원 HTTP 메서드
 
@@ -570,6 +571,100 @@ GET /ws/stats
     }
   }
 }
+```
+
+### React WebSocket Integration
+
+**프론트엔드 WebSocket 연결 패턴:**
+
+```typescript
+// React Hook 예시 (frontend/src/hooks/useWebSocket.ts)
+import { useEffect, useRef, useState } from 'react';
+
+interface WebSocketMessage {
+  type: string;
+  script_id?: number;
+  data?: any;
+  timestamp?: string;
+}
+
+export const useWebSocket = (url: string) => {
+  const ws = useRef<WebSocket | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
+  const [lastMessage, setLastMessage] = useState<WebSocketMessage | null>(null);
+
+  useEffect(() => {
+    ws.current = new WebSocket(url);
+    
+    ws.current.onopen = () => {
+      setIsConnected(true);
+      console.log('WebSocket 연결 완료');
+    };
+    
+    ws.current.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      setLastMessage(message);
+    };
+    
+    ws.current.onclose = () => {
+      setIsConnected(false);
+      // Race condition 방지: 자동 재연결 로직
+      setTimeout(() => {
+        if (ws.current?.readyState === WebSocket.CLOSED) {
+          ws.current = new WebSocket(url);
+        }
+      }, 3000);
+    };
+
+    return () => {
+      ws.current?.close();
+    };
+  }, [url]);
+
+  const sendMessage = (message: any) => {
+    if (ws.current?.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify(message));
+    }
+  };
+
+  return { isConnected, lastMessage, sendMessage };
+};
+```
+
+**실시간 업로드 진행률 컴포넌트:**
+
+```typescript
+// React 컴포넌트 예시
+const UploadProgress: React.FC<{ scriptId: number }> = ({ scriptId }) => {
+  const { isConnected, lastMessage, sendMessage } = useWebSocket(
+    `ws://localhost:8000/ws?user_id=${Date.now()}`
+  );
+
+  useEffect(() => {
+    if (isConnected) {
+      sendMessage({
+        type: 'subscribe_script',
+        script_id: scriptId
+      });
+    }
+  }, [isConnected, scriptId]);
+
+  useEffect(() => {
+    if (lastMessage?.type === 'upload_progress' && 
+        lastMessage.script_id === scriptId) {
+      // 실시간 진행률 업데이트
+      const { progress_percentage } = lastMessage.data;
+      console.log(`업로드 진행률: ${progress_percentage}%`);
+    }
+  }, [lastMessage, scriptId]);
+
+  return (
+    <div>
+      <div>연결 상태: {isConnected ? '✅ 연결됨' : '❌ 연결 해제됨'}</div>
+      {/* 진행률 표시 컴포넌트 */}
+    </div>
+  );
+};
 ```
 
 ---

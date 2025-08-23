@@ -16,8 +16,10 @@
 ### 💻 **개발자이신가요?**
 
 1. 🏗️ [CLAUDE.md](../CLAUDE.md) - **전체 시스템 구조**
-2. ⌨️ [CLI_USAGE.md](./CLI_USAGE.md) - **명령줄 도구**
-3. 🔌 [API.md](./API.md) - **REST API 및 WebSocket 가이드**
+2. ⌨️ [CLI_USAGE.md](./CLI_USAGE.md) - **명령줄 도구 (18개 명령어)**
+3. 🔌 [API.md](./API.md) - **REST API 및 WebSocket 실시간 통신 가이드**
+4. ⚛️ **React Frontend 개발** - **TypeScript + WebSocket 완전 통합**
+5. 🔄 **CLI-Frontend 매핑** - **18개 명령어 100% 웹 구현**
 
 ### 🎊 **시스템 완성도를 확인하고 싶으신가요?**
 

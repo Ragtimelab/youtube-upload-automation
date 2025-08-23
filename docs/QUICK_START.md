@@ -15,18 +15,19 @@
 ### 1. 서버 시작
 
 ```bash
-# 터미널 1: 백엔드 서버
+# 터미널 1: 백엔드 서버 (WebSocket 포함)
 cd backend && make run
 
-# 터미널 2: Gradio 웹 인터페이스
-poetry run python gradio_app.py
+# 터미널 2: React 웹 인터페이스
+cd frontend && npm run dev
 ```
 
 ### 2. 브라우저 접속
 
-- <http://localhost:7860> 열기
-- "🌐 YouTube Upload Automation" 헤더 확인
-- 4개 탭 (스크립트 관리, 비디오 업로드, YouTube 업로드, 대시보드) 확인
+- <http://localhost:5174> 열기
+- "YouTube Upload Automation" React 웹 앱 헤더 확인
+- 4개 메인 페이지 (Dashboard, Scripts, Videos, YouTube) 확인
+- WebSocket 연결 상태 표시 확인
 
 ---
 
@@ -34,7 +35,7 @@ poetry run python gradio_app.py
 
 ### 방법 A: 파일 업로드 (추천)
 
-1. **📝 스크립트 관리** 탭 클릭
+1. **Scripts** 페이지로 이동 (사이드바 또는 내비게이션에서)
 2. 아래 템플릿을 `test_script.md` 파일로 저장:
 
 ```
@@ -54,9 +55,9 @@ ImageFX 프롬프트: simple test video thumbnail
 ```
 
 3. **파일 업로드** 영역에 `test_script.md` 드래그 앤 드롭
-4. **스크립트 업로드** 버튼 클릭
-5. ✅ "업로드 성공" 메시지 확인
-6. 스크립트 목록에 새 스크립트 표시 확인
+4. **Upload Script** 버튼 클릭
+5. ✅ WebSocket을 통한 실시간 업로드 진행률 확인
+6. ✅ "업로드 성공" 알림 및 스크립트 목록 자동 업데이트 확인
 
 ---
 
@@ -70,11 +71,11 @@ ImageFX 프롬프트: simple test video thumbnail
 
 ### 업로드 과정
 
-1. **🎥 비디오 업로드** 탭 클릭
+1. **Videos** 페이지로 이동
 2. 드롭다운에서 `script_ready` 상태의 방금 업로드한 스크립트 선택
 3. **비디오 파일 업로드** 영역에 비디오 파일 드래그 앤 드롭
-4. **비디오 업로드** 버튼 클릭
-5. 업로드 진행률 표시 확인 → ✅ "업로드 성공" 대기
+4. **Upload Video** 버튼 클릭
+5. WebSocket 실시간 업로드 진행률 표시 확인 → ✅ "업로드 성공" 대기
 
 ---
 
@@ -82,28 +83,28 @@ ImageFX 프롬프트: simple test video thumbnail
 
 ### 단일 업로드 설정
 
-1. **📺 YouTube 업로드** 탭 클릭
-2. **단일 업로드** 서브탭 선택
+1. **YouTube** 페이지로 이동
+2. **Single Upload** 서브섹션 선택
 3. 드롭다운에서 `video_ready` 상태의 스크립트 선택
 4. **공개 설정** 선택:
    - 첫 테스트는 **"private"** 권장
 5. **카테고리 ID** 선택:
    - 기본값 **"22"** (People & Blogs) 사용
-6. **업로드 시작** 버튼 클릭
-7. 업로드 진행률 표시 확인 → ✅ "업로드 성공!" 대기
-8. YouTube 링크 클릭해서 업로드된 영상 확인
+6. **Start Upload** 버튼 클릭
+7. WebSocket 실시간 업로드 진행률 표시 확인 → ✅ "업로드 성공!" 대기
+8. 자동 생성된 YouTube 링크 클릭해서 업로드된 영상 확인
 
 ---
 
 ## ✅ 완료 확인
 
-### 📊 대시보드에서 확인
+### 📊 Dashboard에서 확인
 
-1. **📊 대시보드** 탭 클릭
-2. **최근 활동** 서브탭에서 스크립트 상태 확인
-3. **업로드 분석** 서브탭에서 성공률 확인
-4. **시스템 로그** 서브탭에서 업로드 로그 확인
-5. **성능 모니터링** 서브탭에서 시스템 상태 확인
+1. **Dashboard** 페이지로 이동
+2. **Recent Activities** 섹션에서 스크립트 상태 실시간 확인
+3. **Upload Analytics** 섹션에서 성공률 및 통계 확인
+4. **System Status** 섹션에서 백엔드 및 WebSocket 연결 상태 확인
+5. **Activity Logs** 섹션에서 실시간 업로드 로그 확인
 
 ### 🎉 첫 번째 자동 업로드 성공
 
@@ -117,10 +118,10 @@ ImageFX 프롬프트: simple test video thumbnail
 
 ### 더 많은 기능 활용
 
-- **📋 스크립트 관리**: 여러 스크립트 동시 관리
-- **파일 업로드**: .txt, .md 파일로 스크립트 업로드
-- **공개 설정**: unlisted, public으로 공개 범위 조절
-- **카테고리**: 콘텐츠에 맞는 카테고리 선택
+- **📋 Scripts 관리**: 여러 스크립트 동시 관리 및 실시간 상태 업데이트
+- **WebSocket 실시간 피드백**: 모든 작업 진행 상황 실시간 표시
+- **공개 설정**: private, unlisted, public으로 공개 범위 조절
+- **CLI 연동**: 웹 인터페이스 모든 기능 CLI 명령어로 대응
 
 ### 자동화 워크플로우 구축
 
@@ -131,9 +132,9 @@ ImageFX 프롬프트: simple test video thumbnail
 
 ### 고급 기능
 
-- **배치 처리**: 여러 영상 동시 처리
-- **API 통합**: 외부 도구와 연동
-- **자동화 스크립트**: 반복 작업 자동화
+- **배치 처리**: 여러 영상 동시 처리 및 WebSocket 실시간 진행률
+- **REST API + WebSocket**: 외부 도구와 실시간 연동
+- **CLI 자동화**: 18개 명령어 기반 반복 작업 완전 자동화
 
 ---
 
@@ -148,9 +149,10 @@ ImageFX 프롬프트: simple test video thumbnail
 
 ### 상세 도움말
 
-- 📖 **STREAMLIT_USER_GUIDE.md**: 완전한 사용법
-- 🔧 **TROUBLESHOOTING.md**: 문제 해결 가이드
-- 💻 **CLI_USAGE.md**: 명령줄 도구 사용법
+- 📚 **USER_GUIDE.md**: React 웹 인터페이스 완전한 사용법
+- 🔧 **FAQ.md**: 문제 해결 가이드 및 WebSocket 관련 FAQ
+- 💻 **CLI_USAGE.md**: CLI 18개 명령어 사용법
+- 🔌 **API.md**: REST API 및 WebSocket API 가이드
 
 ---
 

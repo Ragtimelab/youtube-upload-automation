@@ -131,6 +131,18 @@ youtube-upload-automation/
 
 ## 🔧 기술 스택
 
+### Frontend Stack (신규 추가)
+
+- **React 19.1.1**: 최신 React + Concurrent Features
+- **TypeScript 5.8.3**: 타입 안전성 100% 보장
+- **Vite 7.1.2**: 고속 번들링 및 개발 서버
+- **TailwindCSS**: 반응형 디자인 (데스크톱, 태블릿, 모바일)
+- **Shadcn/ui + Radix UI**: 접근성 완벽 지원 컴포넌트
+- **TanStack Query 5.85.5**: 서버 상태 관리 및 캐싱
+- **React Hook Form + Zod**: 폼 검증 및 타입 안전성
+- **Recharts**: 실시간 통계 차트
+- **WebSocket API**: 네이티브 실시간 통신
+
 ### Backend
 
 - **Python 3.13**: 최신 Python 버전

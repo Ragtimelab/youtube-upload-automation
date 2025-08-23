@@ -73,23 +73,27 @@ async def upload_script(file: UploadFile = File(...), db: Session = Depends(get_
 
 @router.get("/")
 def get_scripts(
-    skip: int = 0,
-    limit: int = 100,
+    page: int = 1,
+    per_page: int = 10,
     status: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
     """등록된 대본 목록 조회
 
     Args:
-        skip: 건너뛸 개수 (페이지네이션)
-        limit: 조회할 최대 개수 (기본: 100)
+        page: 페이지 번호 (1부터 시작)
+        per_page: 페이지당 항목 수 (기본: 10)
         status: 상태 필터 (script_ready, video_ready, uploaded, error, scheduled)
     """
     try:
+        # page를 skip으로 변환 (page는 1부터 시작)
+        skip = (page - 1) * per_page
+        limit = per_page
+        
         script_service = ScriptService(db)
         result = script_service.get_scripts(skip, limit, status)
 
-        logger.info(f"대본 목록 조회: total={result['total']}, status_filter={status}")
+        logger.info(f"대본 목록 조회: page={page}, per_page={per_page}, total={result['total']}, status_filter={status}")
         return PaginatedResponse.create(
             data=result["scripts"],
             total=result["total"],

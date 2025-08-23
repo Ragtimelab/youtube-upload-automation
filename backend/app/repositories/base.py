@@ -63,7 +63,13 @@ class BaseSQLAlchemyRepository(BaseRepository[T]):
         self, skip: int = 0, limit: int = PaginationConstants.DEFAULT_PAGE_LIMIT
     ) -> List[T]:
         """모든 엔티티 조회"""
-        return self.db.query(self.model).offset(skip).limit(limit).all()
+        return (
+            self.db.query(self.model)
+            .order_by(self.model.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
     def update(self, entity: T) -> T:
         """엔티티 수정"""

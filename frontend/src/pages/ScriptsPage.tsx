@@ -152,7 +152,14 @@ export function ScriptsPage() {
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {scriptsData.items.map((script) => (
+            {scriptsData.items
+              .filter((script) => 
+                searchTerm === '' || 
+                script.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                script.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                script.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+              )
+              .map((script) => (
               <div key={script.id} className="p-6 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 min-w-0">

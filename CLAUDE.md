@@ -84,6 +84,13 @@ make migrate-create     # 빈 마이그레이션 생성
 make clean              # 캐시 및 임시 파일 정리
 make deps-update        # 의존성 업데이트
 make deps-show          # 설치된 의존성 표시
+make deps-tree          # 의존성 트리 표시
+
+# 백업 및 배포
+make backup             # 데이터베이스 자동 백업 실행
+make backup-info        # 현재 백업 상태 확인
+make build              # 패키지 빌드
+make version            # 현재 버전 표시
 
 # Pre-commit 훅 (고급 코드 품질 자동화)
 make pre-commit         # pre-commit 훅 설치 (보안 검사, 커밋 메시지 검증 포함)
@@ -199,7 +206,6 @@ LOG_LEVEL=INFO
 ### 필수 인증 파일 (.secrets/ 디렉토리)
 - `youtube-oauth2.json` - Google OAuth2 클라이언트 인증 정보
 - `youtube-token.pickle` - YouTube API 액세스 토큰
-- `google-tts-service.json` - Google TTS 서비스 계정 키
 
 ## 🚀 핵심 기능 및 상태 관리
 
@@ -354,6 +360,17 @@ make test-cov
 
 # 특정 테스트 클래스나 메서드 실행
 poetry run pytest backend/tests/integration/test_scripts_api.py::TestScriptsAPI::test_upload_script_success -v
+
+# 테스트 구조 (backend/tests/)
+# ├── unit/                    # 단위 테스트
+# │   ├── test_script_parser.py   # 스크립트 파싱 로직
+# │   └── test_script_service.py  # 스크립트 서비스 로직  
+# ├── integration/             # 통합 테스트
+# │   ├── test_scripts_api.py     # API 엔드포인트
+# │   ├── test_youtube_auth.py    # YouTube 인증
+# │   └── test_youtube_client.py  # YouTube 클라이언트
+# ├── test_integration_final.py   # 최종 통합 테스트
+# └── test_json_serialization.py  # JSON 직렬화 테스트
 ```
 
 ### 코드 품질 도구 (pyproject.toml 설정)
@@ -373,10 +390,10 @@ poetry run flake8 backend/app/ --max-line-length=88        # 린트 검사
 poetry run mypy backend/app/                               # 타입 체킹
 
 # 보안 검사 (backend/ 디렉토리에서)
-make security
+make security          # Safety를 통한 의존성 취약점 검사
 
-# Pre-commit 훅 (고급 보안 및 품질 자동화)
-make pre-commit        # pre-commit 훅 설치 (bandit 보안 검사, safety 취약점 검사 포함)
+# Pre-commit 훅 (고급 코드 품질 자동화)
+make pre-commit        # pre-commit 훅 설치
 make pre-commit-run    # 수동 실행 (모든 파일 대상)
 ```
 
@@ -419,16 +436,15 @@ make pre-commit-run    # 수동 실행 (모든 파일 대상)
 - **Rich**: 14.1+ (터미널 UI)
 
 ### 개발 도구 (최적화됨)
-- **pytest**: 테스트 프레임워크
+- **pytest**: 테스트 프레임워크 + pytest-asyncio, pytest-cov
 - **black**: 코드 포매팅 (88자 제한)
 - **isort**: import 정렬
 - **autoflake**: 미사용 import 자동 제거
 - **flake8**: 린팅 (88자 제한, E203/W503 무시)
 - **mypy**: 타입 체킹
 - **pre-commit**: Git 훅 (고급 보안 검사 포함)
-- **bandit**: 보안 취약점 검사
-- **safety**: 의존성 취약점 검사
-- **commitizen**: 커밋 메시지 표준화
+- **coverage**: 코드 커버리지 분석
+- **factory-boy**: 테스트 데이터 생성
 
 ## 🎯 시스템 최적화 현황 (2025-08)
 

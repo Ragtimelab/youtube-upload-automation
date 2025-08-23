@@ -109,9 +109,16 @@ export function useSystemStatus() {
     const lastUpload = uploadedScripts
       .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0]
 
+    // 업로드 시도 기준 성공률 (기존 로직)
     const totalUploads = scriptsByStatus.uploaded + scriptsByStatus.error
-    const successRate = totalUploads > 0 ? (scriptsByStatus.uploaded / totalUploads) * 100 : 0
-    const errorRate = totalUploads > 0 ? (scriptsByStatus.error / totalUploads) * 100 : 0
+    const uploadSuccessRate = totalUploads > 0 ? (scriptsByStatus.uploaded / totalUploads) * 100 : 0
+    const uploadErrorRate = totalUploads > 0 ? (scriptsByStatus.error / totalUploads) * 100 : 0
+    
+    // 전체 스크립트 기준 처리 현황 (더 유용한 지표)
+    const totalScripts = scripts.length
+    const overallSuccessRate = totalScripts > 0 ? (scriptsByStatus.uploaded / totalScripts) * 100 : 0
+    const overallErrorRate = totalScripts > 0 ? (scriptsByStatus.error / totalScripts) * 100 : 0
+    const processingRate = totalScripts > 0 ? ((scriptsByStatus.uploaded + scriptsByStatus.error) / totalScripts) * 100 : 0
 
     return {
       totalScripts: scripts.length,
@@ -124,8 +131,13 @@ export function useSystemStatus() {
       },
       performance: {
         avgUploadTime: 45, // 평균 45초 (실제로는 계산 필요)
-        successRate: Math.round(successRate * 100) / 100,
-        errorRate: Math.round(errorRate * 100) / 100,
+        // 전체 스크립트 기준 지표 (더 의미있는 지표)
+        successRate: Math.round(overallSuccessRate * 100) / 100,
+        errorRate: Math.round(overallErrorRate * 100) / 100,
+        processingRate: Math.round(processingRate * 100) / 100,
+        // 업로드 시도 기준 지표 (참고용)
+        uploadSuccessRate: Math.round(uploadSuccessRate * 100) / 100,
+        uploadErrorRate: Math.round(uploadErrorRate * 100) / 100,
       }
     }
   }, [])
@@ -206,7 +218,8 @@ export function useSystemStatus() {
   const getOverallStatus = useCallback(() => {
     if (!healthData || !statusData) return 'unknown'
     
-    if (healthData.status === 'ok') return 'healthy'
+    // API 응답 구조에 맞게 수정: success 필드로 판단
+    if (healthData.success === true) return 'healthy'
     if ((statusData as { error?: unknown })?.error) return 'error'
     return 'degraded'
   }, [healthData, statusData])

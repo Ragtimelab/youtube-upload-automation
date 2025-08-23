@@ -84,12 +84,35 @@ export function DashboardPage() {
   ]
 
   // 차트 데이터 준비
-  const statusDistributionData = systemMetrics ? [
-    { name: '스크립트만', value: systemMetrics.scriptsByStatus.script_ready, color: UI_CONSTANTS.COLORS.secondary },
-    { name: '비디오 준비', value: systemMetrics.scriptsByStatus.video_ready, color: UI_CONSTANTS.COLORS.warning },
-    { name: '업로드 완료', value: systemMetrics.scriptsByStatus.uploaded, color: UI_CONSTANTS.COLORS.success },
-    { name: '오류', value: systemMetrics.scriptsByStatus.error, color: UI_CONSTANTS.COLORS.error }
-  ] : []
+  const statusDistributionData = systemMetrics ? (() => {
+    const total = systemMetrics.totalScripts
+    return [
+      { 
+        name: '스크립트만', 
+        value: systemMetrics.scriptsByStatus.script_ready, 
+        color: UI_CONSTANTS.COLORS.secondary,
+        percentage: total > 0 ? Math.round((systemMetrics.scriptsByStatus.script_ready / total) * 100) : 0
+      },
+      { 
+        name: '비디오 준비', 
+        value: systemMetrics.scriptsByStatus.video_ready, 
+        color: UI_CONSTANTS.COLORS.warning,
+        percentage: total > 0 ? Math.round((systemMetrics.scriptsByStatus.video_ready / total) * 100) : 0
+      },
+      { 
+        name: '업로드 완료', 
+        value: systemMetrics.scriptsByStatus.uploaded, 
+        color: UI_CONSTANTS.COLORS.success,
+        percentage: total > 0 ? Math.round((systemMetrics.scriptsByStatus.uploaded / total) * 100) : 0
+      },
+      { 
+        name: '오류', 
+        value: systemMetrics.scriptsByStatus.error, 
+        color: UI_CONSTANTS.COLORS.error,
+        percentage: total > 0 ? Math.round((systemMetrics.scriptsByStatus.error / total) * 100) : 0
+      }
+    ]
+  })() : []
 
   const pipelineData = pipelineStats?.stages.map(stage => ({
     name: stage.name,

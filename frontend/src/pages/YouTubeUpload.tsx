@@ -115,6 +115,12 @@ export default function YouTubeUpload() {
           color: "green" as const,
           text: "업로드 완료"
         }
+      case 'scheduled':
+        return {
+          icon: <Clock className="h-4 w-4" />,
+          color: "purple" as const,
+          text: "scheduled"
+        }
       case 'error':
         return {
           icon: <AlertCircle className="h-4 w-4" />,

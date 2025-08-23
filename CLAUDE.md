@@ -8,9 +8,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 🏗️ 시스템 아키텍처
 
+**하이브리드 아키텍처**: Backend (Python) + Frontend (React) + CLI 도구의 3계층 구조
+
 ```
 youtube-upload-automation/
-├── backend/app/              # FastAPI 백엔드 (Clean Architecture)
+├── backend/app/              # FastAPI 백엔드 (Clean Architecture) - Port :8000
 │   ├── core/                # 상수, 설정, 예외처리
 │   │   ├── constants.py     # 모든 하드코딩 값 중앙화 (핵심!)
 │   │   ├── yaml_loader.py   # YAML 설정 싱글톤 로더
@@ -18,14 +20,24 @@ youtube-upload-automation/
 │   ├── models/              # SQLAlchemy 모델
 │   ├── repositories/        # 데이터 접근 계층
 │   ├── services/            # 비즈니스 로직 (YouTube, WebSocket)
-│   └── routers/             # API 엔드포인트
-├── cli/                     # CLI 도구 (주요 인터페이스)
+│   └── routers/             # API 엔드포인트 (/api prefix)
+├── frontend/                # React 19 + TypeScript + Vite - Port :5174
+│   ├── src/components/      # UI 컴포넌트 (Shadcn/ui + Tailwind CSS)
+│   ├── src/hooks/           # React 커스텀 훅 (WebSocket, API 통합)
+│   ├── src/pages/           # 8개 페이지 (Dashboard, Scripts, Upload, YouTube, etc.)
+│   └── src/services/        # API 클라이언트 (Axios + TanStack Query)
+├── cli/                     # CLI 도구 (개발자 우선 인터페이스)
 │   └── commands/            # script.py, video.py, youtube.py, status.py
 ├── config/                  # YAML 기반 설정 파일
 │   └── channels.yaml        # 채널 브랜딩 중앙 관리 (핵심!)
 ├── .secrets/                # 인증 파일 (git에서 제외)
 └── uploads/                 # 업로드 파일 저장소
 ```
+
+### 🔄 주요 통신 패턴
+- **CLI ↔ Backend**: REST API (`/api/` endpoints)
+- **Frontend ↔ Backend**: REST API + WebSocket (실시간 업데이트)
+- **Frontend ↔ Backend**: CORS 설정으로 포트 간 통신 (5174 → 8000)
 
 ## 🔧 핵심 개발 명령어
 
@@ -78,6 +90,27 @@ make pre-commit         # pre-commit 훅 설치 (보안 검사, 커밋 메시지
 make pre-commit-run     # 수동 실행 (모든 파일 대상)
 ```
 
+### Frontend 개발 (React + TypeScript + Vite)
+```bash
+# 프론트엔드 디렉토리로 이동
+cd frontend/
+
+# Node.js 의존성 설치
+npm install
+
+# 개발 서버 실행 (http://localhost:5174)
+npm run dev
+
+# 프로덕션 빌드
+npm run build
+
+# 린트 검사
+npm run lint
+
+# 빌드 파일 미리보기
+npm run preview
+```
+
 ### CLI 사용법
 ```bash
 # 메인 CLI 실행 (Poetry 자동 감지)
@@ -93,6 +126,20 @@ make pre-commit-run     # 수동 실행 (모든 파일 대상)
 ./youtube-cli video upload 1 video.mp4      # 비디오 업로드
 ./youtube-cli youtube upload 1              # YouTube 업로드
 ./youtube-cli status                         # 상태 확인
+```
+
+### 🚀 전체 시스템 실행 (개발 모드)
+```bash
+# Terminal 1: Backend 서버 실행 (Port 8000)
+cd backend/
+make run
+
+# Terminal 2: Frontend 서버 실행 (Port 5174)  
+cd frontend/
+npm run dev
+
+# Terminal 3: CLI 도구 사용 (선택사항)
+./youtube-cli status
 ```
 
 
@@ -210,10 +257,34 @@ GET    /api/scripts/{id}             # 스크립트 상세
 POST   /api/upload/video/{script_id} # 비디오 업로드
 POST   /api/upload/youtube/{script_id} # YouTube 업로드
 
+# WebSocket 실시간 통신
+WS     /ws/                          # 실시간 업로드 상태, 진행률 알림
+
 # 시스템
 GET    /health                       # 헬스체크
 GET    /docs                         # API 문서 (Swagger)
 ```
+
+## 🌐 프론트엔드 아키텍처
+
+### React 페이지 구조 (8개 페이지)
+- **DashboardPage**: 시스템 개요, 실시간 상태 카드
+- **ScriptsPage**: 스크립트 관리, 업로드, 목록 조회
+- **UploadPage**: 비디오 업로드, 드래그&드롭 지원
+- **YouTubePage**: YouTube 업로드 관리, 상태 필터링
+- **StatusPage**: 시스템 모니터링, 로그 스트림
+- **PipelinePage**: 파이프라인 시각화, 애니메이션
+- **SettingsPage**: 설정 관리
+- **HomePage**: 랜딩 페이지
+
+### 핵심 React 기술 스택
+- **React 19.1.1** + **TypeScript 5.8** + **Vite 7.1**
+- **TanStack Query 5.85**: 서버 상태 관리 및 캐싱
+- **Zustand 5.0**: 클라이언트 상태 관리
+- **Shadcn/ui**: UI 컴포넌트 라이브러리
+- **Tailwind CSS 3.4**: 유틸리티 기반 CSS 프레임워크
+- **React Hook Form 7.62** + **Zod 4.0**: 폼 관리 및 검증
+- **WebSocket**: 실시간 업로드 진행률 및 상태 동기화
 
 ## 🔧 아키텍처 패턴
 
@@ -371,14 +442,31 @@ make pre-commit-run    # 수동 실행 (모든 파일 대상)
 - **테스트 안정성**: 33개 핵심 테스트 100% 통과 상태 유지
 - **개발 환경 표준화**: Poetry 2.0+ 지원, 자동화된 코드 품질 검증 체계
 
-### 🔄 현재 시스템 상태
+### 🔄 현재 시스템 상태 
+- **Backend**: FastAPI + WebSocket (Port 8000) ✅
+- **Frontend**: React 19 + TypeScript (Port 5174) ✅
 - **테스트 통과율**: 33/33 (100%) ✅
 - **API 응답 일관성**: 완전 표준화 ✅  
 - **코드 품질**: flake8/black/isort 규칙 준수 ✅
 - **의존성 상태**: 최적화 완료 ✅
 - **CLI 도구**: 정상 작동 ✅
 - **채널 브랜딩**: YAML 기반 동적 관리 ✅
+- **실시간 통신**: WebSocket 기반 진행률 알림 ✅
 
 ---
 
-**중요**: 이 시스템은 1인 개발자가 한국 시니어 대상 콘텐츠를 효율적으로 제작하고 업로드하기 위해 설계되었습니다. 모든 설정값은 constants.py에서 중앙 관리되며, CLI 도구가 주요 인터페이스입니다.
+## 🚨 중요 개발 참고사항
+
+### 하이브리드 아키텍처 특징
+1. **3가지 인터페이스**: CLI (개발자용), React Web UI (사용자용), REST API (통합용)
+2. **독립 서버**: Backend(8000), Frontend(5174) 별도 실행 필요
+3. **실시간 동기화**: WebSocket으로 CLI ↔ Web UI 상태 동기화
+4. **중앙화된 설정**: `backend/app/core/constants.py` + `config/channels.yaml`
+
+### 개발 시 주의사항
+- **Backend 개발**: 모든 make 명령어는 `backend/` 디렉토리에서 실행
+- **Frontend 개발**: npm 명령어는 `frontend/` 디렉토리에서 실행  
+- **CLI 개발**: 프로젝트 루트에서 `./youtube-cli` 실행
+- **테스트**: Backend 테스트는 `poetry run pytest`로 실행
+
+**중요**: 이 시스템은 1인 개발자가 한국 시니어 대상 콘텐츠를 효율적으로 제작하고 업로드하기 위해 설계되었습니다. CLI 도구가 주요 인터페이스이며, React Web UI는 시각적 모니터링과 관리를 위한 보조 도구입니다.

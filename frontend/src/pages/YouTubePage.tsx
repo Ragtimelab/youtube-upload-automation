@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { scriptApi } from '@/services/api'
 import { useUploadProgress } from '@/hooks/useUploadProgress'
@@ -9,11 +9,12 @@ import { YouTubeBatchControls } from '@/components/youtube/YouTubeBatchControls'
 import { YouTubeScriptList } from '@/components/youtube/YouTubeScriptList'
 import { YouTubeStatsCards } from '@/components/youtube/YouTubeStatsCards'
 import { Activity } from 'lucide-react'
+import type { YouTubeUploadProgress, YouTubeUploadStep } from '@/types/youtube'
+import type { Script } from '@/types/api'
 
 export function YouTubePage() {
   const { 
     uploadStates, 
-    globalStats, 
     webSocketState,
     getActiveUploads 
   } = useUploadProgress()
@@ -53,6 +54,32 @@ export function YouTubePage() {
     return matchesSearch && script.status === statusFilter
   }) || []
 
+  // UploadState를 YouTubeUploadProgress로 변환
+  const youtubeUploadStates = useMemo((): Record<number, YouTubeUploadProgress> => {
+    const converted: Record<number, YouTubeUploadProgress> = {}
+    
+    Object.entries(uploadStates).forEach(([scriptId, uploadState]) => {
+      // 기본 step 결정 로직
+      let step: YouTubeUploadStep = 'preparing'
+      if (uploadState.progress > 0 && uploadState.progress < 50) {
+        step = 'uploading'
+      } else if (uploadState.progress >= 50 && uploadState.progress < 100) {
+        step = 'processing'
+      } else if (uploadState.progress === 100 && !uploadState.error) {
+        step = 'completed'
+      } else if (uploadState.error) {
+        step = 'error'
+      }
+
+      converted[parseInt(scriptId)] = {
+        ...uploadState,
+        step
+      }
+    })
+    
+    return converted
+  }, [uploadStates])
+
   // 배치 업로드 실행 래퍼 (refetch 포함)
   const handleBatchUploadWithRefetch = async () => {
     await handleBatchUpload(scriptsData)
@@ -60,7 +87,7 @@ export function YouTubePage() {
   }
 
   // 단일 업로드 실행 래퍼 (refetch 포함)
-  const handleSingleUploadWithRefetch = async (script: any) => {
+  const handleSingleUploadWithRefetch = async (script: Script) => {
     await handleYouTubeUpload(script)
     refetch()
   }
@@ -76,7 +103,10 @@ export function YouTubePage() {
           </div>
           
           <div className="flex items-center gap-4">
-            <WebSocketStatus />
+            <WebSocketStatus 
+              isConnected={webSocketState.isConnected}
+              connectionStatus={webSocketState.connectionStatus}
+            />
             {batchUploading && (
               <div className="flex items-center gap-2 text-blue-600">
                 <Activity className="w-4 h-4 animate-pulse" />
@@ -90,7 +120,7 @@ export function YouTubePage() {
       {/* 통계 카드 */}
       <YouTubeStatsCards
         scripts={filteredScripts}
-        totalItems={scriptsData?.total_items || 0}
+        totalItems={scriptsData?.total || 0}
         activeUploads={getActiveUploads().length}
       />
 
@@ -102,20 +132,20 @@ export function YouTubePage() {
         onSearchChange={setSearchTerm}
         onStatusFilterChange={setStatusFilter}
         onBatchModeToggle={toggleBatchMode}
-      >
-        {/* 배치 모드 컨트롤 바 */}
-        {isBatchMode && (
-          <YouTubeBatchControls
-            selectedScripts={selectedScripts}
-            batchUploading={batchUploading}
-            batchProgress={batchProgress}
-            batchSettings={batchSettings}
-            onBatchUpload={handleBatchUploadWithRefetch}
-            onBatchSettingsChange={setBatchSettings}
-            onClearSelection={() => setSelectedScripts([])}
-          />
-        )}
-      </YouTubeSearchFilter>
+      />
+
+      {/* 배치 모드 컨트롤 바 */}
+      {isBatchMode && (
+        <YouTubeBatchControls
+          selectedScripts={selectedScripts}
+          batchUploading={batchUploading}
+          batchProgress={batchProgress}
+          batchSettings={batchSettings}
+          onBatchUpload={handleBatchUploadWithRefetch}
+          onBatchSettingsChange={setBatchSettings}
+          onClearSelection={() => setSelectedScripts([])}
+        />
+      )}
 
       {/* 배치 업로드 설정 */}
       {isBatchMode && (
@@ -136,7 +166,7 @@ export function YouTubePage() {
         isLoading={isLoading}
         isBatchMode={isBatchMode}
         selectedScripts={selectedScripts}
-        uploadStates={uploadStates}
+        uploadStates={youtubeUploadStates}
         singleUploadSchedule={singleUploadSchedule}
         onYouTubeUpload={handleSingleUploadWithRefetch}
         onToggleSelection={toggleScriptSelection}

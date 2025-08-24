@@ -16,8 +16,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { formatDate, formatDateTime } from '@/utils/dateFormat'
-import { commonLayouts, statusColors, getStatusColor } from '@/utils/classNames'
-import type { Script, UploadState, YouTubeScriptCardProps } from '@/types'
+import type { YouTubeScriptCardProps } from '@/types'
 
 export function YouTubeScriptCard({
   script,

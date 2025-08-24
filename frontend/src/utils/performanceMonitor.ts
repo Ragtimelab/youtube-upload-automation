@@ -3,6 +3,8 @@
  * Phase 3 최적화 효과를 실시간으로 측정하고 검증
  */
 
+import { isFirstInputEntry, isLayoutShiftEntry, hasMemoryInfo } from '@/utils/typeGuards'
+
 interface PerformanceMetrics {
   renderTime: number
   bundleSize: number
@@ -80,8 +82,10 @@ class PerformanceMonitor {
       try {
         const fidObserver = new PerformanceObserver((list) => {
           const entries = list.getEntries()
-          entries.forEach((entry: any) => {
-            this.metrics.coreWebVitals.FID = entry.processingStart - entry.startTime
+          entries.forEach((entry: PerformanceEntry) => {
+            if (isFirstInputEntry(entry)) {
+              this.metrics.coreWebVitals.FID = entry.processingStart - entry.startTime
+            }
           })
         })
         fidObserver.observe({ type: 'first-input', buffered: true })
@@ -94,8 +98,8 @@ class PerformanceMonitor {
       try {
         const clsObserver = new PerformanceObserver((list) => {
           let clsValue = 0
-          list.getEntries().forEach((entry: any) => {
-            if (!entry.hadRecentInput) {
+          list.getEntries().forEach((entry: PerformanceEntry) => {
+            if (isLayoutShiftEntry(entry) && !entry.hadRecentInput) {
               clsValue += entry.value
             }
           })
@@ -166,8 +170,6 @@ class PerformanceMonitor {
    * React 19 Actions 패턴 성능 측정
    */
   measureActionsPerformance() {
-    const actionStartTime = performance.now()
-    
     return {
       start: () => {
         this.startTimes.set('action', performance.now())
@@ -260,8 +262,8 @@ class PerformanceMonitor {
    * 메모리 사용량 실시간 모니터링
    */
   monitorMemoryUsage() {
-    if ('memory' in performance) {
-      const memory = (performance as any).memory
+    if (hasMemoryInfo(performance)) {
+      const memory = performance.memory
       this.metrics.memoryUsage = memory.usedJSHeapSize / 1024 / 1024 // MB
       
       return {
@@ -331,12 +333,12 @@ class PerformanceMonitor {
    * 성능 리포트 생성
    * 글로벌 원칙: 실시간 정보 검증 후 작업
    */
-  generateReport(): {
+  generateReport(this: PerformanceMonitor): {
     timestamp: string
-    phase3Impact: ReturnType<typeof this.measureOptimizationImpact>
-    coreWebVitals: typeof this.metrics.coreWebVitals
+    phase3Impact: ReturnType<PerformanceMonitor['measureOptimizationImpact']>
+    coreWebVitals: PerformanceMetrics['coreWebVitals']
     bundleAnalysis: Promise<BundleAnalysis>
-    compilerReadiness: ReturnType<typeof this.checkCompilerReadiness>
+    compilerReadiness: ReturnType<PerformanceMonitor['checkCompilerReadiness']>
     recommendations: string[]
   } {
     const impact = this.measureOptimizationImpact()
@@ -403,7 +405,7 @@ export function usePerformanceMonitor() {
  * 개발 환경에서만 성능 디버깅 정보 출력
  */
 export function logPerformanceReport() {
-  if (process.env.NODE_ENV === 'development') {
+  if (process.env['NODE_ENV'] === 'development') {
     const report = performanceMonitor.generateReport()
     
     console.group('🚀 Phase 3 성능 최적화 리포트')

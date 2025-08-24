@@ -42,7 +42,7 @@ interface UseErrorHandlerReturn {
     options?: {
       showSuccessToast?: boolean
       successMessage?: string
-      showErrorToast?: boolean
+      toastError?: boolean
       retryOnError?: boolean
       retryCount?: number
     }
@@ -60,7 +60,7 @@ export function useErrorHandler(defaultContext?: string): UseErrorHandlerReturn 
   const [error, setErrorState] = useState<ErrorInfo | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [loadingState, setLoadingStateInternal] = useState<LoadingState>('idle')
-  const { success, error: showErrorToast } = useToast()
+  const { success, error: errorToast } = useToast()
   
   const setError = useCallback((err: unknown, context?: string) => {
     const errorInfo: ErrorInfo = {
@@ -128,13 +128,13 @@ export function useErrorHandler(defaultContext?: string): UseErrorHandlerReturn 
     } catch (err) {
       setError(err, context)
       if (showToast) {
-        showErrorToast('오류', getUserFriendlyErrorMessage(err))
+        errorToast('오류', getUserFriendlyErrorMessage(err))
       }
       return undefined
     } finally {
       setLoading(false)
     }
-  }, [setError, setLoading, setLoadingState, showErrorToast])
+  }, [setError, setLoading, setLoadingState, errorToast])
   
   const handleApiCall = useCallback(async <T>(
     apiCall: () => Promise<T>,
@@ -142,7 +142,7 @@ export function useErrorHandler(defaultContext?: string): UseErrorHandlerReturn 
     options: {
       showSuccessToast?: boolean
       successMessage?: string
-      showErrorToast?: boolean
+      toastError?: boolean
       retryOnError?: boolean
       retryCount?: number
     } = {}
@@ -150,7 +150,7 @@ export function useErrorHandler(defaultContext?: string): UseErrorHandlerReturn 
     const {
       showSuccessToast = false,
       successMessage = '작업이 완료되었습니다.',
-      showErrorToast = true,
+      toastError = true,
       retryOnError = false,
       retryCount = 3
     } = options
@@ -180,8 +180,8 @@ export function useErrorHandler(defaultContext?: string): UseErrorHandlerReturn 
           return attemptCall()
         }
         
-        if (showErrorToast) {
-          showErrorToast('오류', getUserFriendlyErrorMessage(err))
+        if (toastError) {
+          errorToast('오류', getUserFriendlyErrorMessage(err))
         }
         
         return undefined
@@ -191,7 +191,7 @@ export function useErrorHandler(defaultContext?: string): UseErrorHandlerReturn 
     }
     
     return attemptCall()
-  }, [setError, setLoading, setLoadingState, success, showErrorToast])
+  }, [setError, setLoading, setLoadingState, success, errorToast])
   
   const checkIsQuotaError = useCallback(() => {
     return error ? isQuotaError(error.originalError) : false
@@ -251,7 +251,7 @@ export function useApiErrorHandler(context: string) {
   
   const handleApiCall = useCallback(<T>(apiCall: () => Promise<T>) => {
     return errorHandler.handleApiCall(apiCall, context, {
-      showErrorToast: true,
+      toastError: true,
       retryOnError: true,
       retryCount: 3
     })

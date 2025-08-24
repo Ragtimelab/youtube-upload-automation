@@ -54,7 +54,7 @@ export const scriptApi = {
     
     // 백엔드 응답 구조에 맞게 변환
     const scripts = response.data.data!
-    const pagination = (response.data as { pagination: { total: number } }).pagination
+    const pagination = (response.data as unknown as { pagination: { total: number } }).pagination
     
     return {
       items: scripts,

@@ -1,4 +1,6 @@
-import { QueryClient, QueryClientProvider, DefaultOptions } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from '@tanstack/react-query'
+import type { DefaultOptions } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 
@@ -51,35 +53,23 @@ const createOptimizedQueryClient = () => {
 
   return new QueryClient({
     defaultOptions,
-    queryCache: {
-      // 전역 쿼리 에러 처리
-      onError: (error, query) => {
+    queryCache: new QueryCache({
+      onError: (error: Error, query) => {
         console.error('Query Error:', {
           queryKey: query.queryKey,
           error: error.message
         })
-      },
-      // 성공 시 캐시 정리 (메모리 최적화)
-      onSuccess: (data, query) => {
-        if (query.queryKey[0] === 'upload-progress') {
-          // 업로드 진행률은 완료 후 즉시 캐시에서 제거
-          if (data?.progress === 100 || data?.status === 'completed') {
-            setTimeout(() => {
-              query.queryClient?.removeQueries({ queryKey: query.queryKey })
-            }, 5000) // 5초 후 제거
-          }
-        }
       }
-    },
-    mutationCache: {
-      onError: (error, variables, context, mutation) => {
+    }),
+    mutationCache: new MutationCache({
+      onError: (error: Error, variables: unknown, _context: unknown, mutation) => {
         console.error('Mutation Error:', {
           mutationKey: mutation.options.mutationKey,
           error: error.message,
           variables
         })
       }
-    }
+    })
   })
 }
 
@@ -89,6 +79,13 @@ export function QueryProvider({ children }: QueryProviderProps) {
   return (
     <QueryClientProvider client={queryClient}>
       {children}
+      {/* Phase 8: TanStack Query DevTools - 개발 환경에서만 활성화 */}
+      {process.env['NODE_ENV'] === 'development' && (
+        <ReactQueryDevtools
+          initialIsOpen={false}
+          position="bottom"
+        />
+      )}
     </QueryClientProvider>
   )
 }

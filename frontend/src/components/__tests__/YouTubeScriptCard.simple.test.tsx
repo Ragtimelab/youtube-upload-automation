@@ -155,7 +155,7 @@ describe('YouTubeScriptCard - 단순 검증', () => {
 
       // 체크박스 찾기 시도
       const checkboxes = screen.queryAllByRole('checkbox')
-      if (checkboxes.length > 0) {
+      if (checkboxes.length > 0 && checkboxes[0]) {
         fireEvent.click(checkboxes[0])
         expect(mockOnToggleSelection).toHaveBeenCalledWith(1)
       }
@@ -246,11 +246,10 @@ describe('YouTubeScriptCard - 단순 검증', () => {
         />
       )
 
-      // 스케줄 입력 필드 찾기
-      const inputs = screen.queryAllByRole('textbox')
+      // 스케줄 입력 필드 찾기  
       const datetimeInputs = document.querySelectorAll('input[type="datetime-local"]')
       
-      if (datetimeInputs.length > 0) {
+      if (datetimeInputs.length > 0 && datetimeInputs[0]) {
         fireEvent.change(datetimeInputs[0], { target: { value: '2025-12-31T23:59' } })
         expect(mockOnScheduleChange).toHaveBeenCalled()
       }
@@ -295,12 +294,19 @@ describe('YouTubeScriptCard - 단순 검증', () => {
       expect(title).toBeTruthy()
     })
 
-    it('should handle undefined upload state', () => {
+    it('should handle missing upload state', () => {
+      const { uploadState: _uploadState, ...propsWithoutUploadState } = defaultProps
       expect(() => {
         render(
           <YouTubeScriptCard 
-            {...defaultProps} 
-            uploadState={undefined}
+            {...propsWithoutUploadState}
+            script={mockScript}
+            isBatchMode={false}
+            isSelected={false}
+            singleUploadSchedule=""
+            onYouTubeUpload={jest.fn()}
+            onToggleSelection={jest.fn()}
+            onScheduleChange={jest.fn()}
           />
         )
       }).not.toThrow()
@@ -324,7 +330,7 @@ describe('YouTubeScriptCard - 단순 검증', () => {
       )
 
       const checkboxes = screen.queryAllByRole('checkbox')
-      if (checkboxes.length > 0) {
+      if (checkboxes.length > 0 && checkboxes[0]) {
         const checkbox = checkboxes[0]
         checkbox.focus()
         expect(document.activeElement).toBe(checkbox)

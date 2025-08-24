@@ -17,7 +17,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { formatDate, formatDateTime } from '@/utils/dateFormat'
-import { getStatusColor } from '@/utils/classNames'
 import type { Script, UploadState } from '@/types'
 
 interface OptimizedScriptCardProps {
@@ -26,9 +25,9 @@ interface OptimizedScriptCardProps {
   isSelected: boolean
   uploadState?: UploadState
   singleUploadSchedule?: string
-  onYouTubeUpload: (script: Script) => void
-  onToggleSelection: (scriptId: number) => void
-  onScheduleChange: (scriptId: number, value: string) => void
+  onYouTubeUpload: (_script: Script) => void
+  onToggleSelection: (_scriptId: number) => void
+  onScheduleChange: (_scriptId: number, _value: string) => void
 }
 
 /**

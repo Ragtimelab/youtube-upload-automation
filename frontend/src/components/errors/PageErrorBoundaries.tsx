@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { ErrorBoundary } from './ErrorBoundary'
 import { AlertTriangle, FileText, Upload, Youtube, BarChart3 } from 'lucide-react'
 
@@ -7,10 +7,6 @@ import { AlertTriangle, FileText, Upload, Youtube, BarChart3 } from 'lucide-reac
  * 각 페이지의 특성에 맞는 에러 처리 및 복구 액션 제공
  */
 
-interface PageErrorBoundaryProps {
-  children: ReactNode
-  pageName: string
-}
 
 /**
  * ScriptsPage 전용 Error Boundary
@@ -223,7 +219,7 @@ function PageErrorFallback({
         </div>
 
         {/* 에러 상세 정보 (개발 환경에서만) */}
-        {process.env.NODE_ENV === 'development' && (
+        {process.env['NODE_ENV'] === 'development' && (
           <div className="mb-6 p-3 bg-gray-100 rounded border">
             <details>
               <summary className="text-xs font-mono text-gray-600 cursor-pointer">

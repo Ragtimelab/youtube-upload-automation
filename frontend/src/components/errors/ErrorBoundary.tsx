@@ -1,4 +1,5 @@
-import { Component, ErrorInfo, ReactNode } from 'react'
+import { Component } from 'react'
+import type { ErrorInfo, ReactNode } from 'react'
 import { AlertTriangle, RefreshCw, Home, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -17,8 +18,8 @@ interface ErrorBoundaryState {
 
 interface ErrorBoundaryProps {
   children: ReactNode
-  fallback?: (error: Error, retry: () => void) => ReactNode
-  onError?: (error: Error, errorInfo: ErrorInfo) => void
+  fallback?: (_error: Error, _retry: () => void) => ReactNode
+  onError?: (_error: Error, _errorInfo: ErrorInfo) => void
   maxRetries?: number
   level?: 'global' | 'page' | 'component'
 }
@@ -49,7 +50,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // 에러 정보 저장 및 리포팅 (글로벌 원칙: 실시간 검증)
     this.setState({
       errorInfo
@@ -61,7 +62,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     // 개발 환경에서 상세 로깅
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env['NODE_ENV'] === 'development') {
       console.group(`🚨 ErrorBoundary (${this.props.level || 'unknown'})`)
       console.error('Error:', error)
       console.error('Component Stack:', errorInfo.componentStack)
@@ -74,7 +75,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     // 에러 리포팅 서비스 연동 (프로덕션 환경)
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env['NODE_ENV'] === 'production') {
       this.reportError(error, errorInfo)
     }
   }
@@ -132,14 +133,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }, delayMs)
   }
 
-  componentWillUnmount() {
+  override componentWillUnmount() {
     // 타이머 정리
     if (this.retryTimeoutId) {
       clearTimeout(this.retryTimeoutId)
     }
   }
 
-  render() {
+  override render() {
     const { hasError, error, retryCount } = this.state
     const { children, fallback, maxRetries = 3, level = 'component' } = this.props
 
@@ -232,7 +233,7 @@ function DefaultErrorFallback({ error, retry, canRetry, retryCount, level }: Def
         </p>
 
         {/* 에러 메시지 (개발 환경에서만) */}
-        {process.env.NODE_ENV === 'development' && (
+        {process.env['NODE_ENV'] === 'development' && (
           <div className="mb-4 p-3 bg-red-100 rounded border text-left">
             <p className="text-xs font-mono text-red-800 break-all">
               {error.message}

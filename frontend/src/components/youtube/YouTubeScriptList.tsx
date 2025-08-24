@@ -1,9 +1,9 @@
-import { Loader2, FileText } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import { ListLoading } from '@/components/ui/Loading'
 import { EmptyState } from '@/components/ui/ErrorDisplay'
 import { YouTubeScriptCard } from './YouTubeScriptCard'
 import { commonLayouts } from '@/utils/classNames'
-import type { Script, UploadState, YouTubeScriptListProps } from '@/types'
+import type { YouTubeScriptListProps } from '@/types'
 
 export function YouTubeScriptList({
   scripts,

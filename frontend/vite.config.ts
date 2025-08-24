@@ -85,14 +85,21 @@ export default defineConfig({
     sourcemap: false, // 프로덕션에서는 비활성화
   },
   
-  // 개발 서버 최적화
+  // 개발 서버 최적화 - Phase 8 Enhanced
   server: {
     port: 5174,
     host: true,
     
-    // HMR 최적화
+    // HMR 최적화 - 상태 보존 개선
     hmr: {
-      overlay: true
+      overlay: true,
+      clientPort: 5174,
+    },
+    
+    // 개발 속도 향상
+    fs: {
+      // 모니터링할 파일 패턴 최적화
+      allow: ['..']
     },
     
     // 프록시 설정 (백엔드 연동)

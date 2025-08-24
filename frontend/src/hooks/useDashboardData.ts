@@ -2,6 +2,9 @@ import { useMemo } from 'react'
 import { useSystemStatus } from './useSystemStatus'
 import { useUploadProgress } from './useUploadProgress'
 import { UI_CONSTANTS } from '@/constants/ui'
+import type { SystemMetrics, PipelineStats } from '@/types/dashboard'
+import type { GlobalStats } from '@/types/common'
+import type { WebSocketState } from '@/types/api'
 
 interface StatusDistribution {
   name: string
@@ -31,14 +34,14 @@ interface RecentActivityData {
 
 interface DashboardDataReturn {
   // 기본 데이터
-  systemMetrics: any
-  pipelineStats: any
+  systemMetrics: SystemMetrics | null
+  pipelineStats: PipelineStats | null
   isLoading: boolean
   isRealTimeEnabled: boolean
   lastRefresh: Date
   overallStatus: string
-  webSocketState: any
-  globalStats: any
+  webSocketState: WebSocketState
+  globalStats: GlobalStats | null
   
   // 처리된 데이터
   statusDistributionData: StatusDistribution[]

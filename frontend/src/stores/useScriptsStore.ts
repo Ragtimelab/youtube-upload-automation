@@ -343,7 +343,7 @@ export const useScriptsStore = create<ScriptsState>()(
     ),
     {
       name: 'scripts-store', // Redux DevTools에서 표시될 이름
-      partialize: (state) => ({
+      partialize: (state: ScriptsState) => ({
         // persist할 상태만 선택 (선택사항)
         filters: state.filters,
       })

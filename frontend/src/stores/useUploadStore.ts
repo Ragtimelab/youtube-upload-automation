@@ -1,7 +1,9 @@
 import { create } from 'zustand'
 import { devtools, subscribeWithSelector } from 'zustand/middleware'
 import { immer } from 'zustand/middleware/immer'
+import { extractErrorMessage } from '@/utils/typeGuards'
 import type { UploadState } from '@/types'
+import type { YouTubeUploadStatus, ApiResponse } from '@/types/api'
 
 /**
  * React 19 최적화된 업로드 상태 관리
@@ -50,7 +52,7 @@ interface UploadStoreState {
   // 액션들 - 단일 업로드
   startUpload: (scriptId: string) => void
   updateUploadProgress: (scriptId: string, progress: Partial<UploadState>) => void
-  completeUpload: (scriptId: string, success: boolean, data?: any) => void
+  completeUpload: (scriptId: string, success: boolean, data?: YouTubeUploadStatus | ApiResponse<YouTubeUploadStatus>) => void
   cancelUpload: (scriptId: string) => void
   
   // 액션들 - 배치 업로드
@@ -123,10 +125,11 @@ export const useUploadStore = create<UploadStoreState>()(
             isUploading: true,
             progress: 0,
             message: '업로드 준비 중...',
+            status: 'uploading',
             currentStep: 1,
             totalSteps: 5,
             startTime: new Date(),
-            error: null
+            error: undefined
           }
         }),
 
@@ -139,7 +142,7 @@ export const useUploadStore = create<UploadStoreState>()(
         }),
 
         // 업로드 완료 처리
-        completeUpload: (scriptId: string, success: boolean, data?: any) => set((state) => {
+        completeUpload: (scriptId: string, success: boolean, data?: YouTubeUploadStatus | ApiResponse<YouTubeUploadStatus>) => set((state) => {
           const currentState = state.uploadStates[scriptId]
           if (currentState) {
             state.uploadStates[scriptId] = {
@@ -147,7 +150,7 @@ export const useUploadStore = create<UploadStoreState>()(
               isUploading: false,
               progress: success ? 100 : currentState.progress,
               message: success ? '업로드 완료' : '업로드 실패',
-              error: success ? null : (data?.error || '알 수 없는 오류'),
+              error: success ? undefined : extractErrorMessage(data),
               endTime: new Date(),
               result: data
             }
@@ -160,7 +163,7 @@ export const useUploadStore = create<UploadStoreState>()(
             if (!success) {
               state.batchUpload.errors.push({
                 scriptId,
-                error: data?.error || '업로드 실패',
+                error: extractErrorMessage(data) || '업로드 실패',
                 timestamp: new Date()
               })
             }
@@ -220,10 +223,11 @@ export const useUploadStore = create<UploadStoreState>()(
               isUploading: false,
               progress: 0,
               message: '대기 중...',
+              status: 'pending',
               currentStep: 0,
               totalSteps: 5,
               startTime: null,
-              error: null
+              error: undefined
             }
           })
         }),
@@ -262,6 +266,7 @@ export const useUploadStore = create<UploadStoreState>()(
                 isUploading: false,
                 progress: 0,
                 message: '취소됨',
+                status: 'cancelled',
                 error: '배치 업로드가 취소됨',
                 currentStep: 0,
                 totalSteps: 5,

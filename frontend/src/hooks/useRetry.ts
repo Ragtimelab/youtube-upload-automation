@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { isAxiosError, extractErrorMessage, extractStatusCode, extractYouTubeErrorInfo } from '@/utils/typeGuards'
 
 /**
  * React 19 최적화된 재시도 훅
@@ -12,15 +13,15 @@ export interface RetryConfig {
   backoffStrategy: BackoffStrategy
   baseDelay: number // 밀리초
   maxDelay: number  // 최대 지연 시간
-  retryCondition?: (error: any, attempt: number) => boolean
-  onRetry?: (error: any, attempt: number) => void
-  onMaxAttemptsReached?: (error: any) => void
+  retryCondition?: (error: unknown, attempt: number) => boolean
+  onRetry?: (error: unknown, attempt: number) => void
+  onMaxAttemptsReached?: (error: unknown) => void
 }
 
 export interface RetryState {
   isRetrying: boolean
   currentAttempt: number
-  lastError: any
+  lastError: unknown
   hasReachedMaxAttempts: boolean
 }
 
@@ -29,16 +30,18 @@ const DEFAULT_CONFIG: RetryConfig = {
   backoffStrategy: 'exponential',
   baseDelay: 1000,
   maxDelay: 30000,
-  retryCondition: (error: any) => {
+  retryCondition: (error: unknown) => {
     // 기본적으로 네트워크 에러와 5xx 서버 에러만 재시도
-    if (error?.message?.includes('Network Error')) return true
-    if (error?.response?.status >= 500) return true
-    if (error?.code === 'ECONNABORTED') return true // 타임아웃
+    if (isAxiosError(error)) {
+      if (error.message?.includes('Network Error')) return true
+      if (error.response?.status && error.response.status >= 500) return true
+      if (error.code === 'ECONNABORTED') return true // 타임아웃
+    }
     return false
   }
 }
 
-export function useRetry<T extends any[], R>(
+export function useRetry<T extends unknown[], R>(
   asyncFunction: (...args: T) => Promise<R>,
   config: Partial<RetryConfig> = {}
 ) {
@@ -91,7 +94,7 @@ export function useRetry<T extends any[], R>(
   const execute = useCallback(async (...args: T): Promise<R> => {
     const { maxAttempts, backoffStrategy, baseDelay, maxDelay, retryCondition, onRetry, onMaxAttemptsReached } = finalConfig
 
-    let lastError: any = null
+    let lastError: unknown = null
     let attempt = 1
 
     // 상태 초기화
@@ -211,7 +214,7 @@ export function useRetry<T extends any[], R>(
  * YouTube API 전용 재시도 훅
  * YouTube API의 특수한 제약사항들을 고려한 설정
  */
-export function useYouTubeRetry<T extends any[], R>(
+export function useYouTubeRetry<T extends unknown[], R>(
   asyncFunction: (...args: T) => Promise<R>,
   config: Partial<RetryConfig> = {}
 ) {
@@ -220,28 +223,31 @@ export function useYouTubeRetry<T extends any[], R>(
     backoffStrategy: 'exponential',
     baseDelay: 2000, // 더 긴 기본 지연
     maxDelay: 60000, // 최대 1분
-    retryCondition: (error: any, attempt: number) => {
-      const status = error?.response?.status
+    retryCondition: (error: unknown) => {
+      const { reason, status } = extractYouTubeErrorInfo(error)
 
       // 절대 재시도하지 않을 에러들
       if (status === 400) return false // Bad Request
       if (status === 401) return false // Unauthorized
-      if (status === 403 && error?.response?.data?.error?.reason === 'quotaExceeded') return false // 할당량 초과
+      if (status === 403 && reason === 'quotaExceeded') return false // 할당량 초과
       if (status === 404) return false // Not Found
 
       // 재시도할 에러들
-      if (status === 403 && error?.response?.data?.error?.reason === 'rateLimitExceeded') return true // Rate limit
-      if (status >= 500) return true // 서버 에러
-      if (error?.message?.includes('Network Error')) return true
-      if (error?.code === 'ECONNABORTED') return true
+      if (status === 403 && reason === 'rateLimitExceeded') return true // Rate limit
+      if (status && status >= 500) return true // 서버 에러
+      if (isAxiosError(error)) {
+        if (error.message?.includes('Network Error')) return true
+        if (error.code === 'ECONNABORTED') return true
+      }
 
       return false
     },
-    onRetry: (error: any, attempt: number) => {
+    onRetry: (error: unknown, attempt: number) => {
+      const { reason, message, status } = extractYouTubeErrorInfo(error)
       console.warn(`YouTube API 재시도 ${attempt}번째:`, {
-        status: error?.response?.status,
-        reason: error?.response?.data?.error?.reason,
-        message: error?.message
+        status,
+        reason,
+        message
       })
     },
     ...config
@@ -254,7 +260,7 @@ export function useYouTubeRetry<T extends any[], R>(
  * 파일 업로드 전용 재시도 훅
  * 대용량 파일 업로드의 네트워크 불안정성을 고려한 설정
  */
-export function useUploadRetry<T extends any[], R>(
+export function useUploadRetry<T extends unknown[], R>(
   asyncFunction: (...args: T) => Promise<R>,
   config: Partial<RetryConfig> = {}
 ) {
@@ -263,21 +269,26 @@ export function useUploadRetry<T extends any[], R>(
     backoffStrategy: 'exponential',
     baseDelay: 5000, // 업로드는 더 긴 지연
     maxDelay: 120000, // 최대 2분
-    retryCondition: (error: any) => {
-      const status = error?.response?.status
+    retryCondition: (error: unknown) => {
+      const status = extractStatusCode(error)
 
       // 클라이언트 에러는 재시도 안함
-      if (status >= 400 && status < 500) return false
+      if (status && status >= 400 && status < 500) return false
       
       // 네트워크 에러나 서버 에러만 재시도
-      return (
-        error?.message?.includes('Network Error') ||
-        error?.code === 'ECONNABORTED' ||
-        status >= 500
-      )
+      if (isAxiosError(error)) {
+        return (
+          error.message?.includes('Network Error') ||
+          error.code === 'ECONNABORTED' ||
+          (status !== null && status >= 500)
+        )
+      }
+      
+      return false
     },
-    onRetry: (error: any, attempt: number) => {
-      console.warn(`파일 업로드 재시도 ${attempt}번째:`, error?.message || error)
+    onRetry: (error: unknown, attempt: number) => {
+      const message = extractErrorMessage(error)
+      console.warn(`파일 업로드 재시도 ${attempt}번째:`, message)
     },
     ...config
   }

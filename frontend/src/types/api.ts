@@ -17,7 +17,7 @@ export interface Script {
   thumbnail_text?: string
   thumbnail_prompt?: string
   script_content: string
-  status: 'script_ready' | 'video_ready' | 'uploaded' | 'error'
+  status: 'script_ready' | 'video_ready' | 'uploaded' | 'scheduled' | 'error'
   video_filename?: string
   video_path?: string
   youtube_video_id?: string

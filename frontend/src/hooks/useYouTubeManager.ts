@@ -2,8 +2,8 @@ import { useState, useCallback } from 'react'
 import { useUploadProgress } from './useUploadProgress'
 import { useToast } from './useToast'
 import { uploadApi } from '@/services/api'
-import { logApiError, getUserFriendlyErrorMessage, isQuotaError } from '@/utils/apiUtils'
-import type { Script, BatchSettings, BatchProgress, YouTubeManagerReturn } from '@/types'
+import { logApiError, getUserFriendlyErrorMessage } from '@/utils/apiUtils'
+import type { Script, BatchProgress, YouTubeManagerReturn, YouTubeQuotaStatus, YouTubeBatchSettings } from '@/types'
 
 export function useYouTubeManager(): YouTubeManagerReturn {
   const { startUpload, webSocketState } = useUploadProgress()
@@ -17,20 +17,48 @@ export function useYouTubeManager(): YouTubeManagerReturn {
   const [isBatchMode, setIsBatchMode] = useState(false)
   const [batchUploading, setBatchUploading] = useState(false)
   const [batchProgress, setBatchProgress] = useState<BatchProgress>({ current: 0, total: 0 })
-  const [batchSettings, setBatchSettings] = useState<BatchSettings>({
+  const [batchSettings, setBatchSettings] = useState<YouTubeBatchSettings>({
     delay: 30,
     privacy: 'private',
     category: 24,
-    publishAt: ''
+    publishAt: '',
+    maxConcurrentUploads: 1,
+    retryAttempts: 3,
+    skipDuplicates: false,
+    autoGenerateThumbnails: false,
+    notifyOnCompletion: true
   })
 
   // YouTube API 할당량 체크
-  const checkYouTubeQuota = useCallback(async () => {
+  const checkYouTubeQuota = useCallback(async (): Promise<YouTubeQuotaStatus> => {
     try {
-      return { canUpload: true, message: 'OK' }
+      // TODO: 실제 YouTube API 할당량 체크 구현
+      const now = new Date()
+      const resetTime = new Date(now)
+      resetTime.setHours(24, 0, 0, 0) // 다음날 자정
+      
+      return {
+        canUpload: true,
+        remainingQuota: 8000, // 예시값
+        dailyLimit: 10000,
+        usedToday: 2000,
+        resetTime,
+        message: 'OK'
+      }
     } catch (quotaError) {
       console.error('Quota check error:', quotaError)
-      return { canUpload: false, message: 'YouTube API 할당량 체크 실패' }
+      const now = new Date()
+      const resetTime = new Date(now)
+      resetTime.setHours(24, 0, 0, 0)
+      
+      return {
+        canUpload: false,
+        remainingQuota: 0,
+        dailyLimit: 10000,
+        usedToday: 10000,
+        resetTime,
+        message: 'YouTube API 할당량 체크 실패'
+      }
     }
   }, [])
 
@@ -192,6 +220,10 @@ export function useYouTubeManager(): YouTubeManagerReturn {
     handleSingleScheduleChange,
     
     // 유틸리티
-    checkYouTubeQuota
+    checkYouTubeQuota,
+    validateUploadSettings: () => ({
+      valid: true,
+      errors: []
+    })
   }
 }

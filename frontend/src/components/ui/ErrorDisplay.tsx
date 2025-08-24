@@ -3,7 +3,7 @@
  * 일관된 에러 상태 표시를 위한 재사용 가능한 컴포넌트들
  */
 
-import { AlertCircle, RefreshCw, Home, ArrowLeft, ExternalLink } from 'lucide-react'
+import { AlertCircle, RefreshCw, Home, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { commonLayouts, statusColors, cn } from '@/utils/classNames'
@@ -64,7 +64,7 @@ export function InlineError({
 
 // 카드 에러 컴포넌트
 interface CardErrorProps extends BaseErrorProps {
-  onRetry?: () => void
+  ___onRetry?: () => void
   showRetry?: boolean
   retryLabel?: string
 }
@@ -74,7 +74,7 @@ export function CardError({
   error,
   title = '데이터를 불러올 수 없습니다',
   description,
-  onRetry,
+  ___onRetry,
   showRetry = true,
   retryLabel = '다시 시도'
 }: CardErrorProps) {
@@ -100,9 +100,9 @@ export function CardError({
           {errorMessage}
         </p>
         
-        {showRetry && onRetry && (
+        {showRetry && ___onRetry && (
           <Button
-            onClick={onRetry}
+            onClick={___onRetry}
             className={commonLayouts.flexGapSm}
           >
             <RefreshCw className="h-4 w-4" />
@@ -116,7 +116,7 @@ export function CardError({
 
 // 전체 화면 에러 컴포넌트
 interface FullScreenErrorProps extends BaseErrorProps {
-  onRetry?: () => void
+  ___onRetry?: () => void
   onHome?: () => void
   onBack?: () => void
   showActions?: boolean
@@ -132,7 +132,7 @@ export function FullScreenError({
   error,
   title = '문제가 발생했습니다',
   description,
-  onRetry,
+  ___onRetry,
   onHome,
   onBack,
   showActions = true,
@@ -170,7 +170,7 @@ export function FullScreenError({
                 <Button
                   key={index}
                   onClick={action.onClick}
-                  variant={action.variant}
+                  variant={action.variant === 'primary' ? 'default' : action.variant}
                   className="w-full"
                 >
                   {action.label}
@@ -178,9 +178,9 @@ export function FullScreenError({
               ))
             ) : (
               <>
-                {onRetry && (
+                {___onRetry && (
                   <Button
-                    onClick={onRetry}
+                    onClick={___onRetry}
                     className={cn('w-full', commonLayouts.flexGapSm)}
                   >
                     <RefreshCw className="h-4 w-4" />
@@ -188,7 +188,7 @@ export function FullScreenError({
                   </Button>
                 )}
                 
-                <div className={cn('flex gap-3', onRetry ? 'mt-3' : '')}>
+                <div className={cn('flex gap-3', ___onRetry ? 'mt-3' : '')}>
                   {onBack && (
                     <Button
                       onClick={onBack}
@@ -222,15 +222,14 @@ export function FullScreenError({
 
 // 네트워크 에러 컴포넌트
 interface NetworkErrorProps extends BaseErrorProps {
-  onRetry?: () => void
+  ___onRetry?: () => void
 }
 
 export function NetworkError({ 
   className,
   error,
   title = '연결 문제',
-  description,
-  onRetry
+  description
 }: NetworkErrorProps) {
   const errorMessage = error ? getUserFriendlyErrorMessage(error) : description || '인터넷 연결을 확인하고 다시 시도해주세요.'
 
@@ -247,8 +246,8 @@ export function NetworkError({
 // API 에러 컴포넌트
 interface ApiErrorProps extends BaseErrorProps {
   statusCode?: number
-  onRetry?: () => void
-  showSupport?: boolean
+  ___onRetry?: () => void
+  ___showSupport?: boolean
 }
 
 export function ApiError({ 
@@ -256,9 +255,7 @@ export function ApiError({
   error,
   title,
   description,
-  statusCode,
-  onRetry,
-  showSupport = false
+  statusCode
 }: ApiErrorProps) {
   const errorMessage = error ? getUserFriendlyErrorMessage(error) : description
   
@@ -283,8 +280,7 @@ export function ApiError({
       className={className}
       error={errorMessage}
       title={getDefaultTitle()}
-      onRetry={onRetry}
-      showRetry={!!onRetry}
+      showRetry={false}
     />
   )
 }
@@ -350,7 +346,7 @@ export function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
       error={error}
       title="예상치 못한 오류가 발생했습니다"
       description="이 문제가 계속 발생하면 페이지를 새로고침하거나 관리자에게 문의하세요."
-      onRetry={resetError}
+      ___onRetry={resetError}
       onHome={() => window.location.href = '/'}
       actions={[
         {

@@ -1,8 +1,16 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
-import { useCallback } from 'react'
-import { apiClient } from '@/services/api'
+import { useMemo } from 'react'
+import api from '@/services/api'
 import { useToastHelpers } from '@/contexts/ToastContext'
 import type { Script } from '@/types'
+
+// 스크립트 목록 쿼리 응답 타입
+interface ScriptsQueryData {
+  scripts: Script[]
+  total: number
+  page: number
+  limit: number
+}
 
 /**
  * Phase 4 최적화된 스크립트 전용 Query 훅들
@@ -31,7 +39,7 @@ export function useScriptsQuery(params: {
   return useQuery({
     queryKey: scriptQueryKeys.list(params),
     queryFn: async () => {
-      const response = await apiClient.get('/api/scripts', { params })
+      const response = await api.get('/api/scripts', { params })
       return {
         scripts: response.data.data,
         total: response.data.total || response.data.data.length,
@@ -53,7 +61,7 @@ export function useScriptQuery(scriptId: number, enabled = true) {
   return useQuery({
     queryKey: scriptQueryKeys.detail(scriptId),
     queryFn: async () => {
-      const response = await apiClient.get(`/api/scripts/${scriptId}`)
+      const response = await api.get(`/api/scripts/${scriptId}`)
       return response.data.data
     },
     staleTime: 5 * 60 * 1000, // 상세 정보는 5분간 신선
@@ -69,7 +77,7 @@ export function useScriptStatsQuery() {
   return useQuery({
     queryKey: scriptQueryKeys.stats(),
     queryFn: async () => {
-      const response = await apiClient.get('/api/scripts/stats')
+      const response = await api.get('/api/scripts/stats')
       return response.data.data
     },
     staleTime: 1 * 60 * 1000, // 통계는 1분간 신선
@@ -87,12 +95,12 @@ export function useCreateScriptMutation() {
 
   return useMutation({
     mutationFn: async (scriptData: FormData) => {
-      const response = await apiClient.post('/api/scripts/upload', scriptData, {
+      const response = await api.post('/api/scripts/upload', scriptData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       return response.data.data
     },
-    onMutate: async (newScriptData) => {
+    onMutate: async (_newScriptData) => {
       // 진행 중인 쿼리 취소
       await queryClient.cancelQueries({ queryKey: scriptQueryKeys.lists() })
       
@@ -110,7 +118,7 @@ export function useCreateScriptMutation() {
       // 낙관적 업데이트
       queryClient.setQueriesData(
         { queryKey: scriptQueryKeys.lists() },
-        (old: any) => {
+        (old: ScriptsQueryData | undefined) => {
           if (old?.scripts) {
             return {
               ...old,
@@ -124,11 +132,11 @@ export function useCreateScriptMutation() {
 
       return { previousScripts, optimisticScript }
     },
-    onSuccess: (newScript, variables, context) => {
+    onSuccess: (newScript, _variables, context) => {
       // 성공 시 실제 데이터로 교체
       queryClient.setQueriesData(
         { queryKey: scriptQueryKeys.lists() },
-        (old: any) => {
+        (old: ScriptsQueryData | undefined) => {
           if (old?.scripts) {
             const updatedScripts = old.scripts.map((script: Script) => 
               script.id === context?.optimisticScript.id ? newScript : script
@@ -147,7 +155,7 @@ export function useCreateScriptMutation() {
       
       success('스크립트 업로드 성공', '새 스크립트가 생성되었습니다.')
     },
-    onError: (err, variables, context) => {
+    onError: (err, _variables, context) => {
       // 실패 시 롤백
       if (context?.previousScripts) {
         queryClient.setQueriesData(
@@ -174,7 +182,7 @@ export function useUpdateScriptMutation() {
 
   return useMutation({
     mutationFn: async ({ id, data }: { id: number, data: Partial<Script> }) => {
-      const response = await apiClient.patch(`/api/scripts/${id}`, data)
+      const response = await api.patch(`/api/scripts/${id}`, data)
       return response.data.data
     },
     onMutate: async ({ id, data }) => {
@@ -196,7 +204,7 @@ export function useUpdateScriptMutation() {
       // 목록 쿼리들도 업데이트
       queryClient.setQueriesData(
         { queryKey: scriptQueryKeys.lists() },
-        (old: any) => {
+        (old: ScriptsQueryData | undefined) => {
           if (old?.scripts) {
             const updatedScripts = old.scripts.map((script: Script) =>
               script.id === updatedScript.id ? updatedScript : script
@@ -209,7 +217,7 @@ export function useUpdateScriptMutation() {
       
       success('스크립트 업데이트 완료')
     },
-    onError: (err, variables, context) => {
+    onError: (err, _variables, context) => {
       // 롤백
       if (context?.previousScript && context.id) {
         queryClient.setQueryData(scriptQueryKeys.detail(context.id), context.previousScript)
@@ -229,7 +237,7 @@ export function useDeleteScriptMutation() {
 
   return useMutation({
     mutationFn: async (scriptId: number) => {
-      await apiClient.delete(`/api/scripts/${scriptId}`)
+      await api.delete(`/api/scripts/${scriptId}`)
       return scriptId
     },
     onMutate: async (scriptId) => {
@@ -240,7 +248,7 @@ export function useDeleteScriptMutation() {
       // 낙관적으로 목록에서 제거
       queryClient.setQueriesData(
         { queryKey: scriptQueryKeys.lists() },
-        (old: any) => {
+        (old: ScriptsQueryData | undefined) => {
           if (old?.scripts) {
             const filteredScripts = old.scripts.filter((script: Script) => script.id !== scriptId)
             return {
@@ -264,7 +272,7 @@ export function useDeleteScriptMutation() {
       
       success('스크립트 삭제 완료')
     },
-    onError: (err, variables, context) => {
+    onError: (err, _variables, context) => {
       // 실패 시 모든 이전 데이터 복구
       if (context?.previousData) {
         context.previousData.forEach(([queryKey, data]) => {
@@ -289,7 +297,7 @@ export function useDeleteScriptsMutation() {
 
   return useMutation({
     mutationFn: async (scriptIds: number[]) => {
-      await apiClient.delete('/api/scripts/batch', {
+      await api.delete('/api/scripts/batch', {
         data: { script_ids: scriptIds }
       })
       return scriptIds
@@ -321,20 +329,22 @@ export function useDeleteScriptsMutation() {
 export function useInvalidateScriptQueries() {
   const queryClient = useQueryClient()
   
-  return useCallback({
+  return useMemo(() => ({
     invalidateAll: () => queryClient.invalidateQueries({ queryKey: scriptQueryKeys.all }),
     invalidateLists: () => queryClient.invalidateQueries({ queryKey: scriptQueryKeys.lists() }),
     invalidateDetail: (id: number) => queryClient.invalidateQueries({ queryKey: scriptQueryKeys.detail(id) }),
     invalidateStats: () => queryClient.invalidateQueries({ queryKey: scriptQueryKeys.stats() }),
     
     // 프리페치 헬퍼
-    prefetchScript: (id: number) => queryClient.prefetchQuery({
-      queryKey: scriptQueryKeys.detail(id),
-      queryFn: async () => {
-        const response = await apiClient.get(`/api/scripts/${id}`)
-        return response.data.data
-      },
-      staleTime: 5 * 60 * 1000
-    })
-  }, [queryClient])
+    prefetchScript: (id: number) => {
+      return queryClient.prefetchQuery({
+        queryKey: scriptQueryKeys.detail(id),
+        queryFn: async () => {
+          const response = await api.get(`/api/scripts/${id}`)
+          return response.data.data
+        },
+        staleTime: 5 * 60 * 1000
+      })
+    }
+  }), [queryClient])
 }

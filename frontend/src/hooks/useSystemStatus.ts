@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { systemApi, scriptApi } from '@/services/api'
 import type { Script } from '@/types/api'
+import type { SystemMetrics as DashboardSystemMetrics, PipelineStats as DashboardPipelineStats } from '@/types/dashboard'
 
 export interface SystemHealth {
   status: string
@@ -16,41 +17,9 @@ export interface SystemHealth {
   version: string
 }
 
-export interface SystemMetrics {
-  totalScripts: number
-  scriptsByStatus: {
-    script_ready: number
-    video_ready: number
-    uploaded: number
-    error: number
-  }
-  recentActivity: {
-    uploadsToday: number
-    uploadsThisWeek: number
-    uploadsThisMonth: number
-    lastUploadTime?: string
-  }
-  performance: {
-    avgUploadTime: number
-    successRate: number
-    errorRate: number
-  }
-}
-
-export interface PipelineStats {
-  stages: {
-    name: string
-    count: number
-    percentage: number
-    status: 'normal' | 'warning' | 'error'
-  }[]
-  bottlenecks: string[]
-  throughput: {
-    daily: number
-    weekly: number
-    monthly: number
-  }
-}
+// 기존 타입들을 dashboard 타입과 호환되도록 확장
+export interface SystemMetrics extends DashboardSystemMetrics {}
+export interface PipelineStats extends DashboardPipelineStats {}
 
 export function useSystemStatus() {
   const [isRealTimeEnabled, setIsRealTimeEnabled] = useState(true)
@@ -109,20 +78,20 @@ export function useSystemStatus() {
     const lastUpload = uploadedScripts
       .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())[0]
 
-    // 업로드 시도 기준 성공률 (기존 로직)
-    const totalUploads = scriptsByStatus.uploaded + scriptsByStatus.error
-    const uploadSuccessRate = totalUploads > 0 ? (scriptsByStatus.uploaded / totalUploads) * 100 : 0
-    const uploadErrorRate = totalUploads > 0 ? (scriptsByStatus.error / totalUploads) * 100 : 0
-    
-    // 전체 스크립트 기준 처리 현황 (더 유용한 지표)
+    // 전체 스크립트 기준 처리 현황
     const totalScripts = scripts.length
     const overallSuccessRate = totalScripts > 0 ? (scriptsByStatus.uploaded / totalScripts) * 100 : 0
     const overallErrorRate = totalScripts > 0 ? (scriptsByStatus.error / totalScripts) * 100 : 0
-    const processingRate = totalScripts > 0 ? ((scriptsByStatus.uploaded + scriptsByStatus.error) / totalScripts) * 100 : 0
+
+    // 시간당 처리량 계산 (최근 24시간 기준)
+    const throughputPerHour = uploadsToday > 0 ? Math.round(uploadsToday / 24 * 100) / 100 : 0
 
     return {
       totalScripts: scripts.length,
-      scriptsByStatus,
+      scriptsByStatus: {
+        ...scriptsByStatus,
+        scheduled: 0 // TODO: 예약된 스크립트 수 계산
+      },
       recentActivity: {
         uploadsToday,
         uploadsThisWeek,
@@ -131,13 +100,9 @@ export function useSystemStatus() {
       },
       performance: {
         avgUploadTime: 45, // 평균 45초 (실제로는 계산 필요)
-        // 전체 스크립트 기준 지표 (더 의미있는 지표)
         successRate: Math.round(overallSuccessRate * 100) / 100,
         errorRate: Math.round(overallErrorRate * 100) / 100,
-        processingRate: Math.round(processingRate * 100) / 100,
-        // 업로드 시도 기준 지표 (참고용)
-        uploadSuccessRate: Math.round(uploadSuccessRate * 100) / 100,
-        uploadErrorRate: Math.round(uploadErrorRate * 100) / 100,
+        throughputPerHour
       }
     }
   }, [])
@@ -188,6 +153,10 @@ export function useSystemStatus() {
       bottlenecks.push('High error rate detected')
     }
 
+    // 파이프라인 효율성 계산 (완료율 기준)
+    const completedCount = stages.find(s => s.name === 'Uploaded')?.count || 0
+    const efficiency = totalActive > 0 ? Math.round((completedCount / totalActive) * 100) : 0
+
     return {
       stages,
       bottlenecks,
@@ -195,7 +164,8 @@ export function useSystemStatus() {
         daily: Math.round(totalActive / 30), // 월간 평균을 일간으로 환산
         weekly: Math.round(totalActive / 4), // 월간을 주간으로 환산
         monthly: totalActive,
-      }
+      },
+      efficiency
     }
   }, [])
 
@@ -219,7 +189,7 @@ export function useSystemStatus() {
     if (!healthData || !statusData) return 'unknown'
     
     // API 응답 구조에 맞게 수정: success 필드로 판단
-    if (healthData.success === true) return 'healthy'
+    if ((healthData as { success?: boolean })?.success === true) return 'healthy'
     if ((statusData as { error?: unknown })?.error) return 'error'
     return 'degraded'
   }, [healthData, statusData])

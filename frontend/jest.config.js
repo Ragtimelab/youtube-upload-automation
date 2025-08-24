@@ -24,9 +24,11 @@ export default {
   ],
   
   // 테스트 설정
-  setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],
+  setupFilesAfterEnv: [
+    '<rootDir>/src/test/setup.ts'
+  ],
   
-  // 변환 설정
+  // 변환 설정 - Phase 8 최신 설정
   transform: {
     '^.+\\.(ts|tsx)$': ['ts-jest', {
       tsconfig: {
@@ -36,7 +38,8 @@ export default {
         baseUrl: '.',
         paths: {
           '@/*': ['./src/*']
-        }
+        },
+        types: ['jest', '@testing-library/jest-dom', 'node']
       }
     }],
   },

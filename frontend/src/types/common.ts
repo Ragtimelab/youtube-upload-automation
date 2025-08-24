@@ -17,6 +17,9 @@ export interface UploadState {
   error?: string
   currentStep?: number
   totalSteps?: number
+  startTime?: Date | null
+  endTime?: Date | null
+  result?: unknown
 }
 
 // 업로드 상태 컬렉션

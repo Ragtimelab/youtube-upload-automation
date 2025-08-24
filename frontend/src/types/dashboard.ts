@@ -3,7 +3,7 @@
  * 시스템 모니터링, 차트, 메트릭 관련 타입들을 중앙화
  */
 
-import type { SystemStatus, PerformanceMetric, ChartDataPoint, TimeSeriesData } from './common'
+import type { PerformanceMetric, ChartDataPoint, TimeSeriesData } from './common'
 
 // 시스템 메트릭
 export interface SystemMetrics {
@@ -72,6 +72,12 @@ export interface SystemStatusCard {
     direction: 'up' | 'down' | 'stable'
     period: 'hour' | 'day' | 'week'
   }
+}
+
+// 차트 데이터 (common에서 가져온 것과 호환)
+export interface ChartData {
+  data: ChartDataPoint[]
+  config?: ChartConfig
 }
 
 // 차트 구성
@@ -177,7 +183,7 @@ export interface RecentActivityProps {
 }
 
 // 대시보드 데이터 훅 반환 타입
-export interface DashboardDataReturn {
+export interface DashboardData {
   // 기본 데이터
   systemMetrics: SystemMetrics | null
   pipelineStats: PipelineStats | null
@@ -197,6 +203,9 @@ export interface DashboardDataReturn {
   // 액션
   toggleRealTime: () => void
   refreshAll: () => void
+}
+
+export interface DashboardDataReturn extends DashboardData {
 }
 
 // 시스템 건강성 지표
@@ -261,3 +270,6 @@ export interface DashboardSettings {
     sound: boolean
   }
 }
+
+// Re-export ChartDataPoint from common for convenience
+export type { ChartDataPoint } from './common'

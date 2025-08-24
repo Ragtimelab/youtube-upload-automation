@@ -1,6 +1,6 @@
 import { Card, CardContent } from '@/components/ui/card'
 import { FileText, Video, CheckCircle, Activity } from 'lucide-react'
-import { commonLayouts, statusColors, metricCard } from '@/utils/classNames'
+import { commonLayouts, statusColors } from '@/utils/classNames'
 
 interface SystemStatusCard {
   title: string

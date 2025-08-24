@@ -4,27 +4,58 @@
  */
 
 // 기존 API 타입들
-export * from './api'
+export type {
+  ApiResponse,
+  Script,
+  ScriptUploadRequest,
+  PaginatedResponse,
+  UploadProgress,
+  YouTubeUploadStatus,
+  WebSocketMessageType,
+  WebSocketMessage,
+  WebSocketConnectionStatus,
+  WebSocketState
+} from './api'
 
 // 새로운 중앙화된 타입들
-export * from './common'
-export * from './youtube' 
-export * from './dashboard'
+export type {
+  LoadingState,
+  ConnectionStatus,
+  UploadStatus,
+  UploadState,
+  UploadStates,
+  BatchSettings,
+  BatchProgress
+} from './common'
 
-// 유틸리티 타입들을 위한 네임스페이스
-export namespace Types {
-  // 공통 타입들
-  export * from './common'
-  
-  // YouTube 관련 타입들
-  export * as YouTube from './youtube'
-  
-  // 대시보드 관련 타입들
-  export * as Dashboard from './dashboard'
-  
-  // API 관련 타입들
-  export * as API from './api'
-}
+export type {
+  YouTubeUploadStep,
+  YouTubeQuotaStatus,
+  YouTubeUploadProgress,
+  YouTubeVideoMetadata,
+  YouTubeVideoResponse,
+  YouTubeChannelInfo,
+  YouTubeBatchSettings,
+  YouTubeScriptCardProps,
+  YouTubeScriptListProps,
+  YouTubeBatchControlsProps,
+  YouTubeSearchFilterProps,
+  YouTubeStatsCardsProps,
+  YouTubeManagerReturn,
+  YouTubeApiError,
+  YouTubeUploadEvent,
+  YouTubeStatusFilter,
+  YouTubeSortOption,
+  YouTubeSortDirection,
+  YouTubeSortConfig
+} from './youtube'
+
+export type {
+  SystemMetrics,
+  DashboardData,
+  ChartDataPoint,
+  ChartData
+} from './dashboard'
 
 // 타입 가드 함수들
 export function isUploadState(obj: unknown): obj is import('./common').UploadState {
@@ -54,8 +85,8 @@ export function isSystemMetrics(obj: unknown): obj is import('./dashboard').Syst
 export type ExtractArrayType<T> = T extends (infer U)[] ? U : never
 export type ExtractPromiseType<T> = T extends Promise<infer U> ? U : never
 export type OptionalKeys<T> = {
-  [K in keyof T]-?: {} extends Pick<T, K> ? K : never
+  [K in keyof T]-?: Record<string, never> extends Pick<T, K> ? K : never
 }[keyof T]
 export type RequiredKeys<T> = {
-  [K in keyof T]-?: {} extends Pick<T, K> ? never : K
+  [K in keyof T]-?: Record<string, never> extends Pick<T, K> ? never : K
 }[keyof T]

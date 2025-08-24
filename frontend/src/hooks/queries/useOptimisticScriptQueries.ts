@@ -3,6 +3,7 @@ import { useToastHelpers } from '@/contexts/ToastContext'
 import { useRetry, useYouTubeRetry, useUploadRetry } from '@/hooks/useRetry'
 import { scriptApi, uploadApi } from '@/services/api'
 import { scriptQueryKeys } from './useScriptQueries'
+import { isAxiosError, extractStatusCode, extractErrorMessage, extractYouTubeErrorInfo } from '@/utils/typeGuards'
 import type { Script } from '@/types'
 
 /**
@@ -24,7 +25,7 @@ export function useOptimisticCreateScriptMutation() {
     },
     {
       maxAttempts: 3,
-      onRetry: (err, attempt) => {
+      onRetry: (_err, attempt) => {
         error(`스크립트 업로드 재시도 중... (${attempt}/3)`, '네트워크 오류로 인한 재시도입니다.')
       }
     }
@@ -55,12 +56,12 @@ export function useOptimisticCreateScriptMutation() {
       // 낙관적 업데이트
       queryClient.setQueriesData(
         { queryKey: scriptQueryKeys.lists() },
-        (old: any) => {
+        (old: { scripts?: Script[]; total?: number } | undefined) => {
           if (old?.scripts) {
             return {
               ...old,
               scripts: [optimisticScript, ...old.scripts],
-              total: old.total + 1
+              total: (old.total ?? 0) + 1
             }
           }
           return old
@@ -69,11 +70,11 @@ export function useOptimisticCreateScriptMutation() {
 
       return { previousData, optimisticScript }
     },
-    onSuccess: (newScript, variables, context) => {
+    onSuccess: (newScript, _variables, context) => {
       // 성공 시 실제 데이터로 교체
       queryClient.setQueriesData(
         { queryKey: scriptQueryKeys.lists() },
-        (old: any) => {
+        (old: { scripts?: Script[]; total?: number } | undefined) => {
           if (old?.scripts && context?.optimisticScript) {
             const updatedScripts = old.scripts.map((script: Script) => 
               script.id === context.optimisticScript.id ? newScript : script
@@ -92,7 +93,7 @@ export function useOptimisticCreateScriptMutation() {
       
       success('스크립트 업로드 성공', '새 스크립트가 생성되었습니다.')
     },
-    onError: (err, variables, context) => {
+    onError: (err, _variables, context) => {
       // 실패 시 모든 이전 데이터 복구
       if (context?.previousData) {
         context.previousData.forEach(([queryKey, data]) => {
@@ -126,12 +127,12 @@ export function useOptimisticYouTubeUploadMutation() {
     },
     {
       maxAttempts: 5, // YouTube는 더 많은 재시도
-      onRetry: (err, attempt) => {
-        const reason = err?.response?.data?.error?.reason
+      onRetry: (_err, attempt) => {
+        const reason = isAxiosError(_err) ? _err?.response?.data?.error?.reason : null
         if (reason === 'rateLimitExceeded') {
           info(`YouTube API 제한으로 인한 재시도... (${attempt}/5)`, '잠시 후 자동으로 재시도됩니다.')
         } else {
-          error(`YouTube 업로드 재시도 중... (${attempt}/5)`, err?.message || '알 수 없는 오류')
+          error(`YouTube 업로드 재시도 중... (${attempt}/5)`, _err instanceof Error ? _err.message : '알 수 없는 오류')
         }
       }
     }
@@ -168,7 +169,7 @@ export function useOptimisticYouTubeUploadMutation() {
           return {
             ...old,
             status: 'uploaded' as const,
-            youtube_id: uploadResult.youtube_id,
+            youtube_video_id: uploadResult.youtube_video_id,
             youtube_url: uploadResult.youtube_url,
             upload_progress: '업로드 완료'
           }
@@ -179,11 +180,11 @@ export function useOptimisticYouTubeUploadMutation() {
       // 목록에서도 상태 업데이트
       queryClient.setQueriesData(
         { queryKey: scriptQueryKeys.lists() },
-        (old: any) => {
+        (old: { scripts?: Script[]; total?: number } | undefined) => {
           if (old?.scripts) {
             const updatedScripts = old.scripts.map((script: Script) =>
               script.id === scriptId 
-                ? { ...script, status: 'uploaded' as const, youtube_id: uploadResult.youtube_id }
+                ? { ...script, status: 'uploaded' as const, youtube_video_id: uploadResult.youtube_video_id }
                 : script
             )
             return { ...old, scripts: updatedScripts }
@@ -203,7 +204,7 @@ export function useOptimisticYouTubeUploadMutation() {
       // 목록에서도 에러 상태로 업데이트
       queryClient.setQueriesData(
         { queryKey: scriptQueryKeys.lists() },
-        (old: any) => {
+        (old: { scripts?: Script[]; total?: number } | undefined) => {
           if (old?.scripts) {
             const updatedScripts = old.scripts.map((script: Script) =>
               script.id === scriptId 
@@ -216,8 +217,9 @@ export function useOptimisticYouTubeUploadMutation() {
         }
       )
       
-      const errorMsg = err instanceof Error ? err.message : '알 수 없는 오류'
-      const isQuotaError = err?.response?.data?.error?.reason === 'quotaExceeded'
+      const errorMsg = extractErrorMessage(err)
+      const { reason } = extractYouTubeErrorInfo(err)
+      const isQuotaError = reason === 'quotaExceeded'
       
       error(
         'YouTube 업로드 실패', 
@@ -237,7 +239,7 @@ export function useOptimisticDeleteScriptMutation() {
   const { success, error } = useToastHelpers()
   
   // 삭제 작업에 재시도 로직 적용
-  const { execute: executeDelete, isRetrying, currentAttempt } = useRetry(
+  const { execute: executeDelete, isRetrying, currentAttempt: _currentAttempt } = useRetry(
     async (scriptId: number) => {
       await scriptApi.deleteScript(scriptId)
       return scriptId
@@ -246,10 +248,15 @@ export function useOptimisticDeleteScriptMutation() {
       maxAttempts: 3,
       retryCondition: (err) => {
         // 404는 이미 삭제된 것으로 간주하여 재시도 안함
-        if (err?.response?.status === 404) return false
-        return err?.response?.status >= 500 || err?.message?.includes('Network Error')
+        const status = extractStatusCode(err)
+        if (status === 404) return false
+        
+        if (isAxiosError(err)) {
+          return (status !== null && status >= 500) || err.message?.includes('Network Error')
+        }
+        return false
       },
-      onRetry: (err, attempt) => {
+      onRetry: (_err, attempt) => {
         error(`스크립트 삭제 재시도 중... (${attempt}/3)`, '네트워크 오류로 인한 재시도입니다.')
       }
     }
@@ -265,13 +272,13 @@ export function useOptimisticDeleteScriptMutation() {
       // 낙관적으로 목록에서 제거
       queryClient.setQueriesData(
         { queryKey: scriptQueryKeys.lists() },
-        (old: any) => {
+        (old: { scripts?: Script[]; total?: number } | undefined) => {
           if (old?.scripts) {
             const filteredScripts = old.scripts.filter((script: Script) => script.id !== scriptId)
             return {
               ...old,
               scripts: filteredScripts,
-              total: Math.max(0, old.total - 1)
+              total: Math.max(0, (old.total ?? 0) - 1)
             }
           }
           return old
@@ -289,9 +296,10 @@ export function useOptimisticDeleteScriptMutation() {
       
       success('스크립트 삭제 완료')
     },
-    onError: (err, scriptId, context) => {
+    onError: (err, _scriptId, context) => {
       // 404 에러는 이미 삭제된 것으로 처리
-      if (err?.response?.status === 404) {
+      const status = extractStatusCode(err)
+      if (status === 404) {
         success('스크립트 삭제 완료', '이미 삭제된 스크립트입니다.')
         return
       }

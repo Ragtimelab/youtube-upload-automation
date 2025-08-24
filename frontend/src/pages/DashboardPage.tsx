@@ -92,7 +92,7 @@ export function DashboardPage() {
           totalScripts={systemMetrics?.totalScripts || 0}
           videoReady={systemMetrics?.scriptsByStatus.video_ready || 0}
           uploaded={systemMetrics?.scriptsByStatus.uploaded || 0}
-          activeUploads={globalStats.activeUploads}
+          activeUploads={globalStats?.activeUploads || 0}
         />
 
         {/* 서비스 상태 패널 */}
@@ -116,7 +116,7 @@ export function DashboardPage() {
 
           <SystemAlerts
             bottlenecks={[]}
-            activeUploads={globalStats.activeUploads}
+            activeUploads={globalStats?.activeUploads || 0}
           />
         </div>
 

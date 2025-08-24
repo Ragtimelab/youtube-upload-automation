@@ -1,8 +1,10 @@
-import { Suspense, lazy } from 'react'
-import { FileText, Loader2 } from 'lucide-react'
-import { ListLoading, SkeletonCard } from '@/components/ui/Loading'
+import { Suspense, lazy, useMemo } from 'react'
+import { FileText } from 'lucide-react'
 import { EmptyState } from '@/components/ui/ErrorDisplay'
 import { commonLayouts } from '@/utils/classNames'
+import type { Script, PaginatedResponse } from '@/types/api'
+import type { UploadState, BatchSettings } from '@/types/common'
+import type { YouTubeUploadProgress, YouTubeUploadStep } from '@/types/youtube'
 
 // Lazy load된 스크립트 카드 컴포넌트
 const YouTubeScriptCard = lazy(() => import('./YouTubeScriptCard').then(module => ({ 
@@ -15,17 +17,17 @@ const YouTubeBatchForm = lazy(() => import('./YouTubeBatchForm').then(module => 
 })))
 
 interface YouTubeScriptsWithSuspenseProps {
-  scripts: any[]
+  scripts: Script[]
   isBatchMode: boolean
   selectedScripts: number[]
-  uploadStates: Record<number, any>
+  uploadStates: Record<number, UploadState>
   singleUploadSchedule: Record<number, string>
-  batchSettings: any
-  scriptsData: any
-  onYouTubeUpload: (script: any) => void
+  batchSettings: BatchSettings
+  scriptsData: PaginatedResponse<Script> | undefined
+  onYouTubeUpload: (script: Script) => void
   onToggleSelection: (scriptId: number) => void
   onScheduleChange: (scriptId: number, value: string) => void
-  onBatchSettingsChange: (settings: any) => void
+  onBatchSettingsChange: (settings: BatchSettings) => void
   onClearSelection: () => void
   onUploadComplete: () => void
 }
@@ -51,6 +53,32 @@ export function YouTubeScriptsWithSuspense({
   onClearSelection,
   onUploadComplete
 }: YouTubeScriptsWithSuspenseProps) {
+  // UploadState를 YouTubeUploadProgress로 변환
+  const youtubeUploadStates = useMemo((): Record<number, YouTubeUploadProgress> => {
+    const converted: Record<number, YouTubeUploadProgress> = {}
+    
+    Object.entries(uploadStates).forEach(([scriptId, uploadState]) => {
+      // 기본 step 결정 로직
+      let step: YouTubeUploadStep = 'preparing'
+      if (uploadState.progress > 0 && uploadState.progress < 50) {
+        step = 'uploading'
+      } else if (uploadState.progress >= 50 && uploadState.progress < 100) {
+        step = 'processing'
+      } else if (uploadState.progress === 100 && !uploadState.error) {
+        step = 'completed'
+      } else if (uploadState.error) {
+        step = 'error'
+      }
+
+      converted[parseInt(scriptId)] = {
+        ...uploadState,
+        step
+      }
+    })
+    
+    return converted
+  }, [uploadStates])
+
   // 빈 스크립트 상태
   if (scripts.length === 0) {
     return (
@@ -90,7 +118,7 @@ export function YouTubeScriptsWithSuspense({
                 script={script}
                 isBatchMode={isBatchMode}
                 isSelected={selectedScripts.includes(script.id)}
-                uploadState={uploadStates[script.id]}
+                uploadState={youtubeUploadStates[script.id]}
                 singleUploadSchedule={singleUploadSchedule[script.id]}
                 onYouTubeUpload={onYouTubeUpload}
                 onToggleSelection={onToggleSelection}

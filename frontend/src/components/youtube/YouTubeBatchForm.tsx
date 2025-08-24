@@ -49,7 +49,7 @@ export function YouTubeBatchForm({
 
   // React 19 Actions: 자동 pending 상태 관리
   const [batchState, batchAction, isPending] = useActionState(
-    async (previousState: BatchUploadState | null, formData: FormData) => {
+    async (_previousState: BatchUploadState | null, _formData: FormData) => {
       try {
         const selectedScriptObjects = scriptsData?.items.filter(script => 
           selectedScripts.includes(script.id) && script.status === 'video_ready'

@@ -41,6 +41,9 @@ export function useUploadProgress() {
     activeUploads: 0,
     completedUploads: 0,
     failedUploads: 0,
+    completedToday: 0,
+    errorCount: 0,
+    successRate: 0,
   })
 
   // WebSocket 연결 설정
@@ -208,6 +211,8 @@ export function useUploadProgress() {
       isConnected: webSocket.isConnected,
       connectionStatus: webSocket.connectionStatus,
       error: webSocket.error,
+      reconnectAttempts: webSocket.reconnectAttempts || 0,
+      lastActivity: new Date(),
     },
     startUpload,
     completeUpload,

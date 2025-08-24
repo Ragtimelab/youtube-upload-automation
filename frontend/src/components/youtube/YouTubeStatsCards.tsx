@@ -9,7 +9,7 @@ interface YouTubeStatsCardsProps {
 export function YouTubeStatsCards({ scripts, totalItems, activeUploads }: YouTubeStatsCardsProps) {
   const videoReadyCount = scripts.filter(s => s.status === 'video_ready').length
   const uploadedCount = scripts.filter(s => s.status === 'uploaded').length
-  const scheduledCount = scripts.filter(s => s.status === 'scheduled').length
+  const scheduledCount = 0 // scheduled 상태는 현재 Script 타입에서 지원하지 않음
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">

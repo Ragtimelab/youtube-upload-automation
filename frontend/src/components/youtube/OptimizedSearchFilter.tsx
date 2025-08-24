@@ -10,8 +10,8 @@ interface OptimizedSearchFilterProps {
   statusFilter: string
   isBatchMode: boolean
   totalResults: number
-  onSearchChange: (value: string) => void
-  onStatusFilterChange: (value: string) => void
+  onSearchChange: (_value: string) => void
+  onStatusFilterChange: (_value: string) => void
   onBatchModeToggle: () => void
 }
 

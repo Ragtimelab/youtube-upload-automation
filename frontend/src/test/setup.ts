@@ -131,7 +131,7 @@ Object.defineProperty(global, 'File', {
 })
 
 // Clipboard API 모킹
-Object.defineProperty(navigator, 'clipboard', {
+;(Object as any).defineProperty(navigator, 'clipboard', {
   value: {
     writeText: jest.fn().mockResolvedValue(void 0),
     readText: jest.fn().mockResolvedValue(''),
@@ -139,7 +139,7 @@ Object.defineProperty(navigator, 'clipboard', {
 })
 
 // 전역 테스트 유틸리티
-global.TestUtils = {
+(global as any).TestUtils = {
   // 비동기 대기 헬퍼
   waitFor: (ms: number) => new Promise(resolve => setTimeout(resolve, ms)),
   

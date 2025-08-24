@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useMemo, useCallback, useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { apiClient } from '@/services/api'
+import api from '@/services/api'
 
 /**
  * React 19 최적화된 전역 권한 관리 시스템
@@ -200,7 +200,7 @@ export function PermissionsProvider({
     queryKey: ['current-user'],
     queryFn: async () => {
       try {
-        const response = await apiClient.get('/auth/me')
+        const response = await api.get('/auth/me')
         return response.data
       } catch (error) {
         // API가 없는 경우 fallback 사용자 생성

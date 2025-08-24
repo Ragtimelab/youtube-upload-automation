@@ -1,10 +1,20 @@
 import { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { QueryProvider } from '@/components/providers/QueryProvider'
+import { WebSocketProvider } from '@/contexts/WebSocketContext'
+import { ToastProvider } from '@/contexts/ToastContext'
+import { PermissionsProvider } from '@/contexts/PermissionsContext'
 import { Layout } from '@/components/layout/Layout'
 import { Toaster } from '@/components/Toaster'
 import { RealTimeNotifications } from '@/components/RealTimeNotifications'
 import { FullScreenLoading } from '@/components/ui/Loading'
+import { ErrorBoundary } from '@/components/errors/ErrorBoundary'
+import { 
+  ScriptsPageErrorBoundary,
+  UploadPageErrorBoundary,
+  YouTubePageErrorBoundary,
+  DashboardPageErrorBoundary
+} from '@/components/errors/PageErrorBoundaries'
 
 // React 19 Lazy Loading: 페이지별 코드 분할
 // HomePage는 즉시 로딩 (랜딩 페이지)
@@ -20,96 +30,122 @@ const PipelinePage = lazy(() => import('@/pages/PipelinePage').then(module => ({
 const SettingsPage = lazy(() => import('@/pages/SettingsPage').then(module => ({ default: module.SettingsPage })))
 
 /**
- * React 19 최적화된 메인 앱 컴포넌트
+ * React 19 + Phase 5 최적화된 메인 앱 컴포넌트
  * - 페이지별 Lazy Loading으로 초기 번들 크기 최소화
- * - Suspense 경계로 로딩 상태 관리
- * - 중요도에 따른 로딩 우선순위 설정
+ * - Context Provider 계층으로 Props drilling 완전 제거
+ * - 전역 상태 관리 최적화 (WebSocket, Toast, Permissions)
+ * - 페이지별 Error Boundary로 안정성 보장 (Phase 5)
  */
 function App() {
   return (
-    <QueryProvider>
-      <Router>
-        <Layout>
-          <Suspense 
-            fallback={
-              <FullScreenLoading
-                title="페이지 로딩 중"
-                message="잠시만 기다려주세요..."
-              />
-            }
-          >
-            <Routes>
-              {/* 홈페이지는 즉시 로딩 */}
-              <Route path="/" element={<HomePage />} />
-              
-              {/* 핵심 기능 페이지들 - Lazy Loading */}
-              <Route 
-                path="/scripts" 
-                element={
-                  <Suspense fallback={<PageLoadingSkeleton title="스크립트 관리" />}>
-                    <ScriptsPage />
+    <ErrorBoundary level="global" onError={(error, errorInfo) => {
+      console.error('Global App Error:', { error, errorInfo })
+      // 글로벌 에러 리포팅 (실무 표준)
+    }}>
+      <QueryProvider>
+        <ToastProvider position="top-right" maxToasts={5}>
+          <PermissionsProvider fallbackRole="editor">
+            <WebSocketProvider autoConnect={true}>
+              <Router>
+                <Layout>
+                  <Suspense 
+                    fallback={
+                      <FullScreenLoading
+                        title="페이지 로딩 중"
+                        message="잠시만 기다려주세요..."
+                      />
+                    }
+                  >
+                    <Routes>
+                      {/* 홈페이지는 즉시 로딩 */}
+                      <Route path="/" element={<HomePage />} />
+                      
+                      {/* 핵심 기능 페이지들 - Lazy Loading + Error Boundary */}
+                      <Route 
+                        path="/scripts" 
+                        element={
+                          <ScriptsPageErrorBoundary>
+                            <Suspense fallback={<PageLoadingSkeleton title="스크립트 관리" />}>
+                              <ScriptsPage />
+                            </Suspense>
+                          </ScriptsPageErrorBoundary>
+                        } 
+                      />
+                      <Route 
+                        path="/upload" 
+                        element={
+                          <UploadPageErrorBoundary>
+                            <Suspense fallback={<PageLoadingSkeleton title="비디오 업로드" />}>
+                              <UploadPage />
+                            </Suspense>
+                          </UploadPageErrorBoundary>
+                        } 
+                      />
+                      <Route 
+                        path="/youtube" 
+                        element={
+                          <YouTubePageErrorBoundary>
+                            <Suspense fallback={<PageLoadingSkeleton title="YouTube 관리" />}>
+                              <YouTubePage />
+                            </Suspense>
+                          </YouTubePageErrorBoundary>
+                        } 
+                      />
+                      
+                      {/* 모니터링 페이지들 */}
+                      <Route 
+                        path="/dashboard" 
+                        element={
+                          <DashboardPageErrorBoundary>
+                            <Suspense fallback={<PageLoadingSkeleton title="대시보드" />}>
+                              <DashboardPage />
+                            </Suspense>
+                          </DashboardPageErrorBoundary>
+                        } 
+                      />
+                      <Route 
+                        path="/status" 
+                        element={
+                          <ErrorBoundary level="page">
+                            <Suspense fallback={<PageLoadingSkeleton title="시스템 상태" />}>
+                              <StatusPage />
+                            </Suspense>
+                          </ErrorBoundary>
+                        } 
+                      />
+                      <Route 
+                        path="/pipeline" 
+                        element={
+                          <ErrorBoundary level="page">
+                            <Suspense fallback={<PageLoadingSkeleton title="파이프라인 시각화" />}>
+                              <PipelinePage />
+                            </Suspense>
+                          </ErrorBoundary>
+                        } 
+                      />
+                      
+                      {/* 설정 페이지 - 가장 낮은 우선순위 */}
+                      <Route 
+                        path="/settings" 
+                        element={
+                          <ErrorBoundary level="page">
+                            <Suspense fallback={<PageLoadingSkeleton title="설정" />}>
+                              <SettingsPage />
+                            </Suspense>
+                          </ErrorBoundary>
+                        } 
+                      />
+                    </Routes>
                   </Suspense>
-                } 
-              />
-              <Route 
-                path="/upload" 
-                element={
-                  <Suspense fallback={<PageLoadingSkeleton title="비디오 업로드" />}>
-                    <UploadPage />
-                  </Suspense>
-                } 
-              />
-              <Route 
-                path="/youtube" 
-                element={
-                  <Suspense fallback={<PageLoadingSkeleton title="YouTube 관리" />}>
-                    <YouTubePage />
-                  </Suspense>
-                } 
-              />
-              
-              {/* 모니터링 페이지들 */}
-              <Route 
-                path="/dashboard" 
-                element={
-                  <Suspense fallback={<PageLoadingSkeleton title="대시보드" />}>
-                    <DashboardPage />
-                  </Suspense>
-                } 
-              />
-              <Route 
-                path="/status" 
-                element={
-                  <Suspense fallback={<PageLoadingSkeleton title="시스템 상태" />}>
-                    <StatusPage />
-                  </Suspense>
-                } 
-              />
-              <Route 
-                path="/pipeline" 
-                element={
-                  <Suspense fallback={<PageLoadingSkeleton title="파이프라인 시각화" />}>
-                    <PipelinePage />
-                  </Suspense>
-                } 
-              />
-              
-              {/* 설정 페이지 - 가장 낮은 우선순위 */}
-              <Route 
-                path="/settings" 
-                element={
-                  <Suspense fallback={<PageLoadingSkeleton title="설정" />}>
-                    <SettingsPage />
-                  </Suspense>
-                } 
-              />
-            </Routes>
-          </Suspense>
-        </Layout>
-        <RealTimeNotifications />
-        <Toaster />
-      </Router>
-    </QueryProvider>
+                </Layout>
+                <RealTimeNotifications />
+                <Toaster />
+              </Router>
+            </WebSocketProvider>
+          </PermissionsProvider>
+        </ToastProvider>
+      </QueryProvider>
+    </ErrorBoundary>
   )
 }
 

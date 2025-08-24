@@ -15,27 +15,9 @@ import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import type { Script } from '@/types/api'
-
-interface UploadState {
-  isUploading: boolean
-  progress: number
-  message: string
-  error?: string
-  currentStep?: number
-  totalSteps?: number
-}
-
-interface YouTubeScriptCardProps {
-  script: Script
-  isBatchMode: boolean
-  isSelected: boolean
-  uploadState?: UploadState
-  singleUploadSchedule?: string
-  onYouTubeUpload: (script: Script) => void
-  onToggleSelection: (scriptId: number) => void
-  onScheduleChange: (scriptId: number, value: string) => void
-}
+import { formatDate, formatDateTime } from '@/utils/dateFormat'
+import { commonLayouts, statusColors, getStatusColor } from '@/utils/classNames'
+import type { Script, UploadState, YouTubeScriptCardProps } from '@/types'
 
 export function YouTubeScriptCard({
   script,
@@ -143,7 +125,7 @@ export function YouTubeScriptCard({
           {script.video_filename && (
             <p>비디오: {script.video_filename}</p>
           )}
-          <p>생성: {new Date(script.created_at).toLocaleDateString('ko-KR')}</p>
+          <p>생성: {formatDate(script.created_at)}</p>
         </div>
 
         {/* 태그 */}
@@ -216,7 +198,7 @@ export function YouTubeScriptCard({
             />
             {singleUploadSchedule && (
               <p className="text-xs text-blue-600 mt-1">
-                예약 발행: {new Date(singleUploadSchedule).toLocaleString('ko-KR')}
+                예약 발행: {formatDateTime(singleUploadSchedule)}
               </p>
             )}
           </div>

@@ -1,37 +1,152 @@
+import { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { QueryProvider } from '@/components/providers/QueryProvider'
 import { Layout } from '@/components/layout/Layout'
 import { Toaster } from '@/components/Toaster'
 import { RealTimeNotifications } from '@/components/RealTimeNotifications'
-import { HomePage } from '@/pages/HomePage'
-import { ScriptsPage } from '@/pages/ScriptsPage'
-import { UploadPage } from '@/pages/UploadPage'
-import YouTubeUpload from '@/pages/YouTubeUpload'
-import { DashboardPage } from '@/pages/DashboardPage'
-import { StatusPage } from '@/pages/StatusPage'
-import { PipelinePage } from '@/pages/PipelinePage'
-import { SettingsPage } from '@/pages/SettingsPage'
+import { FullScreenLoading } from '@/components/ui/Loading'
 
+// React 19 Lazy Loading: 페이지별 코드 분할
+// HomePage는 즉시 로딩 (랜딩 페이지)
+import { HomePage } from '@/pages/HomePage'
+
+// 나머지 페이지들은 lazy loading으로 번들 분할
+const ScriptsPage = lazy(() => import('@/pages/ScriptsPage').then(module => ({ default: module.ScriptsPage })))
+const UploadPage = lazy(() => import('@/pages/UploadPage').then(module => ({ default: module.UploadPage })))
+const YouTubePage = lazy(() => import('@/pages/YouTubePage').then(module => ({ default: module.YouTubePage })))
+const DashboardPage = lazy(() => import('@/pages/DashboardPage').then(module => ({ default: module.DashboardPage })))
+const StatusPage = lazy(() => import('@/pages/StatusPage').then(module => ({ default: module.StatusPage })))
+const PipelinePage = lazy(() => import('@/pages/PipelinePage').then(module => ({ default: module.PipelinePage })))
+const SettingsPage = lazy(() => import('@/pages/SettingsPage').then(module => ({ default: module.SettingsPage })))
+
+/**
+ * React 19 최적화된 메인 앱 컴포넌트
+ * - 페이지별 Lazy Loading으로 초기 번들 크기 최소화
+ * - Suspense 경계로 로딩 상태 관리
+ * - 중요도에 따른 로딩 우선순위 설정
+ */
 function App() {
   return (
     <QueryProvider>
       <Router>
         <Layout>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/scripts" element={<ScriptsPage />} />
-            <Route path="/upload" element={<UploadPage />} />
-            <Route path="/youtube" element={<YouTubeUpload />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/status" element={<StatusPage />} />
-            <Route path="/pipeline" element={<PipelinePage />} />
-            <Route path="/settings" element={<SettingsPage />} />
-          </Routes>
+          <Suspense 
+            fallback={
+              <FullScreenLoading
+                title="페이지 로딩 중"
+                message="잠시만 기다려주세요..."
+              />
+            }
+          >
+            <Routes>
+              {/* 홈페이지는 즉시 로딩 */}
+              <Route path="/" element={<HomePage />} />
+              
+              {/* 핵심 기능 페이지들 - Lazy Loading */}
+              <Route 
+                path="/scripts" 
+                element={
+                  <Suspense fallback={<PageLoadingSkeleton title="스크립트 관리" />}>
+                    <ScriptsPage />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/upload" 
+                element={
+                  <Suspense fallback={<PageLoadingSkeleton title="비디오 업로드" />}>
+                    <UploadPage />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/youtube" 
+                element={
+                  <Suspense fallback={<PageLoadingSkeleton title="YouTube 관리" />}>
+                    <YouTubePage />
+                  </Suspense>
+                } 
+              />
+              
+              {/* 모니터링 페이지들 */}
+              <Route 
+                path="/dashboard" 
+                element={
+                  <Suspense fallback={<PageLoadingSkeleton title="대시보드" />}>
+                    <DashboardPage />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/status" 
+                element={
+                  <Suspense fallback={<PageLoadingSkeleton title="시스템 상태" />}>
+                    <StatusPage />
+                  </Suspense>
+                } 
+              />
+              <Route 
+                path="/pipeline" 
+                element={
+                  <Suspense fallback={<PageLoadingSkeleton title="파이프라인 시각화" />}>
+                    <PipelinePage />
+                  </Suspense>
+                } 
+              />
+              
+              {/* 설정 페이지 - 가장 낮은 우선순위 */}
+              <Route 
+                path="/settings" 
+                element={
+                  <Suspense fallback={<PageLoadingSkeleton title="설정" />}>
+                    <SettingsPage />
+                  </Suspense>
+                } 
+              />
+            </Routes>
+          </Suspense>
         </Layout>
         <RealTimeNotifications />
         <Toaster />
       </Router>
     </QueryProvider>
+  )
+}
+
+/**
+ * 페이지별 특화된 로딩 스켈레톤
+ */
+function PageLoadingSkeleton({ title }: { title: string }) {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* 헤더 스켈레톤 */}
+        <div className="mb-8">
+          <div className="h-8 bg-gray-300 rounded w-48 mb-2 animate-pulse" />
+          <div className="h-4 bg-gray-200 rounded w-96 animate-pulse" />
+        </div>
+        
+        {/* 컨텐츠 스켈레톤 */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bg-white p-6 rounded-lg shadow-sm border animate-pulse">
+              <div className="h-5 bg-gray-300 rounded w-3/4 mb-3" />
+              <div className="h-4 bg-gray-200 rounded w-full mb-2" />
+              <div className="h-4 bg-gray-200 rounded w-2/3 mb-4" />
+              <div className="h-10 bg-gray-300 rounded w-full" />
+            </div>
+          ))}
+        </div>
+        
+        {/* 로딩 메시지 */}
+        <div className="fixed bottom-4 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <span className="text-sm font-medium">{title} 로딩 중...</span>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 

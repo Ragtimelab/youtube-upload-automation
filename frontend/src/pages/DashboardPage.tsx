@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { FullScreenLoading } from '@/components/ui/Loading'
 import { SystemStatusCards } from '@/components/dashboard/SystemStatusCards'
 import { ServiceStatusPanel } from '@/components/dashboard/ServiceStatusPanel'
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts'
@@ -7,6 +8,8 @@ import { SystemAlerts } from '@/components/dashboard/SystemAlerts'
 import { RecentActivity } from '@/components/dashboard/RecentActivity'
 import { WebSocketStatus } from '@/components/WebSocketStatus'
 import { useDashboardData } from '@/hooks/useDashboardData'
+import { formatFullTime } from '@/utils/dateFormat'
+import { commonLayouts, cn } from '@/utils/classNames'
 import { Activity, RefreshCw } from 'lucide-react'
 
 export function DashboardPage() {
@@ -29,40 +32,38 @@ export function DashboardPage() {
   // 로딩 상태
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">시스템 상태를 불러오는 중...</p>
-        </div>
-      </div>
+      <FullScreenLoading
+        message="시스템 상태를 불러오는 중..."
+        title="대시보드 로딩"
+      />
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className={cn(commonLayouts.fullScreen, commonLayouts.padding)}>
+      <div className={commonLayouts.container}>
         {/* 헤더 */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className={commonLayouts.flexBetween}>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">시스템 대시보드</h1>
-              <p className="text-gray-600">YouTube 업로드 자동화 시스템 실시간 모니터링</p>
+              <h1 className={cn(commonLayouts.title, 'mb-2')}>시스템 대시보드</h1>
+              <p className={commonLayouts.subtitle}>YouTube 업로드 자동화 시스템 실시간 모니터링</p>
             </div>
             
             {/* 컨트롤 패널 */}
-            <div className="flex items-center gap-4">
+            <div className={commonLayouts.flexGapMd}>
               <WebSocketStatus 
                 isConnected={webSocketState.isConnected}
                 connectionStatus={webSocketState.connectionStatus}
                 error={webSocketState.error}
               />
               
-              <div className="flex items-center gap-2">
+              <div className={commonLayouts.flexGapSm}>
                 <Button
                   variant={isRealTimeEnabled ? "default" : "outline"}
                   size="sm"
                   onClick={toggleRealTime}
-                  className="flex items-center gap-2"
+                  className={commonLayouts.flexGapSm}
                 >
                   <Activity className={`h-4 w-4 ${isRealTimeEnabled ? 'animate-pulse' : ''}`} />
                   실시간 {isRealTimeEnabled ? '켜짐' : '꺼짐'}
@@ -72,15 +73,15 @@ export function DashboardPage() {
                   variant="outline"
                   size="sm"
                   onClick={refreshAll}
-                  className="flex items-center gap-2"
+                  className={commonLayouts.flexGapSm}
                 >
                   <RefreshCw className="h-4 w-4" />
                   새로고침
                 </Button>
               </div>
               
-              <div className="text-sm text-gray-500">
-                마지막 업데이트: {lastRefresh.toLocaleTimeString('ko-KR')}
+              <div className={commonLayouts.smallText}>
+                마지막 업데이트: {formatFullTime(lastRefresh)}
               </div>
             </div>
           </div>
@@ -107,7 +108,7 @@ export function DashboardPage() {
         />
 
         {/* 성능 지표 및 병목 현상 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className={cn(commonLayouts.gridCols2, 'lg:grid-cols-2', commonLayouts.gapXl, 'mb-8')}>
           <PerformanceMetrics
             performanceData={performanceData}
             avgUploadTime={systemMetrics?.performance.avgUploadTime || 0}

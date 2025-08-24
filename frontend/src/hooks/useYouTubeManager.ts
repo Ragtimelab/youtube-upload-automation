@@ -2,44 +2,8 @@ import { useState, useCallback } from 'react'
 import { useUploadProgress } from './useUploadProgress'
 import { useToast } from './useToast'
 import { uploadApi } from '@/services/api'
-import type { Script } from '@/types/api'
-
-interface BatchSettings {
-  delay: number
-  privacy: string
-  category: number
-  publishAt: string
-}
-
-interface BatchProgress {
-  current: number
-  total: number
-}
-
-interface YouTubeManagerReturn {
-  // 단일 업로드 상태
-  singleUploadSchedule: Record<number, string>
-  setSingleUploadSchedule: React.Dispatch<React.SetStateAction<Record<number, string>>>
-  
-  // 배치 업로드 상태
-  selectedScripts: number[]
-  isBatchMode: boolean
-  batchUploading: boolean
-  batchProgress: BatchProgress
-  batchSettings: BatchSettings
-  
-  // 액션 함수들
-  handleYouTubeUpload: (script: Script) => Promise<void>
-  handleBatchUpload: (scriptsData: { items: Script[] } | undefined) => Promise<void>
-  toggleBatchMode: () => void
-  toggleScriptSelection: (scriptId: number) => void
-  setBatchSettings: (settings: BatchSettings) => void
-  setSelectedScripts: (scripts: number[]) => void
-  handleSingleScheduleChange: (scriptId: number, value: string) => void
-  
-  // 상태 체크 함수들
-  checkYouTubeQuota: () => Promise<{ canUpload: boolean; message: string }>
-}
+import { logApiError, getUserFriendlyErrorMessage, isQuotaError } from '@/utils/apiUtils'
+import type { Script, BatchSettings, BatchProgress, YouTubeManagerReturn } from '@/types'
 
 export function useYouTubeManager(): YouTubeManagerReturn {
   const { startUpload, webSocketState } = useUploadProgress()
@@ -98,13 +62,9 @@ export function useYouTubeManager(): YouTubeManagerReturn {
       const publishAt = singleUploadSchedule[script.id]
       await uploadApi.uploadToYouTube(script.id, publishAt)
     } catch (apiError: unknown) {
-      console.error('YouTube upload API error:', apiError)
-      
-      if (apiError instanceof Error) {
-        error('업로드 실패', `YouTube API 오류: ${apiError.message}`)
-      } else {
-        error('업로드 실패', '알 수 없는 오류가 발생했습니다.')
-      }
+      logApiError('YouTube single upload', apiError)
+      const friendlyMessage = getUserFriendlyErrorMessage(apiError)
+      error('업로드 실패', friendlyMessage)
     }
   }, [singleUploadSchedule, webSocketState.isConnected, startUpload, checkYouTubeQuota, error, info])
 
@@ -161,8 +121,9 @@ export function useYouTubeManager(): YouTubeManagerReturn {
           const successType = batchSettings.publishAt ? '예약 설정' : '업로드'
           success(`${successType} 완료`, `"${script.title}" ${successType} 성공`)
         } catch (scriptError) {
-          console.error(`Script ${scriptId} upload error:`, scriptError)
-          error('개별 실패', `"${script.title}" ${uploadType} 실패`)
+          logApiError(`Script ${scriptId} batch upload`, scriptError)
+          const friendlyMessage = getUserFriendlyErrorMessage(scriptError)
+          error('개별 실패', `"${script.title}" ${uploadType} 실패: ${friendlyMessage}`)
         }
 
         if (i < selectedScripts.length - 1) {
@@ -173,8 +134,9 @@ export function useYouTubeManager(): YouTubeManagerReturn {
       success('배치 완료', `${selectedScripts.length}개 스크립트 ${uploadType}가 완료되었습니다.`)
       setSelectedScripts([])
     } catch (batchError) {
-      console.error('Batch upload error:', batchError)
-      error('배치 실패', `${uploadType} 중 오류가 발생했습니다.`)
+      logApiError('YouTube batch upload', batchError)
+      const friendlyMessage = getUserFriendlyErrorMessage(batchError)
+      error('배치 실패', `${uploadType} 중 오류가 발생했습니다: ${friendlyMessage}`)
     } finally {
       setBatchUploading(false)
       setBatchProgress({ current: 0, total: 0 })

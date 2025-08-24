@@ -1,27 +1,9 @@
 import { Loader2, FileText } from 'lucide-react'
+import { ListLoading } from '@/components/ui/Loading'
+import { EmptyState } from '@/components/ui/ErrorDisplay'
 import { YouTubeScriptCard } from './YouTubeScriptCard'
-import type { Script } from '@/types/api'
-
-interface UploadState {
-  isUploading: boolean
-  progress: number
-  message: string
-  error?: string
-  currentStep?: number
-  totalSteps?: number
-}
-
-interface YouTubeScriptListProps {
-  scripts: Script[]
-  isLoading: boolean
-  isBatchMode: boolean
-  selectedScripts: number[]
-  uploadStates: Record<number, UploadState>
-  singleUploadSchedule: Record<number, string>
-  onYouTubeUpload: (script: Script) => void
-  onToggleSelection: (scriptId: number) => void
-  onScheduleChange: (scriptId: number, value: string) => void
-}
+import { commonLayouts } from '@/utils/classNames'
+import type { Script, UploadState, YouTubeScriptListProps } from '@/types'
 
 export function YouTubeScriptList({
   scripts,
@@ -36,29 +18,26 @@ export function YouTubeScriptList({
 }: YouTubeScriptListProps) {
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-        <div className="p-8 text-center">
-          <Loader2 className="h-8 w-8 mx-auto text-gray-400 animate-spin mb-4" />
-          <p className="text-gray-600">스크립트를 불러오는 중...</p>
-        </div>
-      </div>
+      <ListLoading
+        message="스크립트를 불러오는 중..."
+        items={3}
+        showIcon={true}
+      />
     )
   }
 
   if (scripts.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-        <div className="p-8 text-center">
-          <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">스크립트가 없습니다</h3>
-          <p className="text-gray-600 mb-4">검색 조건에 맞는 스크립트가 없습니다.</p>
-        </div>
-      </div>
+      <EmptyState
+        icon={FileText}
+        title="스크립트가 없습니다"
+        description="검색 조건에 맞는 스크립트가 없습니다."
+      />
     )
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+    <div className={commonLayouts.card}>
       <div className="divide-y divide-gray-200">
         {scripts.map((script) => (
           <YouTubeScriptCard

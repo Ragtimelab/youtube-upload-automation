@@ -4,28 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
-
-interface BatchSettings {
-  delay: number
-  privacy: string
-  category: number
-  publishAt: string
-}
-
-interface BatchProgress {
-  current: number
-  total: number
-}
-
-interface YouTubeBatchControlsProps {
-  selectedScripts: number[]
-  batchUploading: boolean
-  batchProgress: BatchProgress
-  batchSettings: BatchSettings
-  onBatchUpload: () => void
-  onBatchSettingsChange: (settings: BatchSettings) => void
-  onClearSelection: () => void
-}
+import type { BatchSettings, BatchProgress, YouTubeBatchControlsProps } from '@/types'
 
 export function YouTubeBatchControls({
   selectedScripts,

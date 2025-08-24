@@ -29,6 +29,7 @@ const DashboardPage = lazy(() => import('@/pages/DashboardPage').then(module => 
 const StatusPage = lazy(() => import('@/pages/StatusPage').then(module => ({ default: module.StatusPage })))
 const PipelinePage = lazy(() => import('@/pages/PipelinePage').then(module => ({ default: module.PipelinePage })))
 const SettingsPage = lazy(() => import('@/pages/SettingsPage').then(module => ({ default: module.SettingsPage })))
+const RenderPropsDemo = lazy(() => import('@/pages/RenderPropsDemo').then(module => ({ default: module.RenderPropsDemo })))
 
 /**
  * React 19 + Phase 6 최적화된 메인 앱 컴포넌트
@@ -135,6 +136,18 @@ function App() {
                           <ErrorBoundary level="page">
                             <Suspense fallback={<PageLoadingSkeleton title="파이프라인 시각화" />}>
                               <PipelinePage />
+                            </Suspense>
+                          </ErrorBoundary>
+                        } 
+                      />
+                      
+                      {/* Phase 10 데모 페이지 - Render Props 패턴 */}
+                      <Route 
+                        path="/render-props-demo" 
+                        element={
+                          <ErrorBoundary level="page">
+                            <Suspense fallback={<PageLoadingSkeleton title="Render Props 데모" />}>
+                              <RenderPropsDemo />
                             </Suspense>
                           </ErrorBoundary>
                         } 

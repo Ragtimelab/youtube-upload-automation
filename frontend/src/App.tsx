@@ -15,6 +15,7 @@ import {
   YouTubePageErrorBoundary,
   DashboardPageErrorBoundary
 } from '@/components/errors/PageErrorBoundaries'
+import { LiveRegion, SkipToContent } from '@/components/accessibility/AccessibilityComponents'
 
 // React 19 Lazy Loading: 페이지별 코드 분할
 // HomePage는 즉시 로딩 (랜딩 페이지)
@@ -30,11 +31,12 @@ const PipelinePage = lazy(() => import('@/pages/PipelinePage').then(module => ({
 const SettingsPage = lazy(() => import('@/pages/SettingsPage').then(module => ({ default: module.SettingsPage })))
 
 /**
- * React 19 + Phase 5 최적화된 메인 앱 컴포넌트
+ * React 19 + Phase 6 최적화된 메인 앱 컴포넌트
  * - 페이지별 Lazy Loading으로 초기 번들 크기 최소화
  * - Context Provider 계층으로 Props drilling 완전 제거
  * - 전역 상태 관리 최적화 (WebSocket, Toast, Permissions)
  * - 페이지별 Error Boundary로 안정성 보장 (Phase 5)
+ * - WCAG 2.1 AA 접근성 완전 지원 (Phase 6)
  */
 function App() {
   return (
@@ -47,6 +49,12 @@ function App() {
           <PermissionsProvider fallbackRole="editor">
             <WebSocketProvider autoConnect={true}>
               <Router>
+                {/* 접근성: 건너뛰기 링크 */}
+                <SkipToContent />
+                
+                {/* 접근성: 스크린 리더 라이브 리전 */}
+                <LiveRegion />
+                
                 <Layout>
                   <Suspense 
                     fallback={
@@ -56,7 +64,15 @@ function App() {
                       />
                     }
                   >
-                    <Routes>
+                    {/* 메인 콘텐츠 영역 */}
+                    <main 
+                      id="main-content" 
+                      className="focus:outline-none" 
+                      tabIndex={-1}
+                      role="main"
+                      aria-label="메인 콘텐츠"
+                    >
+                      <Routes>
                       {/* 홈페이지는 즉시 로딩 */}
                       <Route path="/" element={<HomePage />} />
                       
@@ -135,7 +151,8 @@ function App() {
                           </ErrorBoundary>
                         } 
                       />
-                    </Routes>
+                      </Routes>
+                    </main>
                   </Suspense>
                 </Layout>
                 <RealTimeNotifications />

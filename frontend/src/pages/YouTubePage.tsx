@@ -1,95 +1,147 @@
-import { useNavigate } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { Youtube, Upload, CheckCircle2, Clock, AlertTriangle } from 'lucide-react'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { scriptApi } from '@/services/api'
+import { useUploadProgress } from '@/hooks/useUploadProgress'
+import { useYouTubeManager } from '@/hooks/useYouTubeManager'
+import { WebSocketStatus } from '@/components/WebSocketStatus'
+import { YouTubeSearchFilter } from '@/components/youtube/YouTubeSearchFilter'
+import { YouTubeBatchControls } from '@/components/youtube/YouTubeBatchControls'
+import { YouTubeScriptList } from '@/components/youtube/YouTubeScriptList'
+import { YouTubeStatsCards } from '@/components/youtube/YouTubeStatsCards'
+import { Activity } from 'lucide-react'
 
 export function YouTubePage() {
-  const navigate = useNavigate()
+  const { 
+    uploadStates, 
+    globalStats, 
+    webSocketState,
+    getActiveUploads 
+  } = useUploadProgress()
+  
+  const {
+    singleUploadSchedule,
+    selectedScripts,
+    isBatchMode,
+    batchUploading,
+    batchProgress,
+    batchSettings,
+    handleYouTubeUpload,
+    handleBatchUpload,
+    toggleBatchMode,
+    toggleScriptSelection,
+    setBatchSettings,
+    setSelectedScripts,
+    handleSingleScheduleChange
+  } = useYouTubeManager()
+  
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+
+  // 스크립트 목록 조회
+  const { data: scriptsData, isLoading, refetch } = useQuery({
+    queryKey: ['scripts', 1, 50],
+    queryFn: () => scriptApi.getScripts(1, 50)
+  })
+
+  // 업로드 상태별 필터링
+  const filteredScripts = scriptsData?.items.filter(script => {
+    const matchesSearch = script.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (script.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         script.filename.toLowerCase().includes(searchTerm.toLowerCase())
+    
+    if (statusFilter === 'all') return matchesSearch
+    return matchesSearch && script.status === statusFilter
+  }) || []
+
+  // 배치 업로드 실행 래퍼 (refetch 포함)
+  const handleBatchUploadWithRefetch = async () => {
+    await handleBatchUpload(scriptsData)
+    refetch()
+  }
+
+  // 단일 업로드 실행 래퍼 (refetch 포함)
+  const handleSingleUploadWithRefetch = async (script: any) => {
+    await handleYouTubeUpload(script)
+    refetch()
+  }
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">YouTube 업로드</h1>
-        <p className="text-gray-600 mt-1">완성된 콘텐츠를 YouTube에 자동으로 업로드하세요.</p>
-      </div>
-
-      {/* YouTube API 상태 */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+    <div className="p-8 max-w-7xl mx-auto">
+      {/* 헤더 */}
+      <div className="mb-8">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <Youtube className="h-8 w-8 text-red-600" />
-            <div>
-              <h3 className="font-medium text-gray-900">YouTube API 상태</h3>
-              <p className="text-sm text-gray-600">일일 할당량: 8,400 / 10,000 units</p>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">YouTube 업로드 관리</h1>
+            <p className="text-gray-600">스크립트를 선택하여 YouTube에 업로드하세요.</p>
           </div>
-          <div className="flex items-center space-x-2">
-            <CheckCircle2 className="h-5 w-5 text-green-600" />
-            <span className="text-sm font-medium text-green-600">연결됨</span>
-          </div>
-        </div>
-      </div>
-
-      {/* 업로드 대기 목록 */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">업로드 대기 목록</h3>
-          <p className="text-gray-600 mt-1">비디오가 준비된 스크립트들을 YouTube에 업로드할 수 있습니다.</p>
-        </div>
-
-        <div className="p-6">
-          <div className="text-center py-8">
-            <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h4 className="text-lg font-medium text-gray-900 mb-2">업로드 대기 중인 항목이 없습니다</h4>
-            <p className="text-gray-600 mb-6">스크립트와 비디오를 먼저 준비해주세요.</p>
-            <div className="flex justify-center space-x-4">
-              <Button variant="outline" onClick={() => navigate('/scripts')}>스크립트 관리</Button>
-              <Button variant="outline" onClick={() => navigate('/upload')}>비디오 업로드</Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 최근 업로드 */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">최근 업로드</h3>
-        </div>
-
-        <div className="divide-y divide-gray-200">
-          {[
-            { title: '시니어를 위한 스마트폰 활용법', status: 'completed', date: '2025-08-21' },
-            { title: '건강한 노후 생활 가이드', status: 'processing', date: '2025-08-20' },
-            { title: '디지털 금융 서비스 이용법', status: 'failed', date: '2025-08-19' },
-          ].map((item, index) => (
-            <div key={index} className="p-6 flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="flex-shrink-0">
-                  {item.status === 'completed' && <CheckCircle2 className="h-5 w-5 text-green-600" />}
-                  {item.status === 'processing' && <Clock className="h-5 w-5 text-yellow-600" />}
-                  {item.status === 'failed' && <AlertTriangle className="h-5 w-5 text-red-600" />}
-                </div>
-                <div>
-                  <h4 className="font-medium text-gray-900">{item.title}</h4>
-                  <p className="text-sm text-gray-600">{item.date}</p>
-                </div>
+          
+          <div className="flex items-center gap-4">
+            <WebSocketStatus />
+            {batchUploading && (
+              <div className="flex items-center gap-2 text-blue-600">
+                <Activity className="w-4 h-4 animate-pulse" />
+                <span className="text-sm font-medium">{batchProgress.current}개 업로드 중</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                  item.status === 'completed' 
-                    ? 'bg-green-100 text-green-800'
-                    : item.status === 'processing'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {item.status === 'completed' ? '업로드 완료' 
-                   : item.status === 'processing' ? '처리 중'
-                   : '업로드 실패'}
-                </span>
-                <Button variant="ghost" size="sm">상세 보기</Button>
-              </div>
-            </div>
-          ))}
+            )}
+          </div>
         </div>
       </div>
+
+      {/* 통계 카드 */}
+      <YouTubeStatsCards
+        scripts={filteredScripts}
+        totalItems={scriptsData?.total_items || 0}
+        activeUploads={getActiveUploads().length}
+      />
+
+      {/* 검색 및 필터 */}
+      <YouTubeSearchFilter
+        searchTerm={searchTerm}
+        statusFilter={statusFilter}
+        isBatchMode={isBatchMode}
+        onSearchChange={setSearchTerm}
+        onStatusFilterChange={setStatusFilter}
+        onBatchModeToggle={toggleBatchMode}
+      >
+        {/* 배치 모드 컨트롤 바 */}
+        {isBatchMode && (
+          <YouTubeBatchControls
+            selectedScripts={selectedScripts}
+            batchUploading={batchUploading}
+            batchProgress={batchProgress}
+            batchSettings={batchSettings}
+            onBatchUpload={handleBatchUploadWithRefetch}
+            onBatchSettingsChange={setBatchSettings}
+            onClearSelection={() => setSelectedScripts([])}
+          />
+        )}
+      </YouTubeSearchFilter>
+
+      {/* 배치 업로드 설정 */}
+      {isBatchMode && (
+        <YouTubeBatchControls
+          selectedScripts={selectedScripts}
+          batchUploading={batchUploading}
+          batchProgress={batchProgress}
+          batchSettings={batchSettings}
+          onBatchUpload={handleBatchUploadWithRefetch}
+          onBatchSettingsChange={setBatchSettings}
+          onClearSelection={() => setSelectedScripts([])}
+        />
+      )}
+
+      {/* 스크립트 목록 */}
+      <YouTubeScriptList
+        scripts={filteredScripts}
+        isLoading={isLoading}
+        isBatchMode={isBatchMode}
+        selectedScripts={selectedScripts}
+        uploadStates={uploadStates}
+        singleUploadSchedule={singleUploadSchedule}
+        onYouTubeUpload={handleSingleUploadWithRefetch}
+        onToggleSelection={toggleScriptSelection}
+        onScheduleChange={handleSingleScheduleChange}
+      />
     </div>
   )
 }

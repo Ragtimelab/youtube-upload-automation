@@ -11,7 +11,7 @@ import { AlertCircle, CheckCircle } from 'lucide-react'
 interface AccessibleInputProps {
   label: string
   value: string
-  onChange: (value: string) => void
+  onChange: (_value: string) => void
   type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url'
   required?: boolean
   disabled?: boolean
@@ -113,7 +113,7 @@ AccessibleInput.displayName = 'AccessibleInput'
 interface AccessibleSelectProps {
   label: string
   value: string
-  onChange: (value: string) => void
+  onChange: (_value: string) => void
   options: Array<{ value: string; label: string }>
   required?: boolean
   disabled?: boolean

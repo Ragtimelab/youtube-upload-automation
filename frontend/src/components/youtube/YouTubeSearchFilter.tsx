@@ -7,8 +7,8 @@ interface YouTubeSearchFilterProps {
   searchTerm: string
   statusFilter: string
   isBatchMode: boolean
-  onSearchChange: (value: string) => void
-  onStatusFilterChange: (value: string) => void
+  onSearchChange: (_value: string) => void
+  onStatusFilterChange: (_value: string) => void
   onBatchModeToggle: () => void
 }
 

@@ -25,21 +25,21 @@ interface UseErrorHandlerReturn {
   loadingState: LoadingState
   
   // 액션
-  setError: (error: unknown, context?: string) => void
+  setError: (_error: unknown, _context?: string) => void
   clearError: () => void
-  setLoading: (loading: boolean) => void
-  setLoadingState: (state: LoadingState) => void
+  setLoading: (_loading: boolean) => void
+  setLoadingState: (_state: LoadingState) => void
   
   // 에러 처리 래퍼 함수들
   handleAsync: <T>(
-    asyncFn: () => Promise<T>, 
-    context?: string,
-    showToast?: boolean
+    _asyncFn: () => Promise<T>, 
+    _context?: string,
+    _showToast?: boolean
   ) => Promise<T | undefined>
   handleApiCall: <T>(
-    apiCall: () => Promise<T>,
-    context?: string,
-    options?: {
+    _apiCall: () => Promise<T>,
+    _context?: string,
+    _options?: {
       showSuccessToast?: boolean
       successMessage?: string
       toastError?: boolean
@@ -53,7 +53,7 @@ interface UseErrorHandlerReturn {
   isNetworkError: () => boolean
   
   // 에러 재시도
-  retry: (fn: () => Promise<unknown> | void, context?: string) => Promise<void>
+  retry: (_fn: () => Promise<unknown> | void, _context?: string) => Promise<void>
 }
 
 export function useErrorHandler(defaultContext?: string): UseErrorHandlerReturn {

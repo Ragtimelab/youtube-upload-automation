@@ -26,8 +26,8 @@ interface OptimizedScriptCardProps {
   uploadState?: UploadState
   singleUploadSchedule?: string
   onYouTubeUpload: (_script: Script) => void
-  onToggleSelection: (_scriptId: number) => void
-  onScheduleChange: (_scriptId: number, _value: string) => void
+  onToggleSelection: (_id: number) => void
+  onScheduleChange: (_id: number, _value: string) => void
 }
 
 /**

@@ -8,7 +8,7 @@ import '@testing-library/jest-dom'
 // React 19 Concurrent Features 모킹
 Object.defineProperty(window, 'requestIdleCallback', {
   writable: true,
-  value: jest.fn().mockImplementation((cb: Function) => {
+  value: jest.fn().mockImplementation((cb: (_deadline: { timeRemaining: () => number }) => void) => {
     return setTimeout(() => cb({ timeRemaining: () => 50 }), 0)
   }),
 })
@@ -70,10 +70,10 @@ class MockWebSocket {
   
   public readyState = MockWebSocket.CONNECTING
   public url: string
-  public onopen: ((event: Event) => void) | null = null
-  public onclose: ((event: CloseEvent) => void) | null = null
-  public onmessage: ((event: MessageEvent) => void) | null = null
-  public onerror: ((event: Event) => void) | null = null
+  public onopen: ((_event: Event) => void) | null = null
+  public onclose: ((_event: CloseEvent) => void) | null = null
+  public onmessage: ((_event: MessageEvent) => void) | null = null
+  public onerror: ((_event: Event) => void) | null = null
 
   constructor(url: string) {
     this.url = url
@@ -94,7 +94,7 @@ class MockWebSocket {
   removeEventListener = jest.fn()
 }
 
-// @ts-ignore
+// @ts-expect-error - Mock WebSocket for testing
 global.WebSocket = MockWebSocket
 
 // File API 모킹 (파일 업로드 테스트용)
@@ -131,15 +131,26 @@ Object.defineProperty(global, 'File', {
 })
 
 // Clipboard API 모킹
-;(Object as any).defineProperty(navigator, 'clipboard', {
+;(Object as typeof Object).defineProperty(navigator, 'clipboard', {
   value: {
     writeText: jest.fn().mockResolvedValue(void 0),
     readText: jest.fn().mockResolvedValue(''),
   },
 })
 
+// 전역 테스트 유틸리티 타입 정의
+declare global {
+  interface _Window {
+    TestUtils: {
+      waitFor: (_ms: number) => Promise<void>
+      createMockScript: (_overrides?: Record<string, unknown>) => Record<string, unknown>
+      createMockYouTubeVideo: (_overrides?: Record<string, unknown>) => Record<string, unknown>
+    }
+  }
+}
+
 // 전역 테스트 유틸리티
-(global as any).TestUtils = {
+;(globalThis as typeof globalThis & _Window).TestUtils = {
   // 비동기 대기 헬퍼
   waitFor: (ms: number) => new Promise(resolve => setTimeout(resolve, ms)),
   
@@ -173,7 +184,7 @@ Object.defineProperty(global, 'File', {
 // 콘솔 경고 억제 (테스트 중 불필요한 로그 제거)
 const originalError = console.error
 beforeAll(() => {
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     if (
       typeof args[0] === 'string' &&
       (args[0].includes('Warning: ReactDOM.render is deprecated') ||

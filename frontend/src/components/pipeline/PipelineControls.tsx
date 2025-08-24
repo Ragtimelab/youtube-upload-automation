@@ -21,7 +21,7 @@ interface PipelineControlsProps {
   lastRefresh: Date
   connectionStatus: string
   onToggleRealTime: () => void
-  onToggleAnimation: (enabled: boolean) => void
+  onToggleAnimation: (_enabled: boolean) => void
   onRefresh: () => void
 }
 

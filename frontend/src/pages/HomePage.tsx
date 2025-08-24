@@ -70,7 +70,7 @@ export function HomePage() {
   const recentStats = statistics ? [
     { label: '전체 스크립트', value: statistics.total.toString(), icon: FileText },
     { label: '업로드 완료', value: statistics.uploaded.toString(), icon: CheckCircle2 },
-    { label: '처리 중', value: (statistics.script_ready + statistics.video_ready).toString(), icon: Clock },
+    { label: '처리 중', value: (statistics.video_ready).toString(), icon: Clock },
     { label: '오류 발생', value: statistics.error.toString(), icon: AlertTriangle },
   ] : [
     { label: '전체 스크립트', value: '-', icon: FileText },

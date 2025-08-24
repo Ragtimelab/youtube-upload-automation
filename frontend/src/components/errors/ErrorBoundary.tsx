@@ -16,7 +16,7 @@ interface ErrorBoundaryState {
   retryCount: number
 }
 
-interface ErrorBoundaryProps {
+export interface ErrorBoundaryProps {
   children: ReactNode
   fallback?: (_error: Error, _retry: () => void) => ReactNode
   onError?: (_error: Error, _errorInfo: ErrorInfo) => void
@@ -175,7 +175,7 @@ interface DefaultErrorFallbackProps {
   level: 'global' | 'page' | 'component'
 }
 
-function DefaultErrorFallback({ error, retry, canRetry, retryCount, level }: DefaultErrorFallbackProps) {
+export function DefaultErrorFallback({ error, retry, canRetry, retryCount, level }: DefaultErrorFallbackProps) {
   const navigate = useNavigate()
 
   const getLevelInfo = () => {
@@ -283,20 +283,4 @@ function DefaultErrorFallback({ error, retry, canRetry, retryCount, level }: Def
   )
 }
 
-/**
- * HOC: 컴포넌트를 ErrorBoundary로 감싸는 유틸리티
- */
-export function withErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>,
-  errorBoundaryProps?: Omit<ErrorBoundaryProps, 'children'>
-) {
-  const WrappedComponent = (props: P) => (
-    <ErrorBoundary {...errorBoundaryProps}>
-      <Component {...props} />
-    </ErrorBoundary>
-  )
-
-  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`
-  
-  return WrappedComponent
-}
+// withErrorBoundary HOC는 별도 파일로 분리 (React Refresh 호환성)

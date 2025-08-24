@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react'
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react'
 import { isAxiosError, extractErrorMessage, extractStatusCode, extractYouTubeErrorInfo } from '@/utils/typeGuards'
 
 /**
@@ -13,9 +13,9 @@ export interface RetryConfig {
   backoffStrategy: BackoffStrategy
   baseDelay: number // 밀리초
   maxDelay: number  // 최대 지연 시간
-  retryCondition?: (error: unknown, attempt: number) => boolean
-  onRetry?: (error: unknown, attempt: number) => void
-  onMaxAttemptsReached?: (error: unknown) => void
+  retryCondition?: (_error: unknown, _attempt: number) => boolean
+  onRetry?: (_error: unknown, _attempt: number) => void
+  onMaxAttemptsReached?: (_error: unknown) => void
 }
 
 export interface RetryState {
@@ -42,10 +42,10 @@ const DEFAULT_CONFIG: RetryConfig = {
 }
 
 export function useRetry<T extends unknown[], R>(
-  asyncFunction: (...args: T) => Promise<R>,
+  asyncFunction: (..._args: T) => Promise<R>,
   config: Partial<RetryConfig> = {}
 ) {
-  const finalConfig: RetryConfig = { ...DEFAULT_CONFIG, ...config }
+  const finalConfig: RetryConfig = useMemo(() => ({ ...DEFAULT_CONFIG, ...config }), [config])
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const isUnmountedRef = useRef(false)
 
@@ -215,7 +215,7 @@ export function useRetry<T extends unknown[], R>(
  * YouTube API의 특수한 제약사항들을 고려한 설정
  */
 export function useYouTubeRetry<T extends unknown[], R>(
-  asyncFunction: (...args: T) => Promise<R>,
+  asyncFunction: (..._args: T) => Promise<R>,
   config: Partial<RetryConfig> = {}
 ) {
   const youTubeConfig: Partial<RetryConfig> = {
@@ -261,7 +261,7 @@ export function useYouTubeRetry<T extends unknown[], R>(
  * 대용량 파일 업로드의 네트워크 불안정성을 고려한 설정
  */
 export function useUploadRetry<T extends unknown[], R>(
-  asyncFunction: (...args: T) => Promise<R>,
+  asyncFunction: (..._args: T) => Promise<R>,
   config: Partial<RetryConfig> = {}
 ) {
   const uploadConfig: Partial<RetryConfig> = {

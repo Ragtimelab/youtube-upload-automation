@@ -6,8 +6,8 @@
 import '@testing-library/jest-dom'
 
 declare global {
-  namespace jest {
-    interface Matchers<R> {
+  namespace _jest {
+    interface _Matchers<R> {
       // DOM 존재 및 가시성
       toBeInTheDocument(): R
       toBeVisible(): R
@@ -24,25 +24,25 @@ declare global {
       toBePartiallyChecked(): R
       
       // 접근성
-      toHaveAccessibleDescription(text?: string | RegExp): R
-      toHaveAccessibleName(text?: string | RegExp): R
+      toHaveAccessibleDescription(_text?: string | RegExp): R
+      toHaveAccessibleName(_text?: string | RegExp): R
       
       // 속성 및 스타일
-      toHaveAttribute(attr: string, value?: string | RegExp): R
-      toHaveClass(...classNames: string[]): R
-      toHaveStyle(css: string | Record<string, any>): R
+      toHaveAttribute(_attr: string, _value?: string | RegExp): R
+      toHaveClass(..._classNames: string[]): R
+      toHaveStyle(_css: string | Record<string, string | number>): R
       
       // 콘텐츠
-      toHaveTextContent(text: string | RegExp): R
-      toHaveDisplayValue(value: string | RegExp | (string | RegExp)[]): R
-      toHaveValue(value: string | string[] | number): R
-      toContainHTML(htmlText: string): R
+      toHaveTextContent(_text: string | RegExp): R
+      toHaveDisplayValue(_value: string | RegExp | (string | RegExp)[]): R
+      toHaveValue(_value: string | string[] | number): R
+      toContainHTML(_htmlText: string): R
       
       // 요소 관계
-      toContainElement(element: HTMLElement | null): R
-      toHaveErrorMessage(text?: string | RegExp): R
+      toContainElement(_element: HTMLElement | null): R
+      toHaveErrorMessage(_text?: string | RegExp): R
       toHaveFocus(): R
-      toHaveFormValues(expectedValues: { [name: string]: any }): R
+      toHaveFormValues(_expectedValues: { [name: string]: string | number | boolean | null }): R
     }
   }
 }

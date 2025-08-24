@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import api from '@/services/api'
-import { useToastHelpers } from '@/contexts/ToastContext'
+import { useToastHelpers } from '@/hooks/useToastContext'
 import type { Script } from '@/types'
 
 // 스크립트 목록 쿼리 응답 타입

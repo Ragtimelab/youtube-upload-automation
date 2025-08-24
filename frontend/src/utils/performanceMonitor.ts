@@ -74,7 +74,7 @@ class PerformanceMonitor {
         })
         lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true })
         this.observers.push(lcpObserver)
-      } catch (e) {
+      } catch {
         console.warn('LCP observer not supported')
       }
 
@@ -90,7 +90,7 @@ class PerformanceMonitor {
         })
         fidObserver.observe({ type: 'first-input', buffered: true })
         this.observers.push(fidObserver)
-      } catch (e) {
+      } catch {
         console.warn('FID observer not supported')
       }
 
@@ -107,7 +107,7 @@ class PerformanceMonitor {
         })
         clsObserver.observe({ type: 'layout-shift', buffered: true })
         this.observers.push(clsObserver)
-      } catch (e) {
+      } catch {
         console.warn('CLS observer not supported')
       }
     }
@@ -333,7 +333,7 @@ class PerformanceMonitor {
    * 성능 리포트 생성
    * 글로벌 원칙: 실시간 정보 검증 후 작업
    */
-  generateReport(this: PerformanceMonitor): {
+  generateReport(): {
     timestamp: string
     phase3Impact: ReturnType<PerformanceMonitor['measureOptimizationImpact']>
     coreWebVitals: PerformanceMetrics['coreWebVitals']

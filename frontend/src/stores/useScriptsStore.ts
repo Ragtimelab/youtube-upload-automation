@@ -36,29 +36,29 @@ interface ScriptsState {
   lastUpdated: Date | null
   
   // 액션들
-  setScripts: (scripts: Script[]) => void
-  addScript: (script: Script) => void
-  updateScript: (id: string, updates: Partial<Script>) => void
-  removeScript: (id: string) => void
+  setScripts: (_scripts: Script[]) => void
+  addScript: (_script: Script) => void
+  updateScript: (_id: string, _updates: Partial<Script>) => void
+  removeScript: (_id: string) => void
   
   // 선택 관리
-  selectScript: (id: string) => void
-  deselectScript: (id: string) => void
-  toggleSelection: (id: string) => void
+  selectScript: (_id: string) => void
+  deselectScript: (_id: string) => void
+  toggleSelection: (_id: string) => void
   selectAll: () => void
   deselectAll: () => void
-  selectByStatus: (status: Script['status']) => void
+  selectByStatus: (_status: Script['status']) => void
   
   // 필터링 & 정렬
-  setFilters: (filters: Partial<FilterState>) => void
+  setFilters: (_filters: Partial<FilterState>) => void
   resetFilters: () => void
-  setSearchQuery: (query: string) => void
-  setStatusFilter: (status: FilterState['statusFilter']) => void
-  setSorting: (sortBy: FilterState['sortBy'], sortOrder: FilterState['sortOrder']) => void
-  setPage: (page: number) => void
+  setSearchQuery: (_query: string) => void
+  setStatusFilter: (_status: FilterState['statusFilter']) => void
+  setSorting: (_sortBy: FilterState['sortBy'], _sortOrder: FilterState['sortOrder']) => void
+  setPage: (_page: number) => void
   
   // 조회 헬퍼
-  getScript: (id: string) => Script | undefined
+  getScript: (_id: string) => Script | undefined
   getSelectedScripts: () => Script[]
   getFilteredIds: () => string[]
   getVisibleScripts: () => Script[]
@@ -71,9 +71,9 @@ interface ScriptsState {
   }
   
   // 상태 관리
-  setLoading: (loading: boolean) => void
-  setUpdating: (id: string, updating: boolean) => void
-  setError: (error: string | null) => void
+  setLoading: (_loading: boolean) => void
+  setUpdating: (_id: string, _updating: boolean) => void
+  setError: (_error: string | null) => void
 }
 
 const DEFAULT_FILTERS: FilterState = {

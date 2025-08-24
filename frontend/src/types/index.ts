@@ -85,8 +85,8 @@ export function isSystemMetrics(obj: unknown): obj is import('./dashboard').Syst
 export type ExtractArrayType<T> = T extends (infer U)[] ? U : never
 export type ExtractPromiseType<T> = T extends Promise<infer U> ? U : never
 export type OptionalKeys<T> = {
-  [K in keyof T]-?: Record<string, never> extends Pick<T, K> ? K : never
+  [K in keyof T]-?: T[K] extends never ? K : never
 }[keyof T]
 export type RequiredKeys<T> = {
-  [K in keyof T]-?: Record<string, never> extends Pick<T, K> ? never : K
+  [K in keyof T]-?: T[K] extends never ? never : K
 }[keyof T]

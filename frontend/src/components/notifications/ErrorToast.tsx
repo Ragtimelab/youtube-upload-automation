@@ -9,7 +9,7 @@ import type { Notification } from './types'
 
 interface ErrorToastProps {
   notifications: Notification[]
-  onDismiss: (id: string) => void
+  onDismiss: (_id: string) => void
   maxToasts?: number
 }
 

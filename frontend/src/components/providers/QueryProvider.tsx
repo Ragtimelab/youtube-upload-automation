@@ -54,7 +54,7 @@ const createOptimizedQueryClient = () => {
   return new QueryClient({
     defaultOptions,
     queryCache: new QueryCache({
-      onError: (error: Error, query) => {
+      onError: (error, query) => {
         console.error('Query Error:', {
           queryKey: query.queryKey,
           error: error.message
@@ -62,7 +62,7 @@ const createOptimizedQueryClient = () => {
       }
     }),
     mutationCache: new MutationCache({
-      onError: (error: Error, variables: unknown, _context: unknown, mutation) => {
+      onError: (error, variables, _context, mutation) => {
         console.error('Mutation Error:', {
           mutationKey: mutation.options.mutationKey,
           error: error.message,

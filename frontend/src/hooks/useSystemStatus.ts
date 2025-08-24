@@ -18,8 +18,8 @@ export interface SystemHealth {
 }
 
 // 기존 타입들을 dashboard 타입과 호환되도록 확장
-export interface SystemMetrics extends DashboardSystemMetrics {}
-export interface PipelineStats extends DashboardPipelineStats {}
+export type SystemMetrics = DashboardSystemMetrics
+export type PipelineStats = DashboardPipelineStats
 
 export function useSystemStatus() {
   const [isRealTimeEnabled, setIsRealTimeEnabled] = useState(true)

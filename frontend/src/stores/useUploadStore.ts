@@ -50,25 +50,25 @@ interface UploadStoreState {
   error: string | null
   
   // 액션들 - 단일 업로드
-  startUpload: (scriptId: string) => void
-  updateUploadProgress: (scriptId: string, progress: Partial<UploadState>) => void
-  completeUpload: (scriptId: string, success: boolean, data?: YouTubeUploadStatus | ApiResponse<YouTubeUploadStatus>) => void
-  cancelUpload: (scriptId: string) => void
+  startUpload: (_scriptId: string) => void
+  updateUploadProgress: (_scriptId: string, _progress: Partial<UploadState>) => void
+  completeUpload: (_scriptId: string, _success: boolean, _data?: YouTubeUploadStatus | ApiResponse<YouTubeUploadStatus>) => void
+  cancelUpload: (_scriptId: string) => void
   
   // 액션들 - 배치 업로드
-  setBatchSettings: (settings: Partial<BatchUploadSettings>) => void
-  startBatchUpload: (scriptIds: string[]) => void
+  setBatchSettings: (_settings: Partial<BatchUploadSettings>) => void
+  startBatchUpload: (_scriptIds: string[]) => void
   pauseBatchUpload: () => void
   resumeBatchUpload: () => void
   cancelBatchUpload: () => void
   
   // 예약 발행 관리
-  setSchedule: (scriptId: string, schedule: string) => void
-  removeSchedule: (scriptId: string) => void
+  setSchedule: (_scriptId: string, _schedule: string) => void
+  removeSchedule: (_scriptId: string) => void
   getScheduledUploads: () => Array<{ scriptId: string; schedule: string }>
   
   // 조회 헬퍼
-  getUploadState: (scriptId: string) => UploadState | undefined
+  getUploadState: (_scriptId: string) => UploadState | undefined
   getActiveUploads: () => UploadState[]
   getBatchProgress: () => { completed: number; total: number; percentage: number }
   
@@ -82,8 +82,8 @@ interface UploadStoreState {
   }
   
   // 상태 관리
-  setLoading: (loading: boolean) => void
-  setError: (error: string | null) => void
+  setLoading: (_loading: boolean) => void
+  setError: (_error: string | null) => void
   reset: () => void
 }
 

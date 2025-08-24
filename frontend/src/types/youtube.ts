@@ -96,9 +96,9 @@ export interface YouTubeScriptCardProps {
   isSelected: boolean
   uploadState?: YouTubeUploadProgress
   singleUploadSchedule?: string
-  onYouTubeUpload: (script: Script) => void
-  onToggleSelection: (scriptId: number) => void
-  onScheduleChange: (scriptId: number, value: string) => void
+  onYouTubeUpload: (_script: Script) => void
+  onToggleSelection: (_id: number) => void
+  onScheduleChange: (_id: number, _value: string) => void
 }
 
 // YouTube 스크립트 리스트 Props
@@ -109,9 +109,9 @@ export interface YouTubeScriptListProps {
   selectedScripts: number[]
   uploadStates: Record<number, YouTubeUploadProgress>
   singleUploadSchedule: Record<number, string>
-  onYouTubeUpload: (script: Script) => void
-  onToggleSelection: (scriptId: number) => void
-  onScheduleChange: (scriptId: number, value: string) => void
+  onYouTubeUpload: (_script: Script) => void
+  onToggleSelection: (_id: number) => void
+  onScheduleChange: (_id: number, _value: string) => void
 }
 
 // YouTube 배치 컨트롤 Props
@@ -121,7 +121,7 @@ export interface YouTubeBatchControlsProps {
   batchProgress: BatchProgress
   batchSettings: YouTubeBatchSettings
   onBatchUpload: () => void
-  onBatchSettingsChange: (settings: YouTubeBatchSettings) => void
+  onBatchSettingsChange: (_settings: YouTubeBatchSettings) => void
   onClearSelection: () => void
 }
 
@@ -130,8 +130,8 @@ export interface YouTubeSearchFilterProps {
   searchTerm: string
   statusFilter: string
   isBatchMode: boolean
-  onSearchChange: (value: string) => void
-  onStatusFilterChange: (value: string) => void
+  onSearchChange: (_value: string) => void
+  onStatusFilterChange: (_value: string) => void
   onBatchModeToggle: () => void
   children?: React.ReactNode
 }
@@ -157,17 +157,17 @@ export interface YouTubeManagerReturn {
   batchSettings: YouTubeBatchSettings
   
   // 액션 함수들
-  handleYouTubeUpload: (script: Script) => Promise<void>
-  handleBatchUpload: (scriptsData: { items: Script[] } | undefined) => Promise<void>
+  handleYouTubeUpload: (_script: Script) => Promise<void>
+  handleBatchUpload: (_scriptsData?: { items: Script[] }) => Promise<void>
   toggleBatchMode: () => void
-  toggleScriptSelection: (scriptId: number) => void
-  setBatchSettings: (settings: YouTubeBatchSettings) => void
-  setSelectedScripts: (scripts: number[]) => void
-  handleSingleScheduleChange: (scriptId: number, value: string) => void
+  toggleScriptSelection: (_id: number) => void
+  setBatchSettings: (_settings: YouTubeBatchSettings) => void
+  setSelectedScripts: (_scripts: number[]) => void
+  handleSingleScheduleChange: (_id: number, _value: string) => void
   
   // 유틸리티 함수들
   checkYouTubeQuota: () => Promise<YouTubeQuotaStatus>
-  validateUploadSettings: (settings: YouTubeBatchSettings) => { valid: boolean; errors: string[] }
+  validateUploadSettings: (_settings: YouTubeBatchSettings) => { valid: boolean; errors: string[] }
 }
 
 // YouTube API 에러 타입들

@@ -138,7 +138,7 @@ export function PipelinePage() {
       from: 'video_ready',
       to: 'uploading',
       throughput: globalStats.activeUploads || 0,
-      status: (globalStats.activeUploads > 0 ? 'active' : 'blocked') as 'active' | 'blocked' | 'slow'
+      status: 'blocked' as 'active' | 'blocked' | 'slow'
     },
     {
       from: 'uploading',

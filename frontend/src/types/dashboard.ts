@@ -205,8 +205,7 @@ export interface DashboardData {
   refreshAll: () => void
 }
 
-export interface DashboardDataReturn extends DashboardData {
-}
+export type DashboardDataReturn = DashboardData
 
 // 시스템 건강성 지표
 export interface HealthMetrics {

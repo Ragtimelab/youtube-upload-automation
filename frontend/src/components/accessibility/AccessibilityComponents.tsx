@@ -22,5 +22,4 @@ export { AccessibleInput, AccessibleSelect } from './AccessibleForm'
 // 접근성 강화 진행률
 export { AccessibleProgress, StepProgress } from './AccessibleProgress'
 
-// 기본 export (하위 호환성)
-export * from './ScreenReaderComponents'
+// React Refresh 호환성을 위해 * export 제거

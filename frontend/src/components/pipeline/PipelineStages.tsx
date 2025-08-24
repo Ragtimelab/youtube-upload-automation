@@ -27,7 +27,7 @@ export interface PipelineStage {
 interface PipelineStagesProps {
   stages: PipelineStage[]
   selectedStage: string | null
-  onStageSelect: (stageId: string) => void
+  onStageSelect: (_stageId: string) => void
   animationEnabled: boolean
 }
 

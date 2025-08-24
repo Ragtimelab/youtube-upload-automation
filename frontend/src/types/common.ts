@@ -122,11 +122,11 @@ export interface FieldState {
 // 폼 상태
 export interface FormState<T extends Record<string, unknown>> {
   fields: {
-    [K in keyof T]: FieldState
+    [_K in keyof T]: FieldState
   }
   isSubmitting: boolean
   isValid: boolean
-  errors: Partial<Record<keyof T, string>>
+  errors: Record<string, string>
 }
 
 // 선택 가능한 옵션
@@ -143,7 +143,7 @@ export interface TableColumn<T = unknown> {
   title: string
   sortable?: boolean
   width?: string
-  render?: (value: unknown, item: T) => React.ReactNode
+  render?: (_value: unknown, _item: T) => React.ReactNode
 }
 
 // 정렬 설정
@@ -186,9 +186,9 @@ export type DeepPartial<T> = {
 }
 
 // 이벤트 핸들러 타입들
-export type ChangeHandler<T = string> = (value: T) => void
+export type ChangeHandler<T = string> = (_value: T) => void
 export type ClickHandler = () => void
-export type SubmitHandler<T = unknown> = (data: T) => void | Promise<void>
+export type SubmitHandler<T = unknown> = (_data: T) => void | Promise<void>
 
 // 컴포넌트 Props 기본 타입들
 export interface BaseProps {

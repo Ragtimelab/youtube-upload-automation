@@ -19,8 +19,8 @@ import type { Notification } from './types'
 interface NotificationListProps {
   notifications: Notification[]
   filter: 'all' | 'unread' | 'errors'
-  onMarkAsRead: (id: string) => void
-  onDismiss: (id: string) => void
+  onMarkAsRead: (_id: string) => void
+  onDismiss: (_id: string) => void
 }
 
 export function NotificationList({

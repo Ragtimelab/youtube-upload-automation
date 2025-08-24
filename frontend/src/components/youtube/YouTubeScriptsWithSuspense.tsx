@@ -24,10 +24,10 @@ interface YouTubeScriptsWithSuspenseProps {
   singleUploadSchedule: Record<number, string>
   batchSettings: BatchSettings
   scriptsData: PaginatedResponse<Script> | undefined
-  onYouTubeUpload: (script: Script) => void
-  onToggleSelection: (scriptId: number) => void
-  onScheduleChange: (scriptId: number, value: string) => void
-  onBatchSettingsChange: (settings: BatchSettings) => void
+  onYouTubeUpload: (_script: Script) => void
+  onToggleSelection: (_id: number) => void
+  onScheduleChange: (_id: number, _value: string) => void
+  onBatchSettingsChange: (_settings: BatchSettings) => void
   onClearSelection: () => void
   onUploadComplete: () => void
 }

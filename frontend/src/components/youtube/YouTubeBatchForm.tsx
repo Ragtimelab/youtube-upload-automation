@@ -14,7 +14,7 @@ interface YouTubeBatchFormProps {
   selectedScripts: number[]
   scriptsData: { items: Script[] } | undefined
   batchSettings: BatchSettings
-  onBatchSettingsChange: (settings: BatchSettings) => void
+  onBatchSettingsChange: (_settings: BatchSettings) => void
   onClearSelection: () => void
   onUploadComplete: () => void
 }

@@ -22,7 +22,7 @@ interface PipelineFlowProps {
 }
 
 export function PipelineFlow({ stages, flows, isAnimated, onStageClick }: PipelineFlowProps) {
-  const [_flowAnimation, setFlowAnimation] = useState<{ [key: string]: boolean }>({})
+  const [, setFlowAnimation] = useState<{ [key: string]: boolean }>({})
 
   useEffect(() => {
     if (!isAnimated) return

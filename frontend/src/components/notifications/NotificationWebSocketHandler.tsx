@@ -14,8 +14,8 @@ import type {
 } from './types'
 
 interface UseNotificationWebSocketProps {
-  onAddNotification: (notification: Omit<Notification, 'id' | 'timestamp'>) => void
-  onPlaySound: (type: Notification['type']) => void
+  onAddNotification: (_notification: Omit<Notification, 'id' | 'timestamp'>) => void
+  onPlaySound: (_type: Notification['type']) => void
   pauseNotifications: boolean
 }
 
@@ -127,6 +127,7 @@ export function useNotificationWebSocket({
   }, [
     webSocket.isConnected,
     webSocket.onMessage,
+    webSocket,
     handleUploadProgress,
     handleYouTubeStatus,
     handleSystemNotification,

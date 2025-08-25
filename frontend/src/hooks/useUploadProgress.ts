@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useWebSocket } from './useWebSocket'
+import { useToastHelpers } from './useToastContext'
 import { UI_CONSTANTS } from '@/constants/ui'
 
 export interface UploadProgressData {
@@ -45,6 +46,9 @@ export function useUploadProgress() {
     errorCount: 0,
     successRate: 0,
   })
+
+  // 훅
+  const toast = useToastHelpers()
 
   // WebSocket 연결 설정
   const webSocket = useWebSocket({
@@ -111,6 +115,11 @@ export function useUploadProgress() {
         isUploading: typedData.status !== 'completed' && typedData.status !== 'error',
         error: typedData.status === 'error' ? typedData.error_message : undefined,
       })
+
+      // 에러 발생 시 Toast 메시지 표시
+      if (typedData.status === 'error' && typedData.error_message) {
+        toast.error('업로드 실패', typedData.error_message)
+      }
     })
 
     return unsubscribe
@@ -133,14 +142,18 @@ export function useUploadProgress() {
         youtubeUrl: typedData.youtube_url,
       })
 
-      // YouTube 업로드 완료 시 전역 통계 업데이트
+      // YouTube 업로드 완료/에러 시 Toast 메시지와 전역 통계 업데이트
       if (typedData.status === 'completed') {
+        toast.success('YouTube 업로드 완료', '비디오가 성공적으로 YouTube에 업로드되었습니다.')
         setGlobalStats(prev => ({
           ...prev,
           activeUploads: Math.max(0, prev.activeUploads - 1),
           completedUploads: prev.completedUploads + 1,
         }))
       } else if (typedData.status === 'error') {
+        if (typedData.error_message) {
+          toast.error('YouTube 업로드 실패', typedData.error_message)
+        }
         setGlobalStats(prev => ({
           ...prev,
           activeUploads: Math.max(0, prev.activeUploads - 1),

@@ -4,7 +4,7 @@
  */
 
 import { useState, useCallback } from 'react'
-import { useToast } from './useToast'
+import { useToastHelpers } from './useToastContext'
 import { logApiError, getUserFriendlyErrorMessage, isQuotaError, isNetworkError } from '@/utils/apiUtils'
 import type { LoadingState } from '@/types'
 
@@ -60,7 +60,7 @@ export function useErrorHandler(defaultContext?: string): UseErrorHandlerReturn 
   const [error, setErrorState] = useState<ErrorInfo | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [loadingState, setLoadingStateInternal] = useState<LoadingState>('idle')
-  const { success, error: errorToast } = useToast()
+  const { success, error: errorToast } = useToastHelpers()
   
   const setError = useCallback((err: unknown, context?: string) => {
     const errorInfo: ErrorInfo = {

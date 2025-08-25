@@ -173,13 +173,7 @@ export function YouTubeScriptCard({
           </div>
         )}
 
-        {/* 에러 메시지 */}
-        {uploadState?.error && (
-          <Alert className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{uploadState.error}</AlertDescription>
-          </Alert>
-        )}
+        {/* 에러 메시지 - 제거됨: WebSocket 에러는 useUploadProgress에서 Toast로 처리 */}
 
         {/* 단일 업로드 예약 발행 설정 */}
         {script.status === 'video_ready' && !uploadState?.isUploading && !isBatchMode && (

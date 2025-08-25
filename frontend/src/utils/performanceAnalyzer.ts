@@ -54,7 +54,7 @@ interface RenderPerformanceReport {
  */
 export class PerformanceAnalyzer {
   private static renderMetrics: Map<string, PerformanceMetrics[]> = new Map()
-  private static isProfilingEnabled = process.env.NODE_ENV === 'development'
+  private static isProfilingEnabled = import.meta.env.MODE === 'development'
 
   /**
    * Bundle Analyzer 자동 실행 및 보고서 생성
@@ -459,7 +459,7 @@ export function ProfiledComponent({
 }
 
 // 개발 환경에서 자동 모니터링 시작
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+if (typeof window !== 'undefined' && import.meta.env.MODE === 'development') {
   PerformanceAnalyzer.startAutoMonitoring()
   PerformanceAnalyzer.enableDebugMode()
 }

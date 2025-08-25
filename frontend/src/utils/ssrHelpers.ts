@@ -31,14 +31,14 @@ export const Environment = {
    * 개발 환경인지 확인
    */
   isDevelopment(): boolean {
-    return process.env.NODE_ENV === 'development'
+    return import.meta.env.MODE === 'development'
   },
 
   /**
    * 프로덕션 환경인지 확인
    */
   isProduction(): boolean {
-    return process.env.NODE_ENV === 'production'
+    return import.meta.env.MODE === 'production'
   },
 
   /**

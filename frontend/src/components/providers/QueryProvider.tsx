@@ -80,7 +80,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
     <QueryClientProvider client={queryClient}>
       {children}
       {/* Phase 8: TanStack Query DevTools - 개발 환경에서만 활성화 */}
-      {process.env['NODE_ENV'] === 'development' && (
+      {import.meta.env.MODE === 'development' && (
         <ReactQueryDevtools
           initialIsOpen={false}
           position="bottom"

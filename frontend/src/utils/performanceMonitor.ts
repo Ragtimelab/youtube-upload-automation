@@ -405,7 +405,7 @@ export function usePerformanceMonitor() {
  * 개발 환경에서만 성능 디버깅 정보 출력
  */
 export function logPerformanceReport() {
-  if (process.env['NODE_ENV'] === 'development') {
+  if (import.meta.env.MODE === 'development') {
     const report = performanceMonitor.generateReport()
     
     console.group('🚀 Phase 3 성능 최적화 리포트')

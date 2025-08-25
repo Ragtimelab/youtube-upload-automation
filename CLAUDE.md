@@ -92,6 +92,19 @@ make backup-info        # 현재 백업 상태 확인
 make build              # 패키지 빌드
 make version            # 현재 버전 표시
 
+# 버전 관리
+make bump-patch         # 패치 버전 업 (1.0.0 → 1.0.1)
+make bump-minor         # 마이너 버전 업 (1.0.0 → 1.1.0)
+make bump-major         # 메이저 버전 업 (1.0.0 → 2.0.0)
+
+# Docker 지원
+make docker-build       # Docker 이미지 빌드
+make docker-run         # Docker 컨테이너 실행
+
+# 개발 도구
+make shell              # Poetry shell 활성화
+make api-docs           # API 문서 브라우저 안내
+
 # Pre-commit 훅 (고급 코드 품질 자동화)
 make pre-commit         # pre-commit 훅 설치 (보안 검사, 커밋 메시지 검증 포함)
 make pre-commit-run     # 수동 실행 (모든 파일 대상)
@@ -116,6 +129,12 @@ npm run build  # 내부적으로 tsc -b && vite build 실행
 
 # 린트 검사
 npm run lint
+
+# 테스트 실행 (Jest + Testing Library)
+npm run test            # 단일 테스트 실행
+npm run test:watch      # 감시 모드로 테스트
+npm run test:coverage   # 커버리지 포함 테스트
+npm run test:ci         # CI 환경용 테스트
 
 # 빌드 파일 미리보기
 npm run preview
@@ -483,15 +502,26 @@ make pre-commit-run    # 수동 실행 (모든 파일 대상)
 
 ## 📦 의존성 관리
 
-### 핵심 의존성
+### 핵심 Backend 의존성
 - **Python**: 3.13
 - **FastAPI**: 0.116.0+ (WebSocket 지원)
-- **SQLAlchemy**: 2.0+ (ORM)
+- **SQLAlchemy**: 2.0+ (ORM)  
 - **Google APIs**: YouTube Data API v3
 - **Click**: 8.2+ (CLI 프레임워크)
 - **Rich**: 14.1+ (터미널 UI)
+- **Pydantic**: 2.5+ (데이터 검증)
+- **Alembic**: 1.12+ (데이터베이스 마이그레이션)
 
-### 개발 도구 (최적화됨)
+### 핵심 Frontend 의존성
+- **React**: 19.1.1 (최신 안정 버전)
+- **TypeScript**: 5.8.3 (엄격 모드 지원)
+- **Vite**: 7.1.2 (빌드 도구)
+- **TanStack Query**: 5.85.5 (서버 상태 관리)
+- **Zustand**: 5.0.8 (클라이언트 상태 관리)
+- **Tailwind CSS**: 3.4.17 (유틸리티 CSS)
+- **Zod**: 4.0.17 (스키마 검증)
+
+### Backend 개발 도구 (최적화됨)
 - **pytest**: 테스트 프레임워크 + pytest-asyncio, pytest-cov
 - **black**: 코드 포매팅 (88자 제한)
 - **isort**: import 정렬
@@ -502,9 +532,16 @@ make pre-commit-run    # 수동 실행 (모든 파일 대상)
 - **coverage**: 코드 커버리지 분석
 - **factory-boy**: 테스트 데이터 생성
 
-## 🎯 시스템 최적화 현황 (2025-08-24 최신)
+### Frontend 개발 도구
+- **Jest**: 테스트 프레임워크 (30.0.5)
+- **Testing Library**: React 컴포넌트 테스트 (16.3.0)
+- **ESLint**: TypeScript/React 린팅 (9.33.0)
+- **TanStack Query DevTools**: 서버 상태 디버깅 도구
+- **Vite**: 번들링 및 HMR (Hot Module Replacement)
 
-### ✅ 최근 완료된 최적화 (Phase 1-8)
+## 🎯 시스템 최적화 현황 (2025-08-25 최신)
+
+### ✅ 최근 완료된 최적화 (Phase 1-11)
 **Phase 1: React 19 Component Composition 패턴 완벽 적용 (77% 코드 감소)**
 - **YouTubePage**: 310줄 → 147줄 (53% 감소) - 5개 컴포넌트 분리
 - **DashboardPage**: 435줄 → 129줄 (70% 감소) - 6개 컴포넌트 분리
@@ -583,7 +620,8 @@ cd backend/ && make lint         # 린트 검사
 cd frontend/ && npm run lint     # 프론트엔드 린트
 
 # 3. 테스트 실행
-cd backend/ && make test         # Backend 테스트
+cd backend/ && make test         # Backend 테스트 (pytest)
+cd frontend/ && npm run test     # Frontend 테스트 (Jest + Testing Library)
 # Playwright 프론트엔드 검증 (브라우저 자동화)
 
 # 4. Git 커밋 (글로벌 원칙 준수)

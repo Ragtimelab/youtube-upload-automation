@@ -62,7 +62,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     // 개발 환경에서 상세 로깅
-    if (process.env['NODE_ENV'] === 'development') {
+    if (import.meta.env.MODE === 'development') {
       console.group(`🚨 ErrorBoundary (${this.props.level || 'unknown'})`)
       console.error('Error:', error)
       console.error('Component Stack:', errorInfo.componentStack)
@@ -75,7 +75,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     // 에러 리포팅 서비스 연동 (프로덕션 환경)
-    if (process.env['NODE_ENV'] === 'production') {
+    if (import.meta.env.MODE === 'production') {
       this.reportError(error, errorInfo)
     }
   }
@@ -176,7 +176,14 @@ interface DefaultErrorFallbackProps {
 }
 
 export function DefaultErrorFallback({ error, retry, canRetry, retryCount, level }: DefaultErrorFallbackProps) {
-  const navigate = useNavigate()
+  // Router 컨텍스트가 없을 수 있으므로 안전하게 처리
+  let navigate: ReturnType<typeof useNavigate> | null = null
+  try {
+    navigate = useNavigate()
+  } catch {
+    // Router 컨텍스트가 없는 경우 navigate를 null로 설정
+    navigate = null
+  }
 
   const getLevelInfo = () => {
     switch (level) {
@@ -233,7 +240,7 @@ export function DefaultErrorFallback({ error, retry, canRetry, retryCount, level
         </p>
 
         {/* 에러 메시지 (개발 환경에서만) */}
-        {process.env['NODE_ENV'] === 'development' && (
+        {import.meta.env.MODE === 'development' && (
           <div className="mb-4 p-3 bg-red-100 rounded border text-left">
             <p className="text-xs font-mono text-red-800 break-all">
               {error.message}
@@ -261,7 +268,14 @@ export function DefaultErrorFallback({ error, retry, canRetry, retryCount, level
           )}
           
           <button
-            onClick={() => navigate('/')}
+            onClick={() => {
+              if (navigate) {
+                navigate('/')
+              } else {
+                // Router 컨텍스트가 없는 경우 페이지 새로고침
+                window.location.href = '/'
+              }
+            }}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
           >
             <Home className="h-4 w-4" />
@@ -270,7 +284,14 @@ export function DefaultErrorFallback({ error, retry, canRetry, retryCount, level
 
           {level !== 'global' && (
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                if (navigate) {
+                  navigate(-1)
+                } else {
+                  // Router 컨텍스트가 없는 경우 브라우저 뒤로가기
+                  window.history.back()
+                }
+              }}
               className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
             >
               <ArrowLeft className="h-4 w-4" />

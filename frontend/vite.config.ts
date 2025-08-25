@@ -132,12 +132,10 @@ export default defineConfig({
     ]
   },
   
-  // CSS 최적화
+  // CSS 최적화 - PostCSS + Tailwind 연동
   css: {
     devSourcemap: true,
-    postcss: {
-      plugins: []
-    }
+    postcss: './postcss.config.js'
   },
   
   // 미리보기 설정

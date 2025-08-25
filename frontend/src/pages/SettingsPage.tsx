@@ -6,6 +6,7 @@ import {
   Shield,
   Download
 } from 'lucide-react'
+import { YOUTUBE_CATEGORIES, DEFAULT_CATEGORY_ID } from '@/constants/youtube'
 
 export function SettingsPage() {
   return (
@@ -50,10 +51,15 @@ export function SettingsPage() {
               <h4 className="font-medium text-gray-900">기본 카테고리</h4>
               <p className="text-sm text-gray-600">업로드할 비디오의 기본 카테고리</p>
             </div>
-            <select className="px-3 py-2 border border-gray-300 rounded-md text-sm">
-              <option value="22">사람 및 블로그</option>
-              <option value="27">교육</option>
-              <option value="26">노하우 및 스타일</option>
+            <select 
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm" 
+              defaultValue={DEFAULT_CATEGORY_ID}
+            >
+              {YOUTUBE_CATEGORIES.map(category => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>

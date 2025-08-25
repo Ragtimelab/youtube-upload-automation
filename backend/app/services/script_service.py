@@ -30,7 +30,7 @@ class ScriptService:
         self.parser = ScriptParser()
 
     def create_script_from_file(self, content: str, filename: str) -> Script:
-        """파일에서 대본 생성"""
+        """파일에서 대본 생성 (중복 검사 포함)"""
         try:
             # 대본 파싱
             parsed_data = self.parser.parse_script_file(content)
@@ -38,6 +38,15 @@ class ScriptService:
             # 데이터 유효성 검증
             if not self.parser.validate_parsed_data(parsed_data):
                 raise ScriptParsingError("파싱된 데이터가 유효하지 않습니다.")
+
+            # 중복 검사: 제목과 내용이 동일한 스크립트가 있는지 확인
+            existing_scripts = self.repository.find_by_title_and_content(
+                parsed_data["title"], parsed_data["content"]
+            )
+            if existing_scripts:
+                raise ScriptParsingError(
+                    f"동일한 제목과 내용의 스크립트가 이미 존재합니다. (ID: {existing_scripts[0].id})"
+                )
 
             # Script 엔티티 생성
             script = Script(

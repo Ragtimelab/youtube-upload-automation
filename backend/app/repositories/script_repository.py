@@ -145,3 +145,12 @@ class ScriptRepository(BaseSQLAlchemyRepository[Script]):
             script.status = new_status
             return self.update(script)
         return None
+
+    def find_by_title_and_content(self, title: str, content: str) -> List[Script]:
+        """제목과 내용이 동일한 스크립트 찾기 (중복 검사용)"""
+        return (
+            self.db.query(self.model)
+            .filter(self.model.title == title)
+            .filter(self.model.content == content)
+            .all()
+        )

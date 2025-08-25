@@ -27,9 +27,9 @@ export function useWebSocket(config: WebSocketConfig, shouldConnect: boolean = t
   const ws = useRef<WebSocket | null>(null)
   const reconnectTimer = useRef<NodeJS.Timeout | null>(null)
   const heartbeatTimer = useRef<NodeJS.Timeout | null>(null)
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   const messageHandlers = useRef<Map<string, (data: unknown) => void>>(new Map())
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   const connectionChangeHandlers = useRef<((isConnected: boolean, status: WebSocketConnectionStatus) => void)[]>([])
 
   const {
@@ -194,7 +194,7 @@ export function useWebSocket(config: WebSocketConfig, shouldConnect: boolean = t
   }, [])
 
   // 메시지 핸들러 등록
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   const onMessage = useCallback((messageType: string, handler: (data: unknown) => void) => {
     messageHandlers.current.set(messageType, handler)
     
@@ -204,7 +204,7 @@ export function useWebSocket(config: WebSocketConfig, shouldConnect: boolean = t
   }, [])
 
   // 연결 상태 변화 핸들러 등록
-  // eslint-disable-next-line unused-imports/no-unused-vars
+   
   const onConnectionChange = useCallback((handler: (isConnected: boolean, status: WebSocketConnectionStatus) => void) => {
     connectionChangeHandlers.current.push(handler)
     

@@ -90,40 +90,18 @@ export function UploadFlow({
   // 훅
   // const navigate = useNavigate() // Currently unused
   const { allScripts, isLoading } = useUnifiedScripts({ currentPage: 1, pageSize: 50 })
-  const scriptsData = { scripts: allScripts }
+  const scriptsData = useMemo(() => ({ scripts: allScripts }), [allScripts])
   const scriptsLoading = isLoading
   const toast = useToastHelpers()
   
-  // 에러 핸들러 정의
-  const handleUploadError = useCallback((error: any) => {
-    console.error('Upload failed:', error)
-    
-    // API 에러에서 사용자 친화적 메시지 추출
-    let errorMessage = '알 수 없는 오류가 발생했습니다.'
-    
-    if (error?.response?.data?.message) {
-      errorMessage = error.response.data.message
-    } else if (error?.message) {
-      errorMessage = error.message
-    }
-    
-    // 특정 에러 케이스별 처리
-    if (errorMessage.includes('404') || errorMessage.includes('Not Found')) {
-      toast.error('스크립트를 찾을 수 없습니다', '선택한 스크립트가 존재하지 않습니다.')
-    } else if (errorMessage.includes('script_ready')) {
-      toast.error('스크립트 상태 오류', errorMessage)
-    } else {
-      toast.error('비디오 업로드 실패', errorMessage)
-    }
-  }, [toast])
   
   const { uploadVideo: uploadVideoAction, isUploadingVideo } = useUnifiedUpload()
-  const uploadVideo = {
+  const uploadVideo = useMemo(() => ({
     mutateAsync: async ({ scriptId, file }: { scriptId: number; file: File }) => {
       return uploadVideoAction(scriptId, file)
     },
     isPending: isUploadingVideo
-  }
+  }), [uploadVideoAction, isUploadingVideo])
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   // 유틸리티 함수들
@@ -189,7 +167,7 @@ export function UploadFlow({
       
       // 완료 콜백 실행
       onComplete?.()
-    } catch (error: any) {
+    } catch (_error: unknown) {
       // 에러는 handleUploadError에서 이미 처리됨
       // 여기서는 추가 작업이 필요한 경우에만 처리
     }
@@ -238,7 +216,6 @@ export function UploadFlow({
     scriptsLoading,
     uploadVideo.isPending,
     handleUpload,
-    handleUploadError,
     isVideoFile,
     validateFileSize,
     formatFileSize,
@@ -407,7 +384,7 @@ function FileUpload({
       
       setSelectedFile(file)
     }
-  }, [setDragActive, isVideoFile, validateFileSize, setSelectedFile])
+  }, [setDragActive, isVideoFile, validateFileSize, setSelectedFile, toast])
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]

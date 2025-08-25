@@ -41,6 +41,7 @@ interface FilterState {
   sortOrder: 'asc' | 'desc'
   pageSize: number
   currentPage: number
+  [key: string]: unknown  // 인덱스 시그니처 추가
 }
 
 /**
@@ -48,12 +49,12 @@ interface FilterState {
  * React 19 Component Composition 패턴 적용
  */
 export function useUnifiedScripts(params: Partial<FilterState> = {}) {
-  const { success, error } = useToastHelpers()
+  const { success, error: _error } = useToastHelpers()
   const errorHandler = useErrorHandler('UnifiedScripts')
   const queryClient = useQueryClient()
 
-  // 기본 필터 설정
-  const filters: FilterState = {
+  // 기본 필터 설정 - useMemo로 최적화
+  const filters: FilterState = useMemo(() => ({
     searchQuery: '',
     statusFilter: 'all',
     sortBy: 'created_at',
@@ -61,7 +62,7 @@ export function useUnifiedScripts(params: Partial<FilterState> = {}) {
     pageSize: 10,
     currentPage: 1,
     ...params
-  }
+  }), [params])
 
   // 스크립트 목록 조회 (페이지네이션 최적화)
   const scriptsQuery = useQuery({

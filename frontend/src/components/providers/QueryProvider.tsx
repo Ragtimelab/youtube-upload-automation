@@ -64,7 +64,7 @@ const createOptimizedQueryClient = () => {
       }
     }),
     mutationCache: new MutationCache({
-      onError: (error, variables, _context, mutation) => {
+      onError: (error, _variables, _context, mutation) => {
         const mutationKey = mutation.options.mutationKey ? String(mutation.options.mutationKey) : 'Unknown'
         logApiError(`Mutation ${mutationKey}`, error)
         

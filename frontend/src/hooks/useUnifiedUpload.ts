@@ -1,11 +1,10 @@
-import { useMemo, useCallback } from 'react'
+import { useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useToastHelpers } from '@/hooks/useToastContext'
 import { useErrorHandler } from '@/hooks/useErrorHandler'
 import { useUploadProgress } from '@/hooks/useUploadProgress'
 import { uploadApi } from '@/services/api'
 import { scriptQueryKeys } from '@/hooks/useUnifiedScripts'
-import type { UploadState, YouTubeUploadStatus, ApiResponse } from '@/types'
 
 /**
  * React 19 설계 철학 기반 통합 업로드 관리 훅
@@ -166,20 +165,20 @@ export function useUnifiedUpload() {
     }
   })
 
-  // 업로드 취소 함수
-  const cancelUpload = useCallback(async (scriptId: number) => {
-    try {
-      await uploadApi.cancelUpload?.(scriptId)
-      
-      // 관련 쿼리 무효화
-      queryClient.invalidateQueries({ queryKey: ['scripts'] })
-      queryClient.invalidateQueries({ queryKey: ['script', scriptId] })
-      
-      success('업로드 취소됨', '업로드가 취소되었습니다.')
-    } catch (err) {
-      errorHandler.setError(err, 'Cancel upload failed')
-    }
-  }, [success, errorHandler, queryClient])
+  // 업로드 취소 함수 (현재 미구현)
+  // const cancelUpload = useCallback(async (scriptId: number) => {
+  //   try {
+  //     await uploadApi.cancelUpload?.(scriptId)
+  //     
+  //     // 관련 쿼리 무효화
+  //     queryClient.invalidateQueries({ queryKey: ['scripts'] })
+  //     queryClient.invalidateQueries({ queryKey: ['script', scriptId] })
+  //     
+  //     success('업로드 취소됨', '업로드가 취소되었습니다.')
+  //   } catch (err) {
+  //     errorHandler.setError(err, 'Cancel upload failed')
+  //   }
+  // }, [success, errorHandler, queryClient])
 
   // 현재 업로드 상태 통계
   const uploadStats = useMemo(() => {
@@ -187,8 +186,8 @@ export function useUnifiedUpload() {
     
     return {
       activeCount: activeUploads.length,
-      totalUploaded: globalStats?.totalUploaded || 0,
-      totalFailed: globalStats?.totalFailed || 0,
+      totalUploaded: globalStats?.completedUploads || 0,
+      totalFailed: globalStats?.failedUploads || 0,
       isAnyUploading: activeUploads.length > 0,
       
       // 진행 중인 업로드들의 평균 진행률
@@ -217,8 +216,8 @@ export function useUnifiedUpload() {
         settings: { ...DEFAULT_BATCH_SETTINGS, ...settings } 
       }),
     
-    // 업로드 취소
-    cancelUpload,
+    // 업로드 취소 (현재 미구현)
+    // cancelUpload,
     
     // 쿼리 무효화 헬퍼들
     refreshUploadStates: () => {
@@ -230,7 +229,7 @@ export function useUnifiedUpload() {
     uploadToYouTubeMutation, 
     scheduledUploadMutation,
     batchUploadMutation,
-    cancelUpload,
+    // cancelUpload,
     queryClient
   ])
 
@@ -265,10 +264,11 @@ export function useUnifiedUpload() {
  * 특정 스크립트의 업로드 상태 전용 훅
  */
 export function useScriptUploadState(scriptId: number) {
-  const { activeUploads, webSocketState } = useUploadProgress()
+  const { webSocketState, getActiveUploads } = useUploadProgress()
+  const activeUploads = getActiveUploads()
   
   const uploadState = useMemo(() => {
-    const activeUpload = activeUploads.find(upload => 
+    const activeUpload = activeUploads.find((upload: any) => 
       upload.scriptId === scriptId || upload.script_id === scriptId
     )
     

@@ -63,8 +63,10 @@ async function getScriptsServerSide() {
       description: 'Server Components의 작동 원리와 활용법',
       status: 'script_ready',
       created_at: '2025-08-25T10:00:00Z',
+      updated_at: '2025-08-25T10:00:00Z',
       filename: '20250825_01_story.md',
-      tags: ['react', 'server-components', 'next.js']
+      tags: ['react', 'server-components', 'next.js'],
+      script_content: '# React 19 Server Components 가이드\n\n...'
     },
     {
       id: 2,
@@ -72,8 +74,10 @@ async function getScriptsServerSide() {
       description: '최신 TypeScript 기능 심화 학습',
       status: 'video_ready',
       created_at: '2025-08-25T11:00:00Z',
+      updated_at: '2025-08-25T11:00:00Z',
       filename: '20250825_02_story.md',
-      tags: ['typescript', 'advanced', 'types']
+      tags: ['typescript', 'advanced', 'types'],
+      script_content: '# TypeScript 5.8 고급 기능\n\n...'
     }
   ]
 }
@@ -321,7 +325,16 @@ async function getUploadSettingsServerSide() {
 /**
  * 업로드 폼 서버 컴포넌트 (정적 부분)
  */
-function UploadServerForm({ scripts, settings }: unknown) {
+interface UploadServerFormProps {
+  scripts: { id: number; title: string; status: string; }[]
+  settings: { 
+    maxFileSize: string
+    allowedTypes: string[]
+    defaultPrivacy: string
+  }
+}
+
+function UploadServerForm({ scripts, settings }: UploadServerFormProps) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
       <div className="space-y-6">
@@ -434,7 +447,16 @@ async function getRecentActivitiesServerSide() {
   ]
 }
 
-function StatCard({ stat }: unknown) {
+interface StatCardProps {
+  stat: {
+    title: string
+    value: string
+    change: string
+    color: string
+  }
+}
+
+function StatCard({ stat }: StatCardProps) {
   const colorClasses = {
     blue: 'bg-blue-50 text-blue-700',
     green: 'bg-green-50 text-green-700',
@@ -471,14 +493,18 @@ function StatCardSkeleton() {
   )
 }
 
-function RecentActivitiesList({ activities }: unknown) {
+interface RecentActivitiesListProps {
+  activities: { id: number; action: string; target: string; time: string; }[]
+}
+
+function RecentActivitiesList({ activities }: RecentActivitiesListProps) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
       <div className="p-6 border-b border-gray-200">
         <h3 className="text-lg font-medium text-gray-900">최근 활동</h3>
       </div>
       <div className="divide-y divide-gray-200">
-        {activities.map((activity: unknown) => (
+        {activities.map((activity) => (
           <div key={activity.id} className="p-4">
             <div className="flex items-center justify-between">
               <div>

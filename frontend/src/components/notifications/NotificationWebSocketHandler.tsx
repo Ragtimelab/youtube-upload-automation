@@ -122,8 +122,7 @@ export function useNotificationWebSocket({
       unsubscribes.forEach(unsubscribe => unsubscribe())
     }
   }, [
-    webSocketState.isConnected,
-    webSocketState.onMessage,
+    webSocketState,
     handleUploadProgress,
     handleYouTubeStatus,
     handleSystemNotification,

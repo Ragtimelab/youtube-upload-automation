@@ -151,7 +151,7 @@ export function NotificationList({
             <Button
               variant="ghost"
               size="sm"
-              onClick={(e: _e) => {
+              onClick={(e: React.MouseEvent) => {
                 e.stopPropagation()
                 onDismiss(notification.id)
               }}

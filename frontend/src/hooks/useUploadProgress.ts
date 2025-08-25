@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useWebSocketContext } from './useWebSocketContext'
 import { useToastHelpers } from './useToastContext'
-import { UI_CONSTANTS } from '@/constants/ui'
 
 /**
  * Phase 3: WebSocket 시스템 통합 - Context 기반으로 마이그레이션

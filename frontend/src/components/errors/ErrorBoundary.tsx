@@ -176,13 +176,26 @@ interface DefaultErrorFallbackProps {
 }
 
 export function DefaultErrorFallback({ error, retry, canRetry, retryCount, level }: DefaultErrorFallbackProps) {
-  // Router 컨텍스트가 없을 수 있으므로 안전하게 처리
-  let navigate: ReturnType<typeof useNavigate> | null = null
-  try {
-    navigate = useNavigate()
-  } catch {
-    // Router 컨텍스트가 없는 경우 navigate를 null로 설정
-    navigate = null
+  // React Hook 규칙 준수: 항상 최상위에서 호출
+  const navigate = useNavigate()
+  
+  // Router 컨텍스트 안전성 확인은 사용 시점에서 처리
+  const handleNavigateHome = () => {
+    try {
+      navigate('/')
+    } catch (_error) {
+      // Router 컨텍스트가 없는 경우 페이지 리로드로 대체
+      window.location.href = '/'
+    }
+  }
+  
+  const handleNavigateBack = () => {
+    try {
+      navigate(-1)
+    } catch (_error) {
+      // Router 컨텍스트가 없는 경우 브라우저 뒤로가기
+      window.history.back()
+    }
   }
 
   const getLevelInfo = () => {
@@ -268,14 +281,7 @@ export function DefaultErrorFallback({ error, retry, canRetry, retryCount, level
           )}
           
           <button
-            onClick={() => {
-              if (navigate) {
-                navigate('/')
-              } else {
-                // Router 컨텍스트가 없는 경우 페이지 새로고침
-                window.location.href = '/'
-              }
-            }}
+            onClick={handleNavigateHome}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
           >
             <Home className="h-4 w-4" />
@@ -284,14 +290,7 @@ export function DefaultErrorFallback({ error, retry, canRetry, retryCount, level
 
           {level !== 'global' && (
             <button
-              onClick={() => {
-                if (navigate) {
-                  navigate(-1)
-                } else {
-                  // Router 컨텍스트가 없는 경우 브라우저 뒤로가기
-                  window.history.back()
-                }
-              }}
+              onClick={handleNavigateBack}
               className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2"
             >
               <ArrowLeft className="h-4 w-4" />

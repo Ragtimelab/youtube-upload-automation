@@ -150,12 +150,21 @@ export const uploadApi = {
   },
 
   // YouTube 업로드
-  async uploadToYouTube(scriptId: number, publishAt?: string): Promise<YouTubeUploadStatus> {
+  async uploadToYouTube(scriptId: number, publishAt?: string, privacy?: string, categoryId?: number): Promise<YouTubeUploadStatus> {
     const formData = new FormData()
+    
     if (publishAt) {
       // ISO 8601 형식의 날짜/시간을 YouTube API용으로 변환
       const isoString = new Date(publishAt).toISOString()
       formData.append('publish_at', isoString)
+    }
+    
+    if (privacy) {
+      formData.append('privacy_status', privacy)
+    }
+    
+    if (categoryId) {
+      formData.append('category_id', categoryId.toString())
     }
     
     const response = await api.post<ApiResponse<YouTubeUploadStatus>>(

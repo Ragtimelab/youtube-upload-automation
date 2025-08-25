@@ -302,14 +302,19 @@ function ScriptSelection({ selectedScriptId }: ScriptSelectionProps) {
               <div
                 key={script.id}
                 onClick={() => handleSelection(script.id)}
-                className={`p-4 border-2 rounded-lg cursor-pointer transition-colors ${
+                className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
                   currentSelection === script.id
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-blue-500 bg-blue-50 shadow-md ring-2 ring-blue-200'
+                    : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-medium text-gray-900 truncate">{script.title}</h4>
+                  <div className="flex items-center space-x-2">
+                    <h4 className="font-medium text-gray-900 truncate">{script.title}</h4>
+                    {currentSelection === script.id && (
+                      <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                    )}
+                  </div>
                   <StatusIcon className={`h-4 w-4 ${status.color}`} />
                 </div>
                 <p className="text-sm text-gray-600 mb-2 line-clamp-2">{script.description}</p>

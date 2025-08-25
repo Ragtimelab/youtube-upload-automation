@@ -20,11 +20,12 @@ import { Environment, HydrationSafeState } from '@/utils/ssrHelpers'
 import { ProfiledComponent } from '@/utils/performanceAnalyzer'
 
 // React 19 Lazy Loading: 페이지별 코드 분할
-// HomePage는 즉시 로딩 (랜딩 페이지)
+// HomePage와 ScriptsPage는 즉시 로딩 (토스트 컨텍스트 문제 해결)
 import { HomePage } from '@/pages/HomePage'
+import { ScriptsPage } from '@/pages/ScriptsPage'
 
 // 나머지 페이지들은 lazy loading으로 번들 분할
-const ScriptsPage = lazy(() => import('@/pages/ScriptsPage').then(module => ({ default: module.ScriptsPage })))
+// const ScriptsPage = lazy(() => import('@/pages/ScriptsPage').then(module => ({ default: module.ScriptsPage })))
 const UploadPage = lazy(() => import('@/pages/UploadPage').then(module => ({ default: module.UploadPage })))
 const YouTubePage = lazy(() => import('@/pages/YouTubePage').then(module => ({ default: module.YouTubePage })))
 const DashboardPage = lazy(() => import('@/pages/DashboardPage').then(module => ({ default: module.DashboardPage })))
@@ -103,9 +104,7 @@ function App() {
                         path="/scripts" 
                         element={
                           <ScriptsPageErrorBoundary>
-                            <Suspense fallback={<PageLoadingSkeleton title="스크립트 관리" />}>
-                              <ScriptsPage />
-                            </Suspense>
+                            <ScriptsPage />
                           </ScriptsPageErrorBoundary>
                         } 
                       />

@@ -42,49 +42,100 @@
 
 ## Phase 1: 핵심 상수 중앙화 (Level 1 검증)
 
-### 📋 Phase 1.1: Tailwind CSS 패턴 중앙화
+### ✅ Phase 1.1: Tailwind CSS 패턴 중앙화 【완료】
 
-#### ✅ 1.1.1 styles.ts 상수 파일 생성
-- [ ] `frontend/src/constants/styles.ts` 생성
+> **Phase 1.1 완료 성과**: 91/1,288 하드코딩 인스턴스 제거 (7.1% 완료)  
+> **완료일**: 2025-08-25  
+> **검증**: Level 1 Playwright 검증 완료 (4개 주요 페이지)
+
+#### ✅ 1.1.1 styles.ts 상수 파일 생성 【완료】
+- [x] `frontend/src/constants/styles.ts` 생성 (219줄, 완전 구현)
   ```typescript
-  // 공통 스타일 패턴 중앙화
+  // 실제 구현된 중앙화 시스템
   export const COMMON_STYLES = {
     card: 'bg-white rounded-lg border border-gray-200 shadow-sm',
+    cardHeader: 'p-6 border-b border-gray-200',
+    cardContent: 'p-6',
+    cardContentSpaced: 'p-6 space-y-4',
     button: {
-      primary: 'bg-blue-600 hover:bg-blue-700 text-white',
-      secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-900',
-      danger: 'bg-red-600 hover:bg-red-700 text-white'
+      primary: 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors',
+      secondary: 'bg-gray-100 hover:bg-gray-200 text-gray-900 px-4 py-2 rounded-md transition-colors',
+      danger: 'bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition-colors',
+      outline: 'border border-gray-300 hover:bg-gray-50 px-3 py-1 rounded text-sm transition-colors'
     },
-    input: 'px-3 py-2 border border-gray-300 rounded-md',
-    // ... 추가 패턴들
+    input: {
+      default: 'px-3 py-2 border border-gray-300 rounded-md text-sm',
+      search: 'flex-1 px-4 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500'
+    },
+    text: {
+      pageTitle: 'text-2xl font-bold text-gray-900',
+      pageDescription: 'text-gray-600 mt-1',
+      sectionTitle: 'text-lg font-medium text-gray-900',
+      cardTitle: 'font-medium text-gray-900',
+      cardDescription: 'text-sm text-gray-600',
+      label: 'text-sm text-gray-500',
+      small: 'text-xs'
+    },
+    toggle: { /* 완전 토글 시스템 */ }
+  }
+  export const LAYOUT_STYLES = {
+    grid: {
+      responsive: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6',
+      cards: 'grid grid-cols-1 md:grid-cols-2 gap-4'
+    },
+    flex: {
+      center: 'flex items-center justify-center',
+      between: 'flex items-center justify-between',
+      start: 'flex items-center justify-start'
+    },
+    spacing: {
+      section: 'space-y-6',
+      cardContent: 'space-y-4'
+    },
+    container: {
+      main: 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8',
+      page: 'min-h-screen bg-gray-50'
+    }
   }
   ```
-- [ ] **검증**: 파일 생성 후 import 테스트
-- [ ] **lint 체크**: `cd frontend/ && npm run lint`
+- [x] **검증**: 모든 페이지에서 import 성공 확인
+- [x] **lint 체크**: 0 errors, 0 warnings
 
-#### ✅ 1.1.2 SettingsPage 리팩토링 (우선순위 #1)
-- [ ] SettingsPage.tsx에서 반복되는 카드 스타일 교체
-  - 기존: `"bg-white rounded-lg border border-gray-200 shadow-sm"`
-  - 변경: `COMMON_STYLES.card`
-- [ ] 버튼 스타일 교체
-  - 기존: `"px-3 py-2 border border-gray-300 rounded-md text-sm"`
-  - 변경: `COMMON_STYLES.input`
-- [ ] **lint 체크**: `cd frontend/ && npm run lint`
-- [ ] **Playwright 검증**: SettingsPage 접근 + 카테고리 드롭다운 동작 확인
+#### ✅ 1.1.2 SettingsPage 리팩토링 【완료】
+- [x] SettingsPage.tsx 44개 하드코딩 패턴 중앙화
+  - 기존: `"bg-white rounded-lg border border-gray-200 shadow-sm"` → `COMMON_STYLES.card`
+  - 기존: `"text-2xl font-bold text-gray-900"` → `COMMON_STYLES.text.pageTitle`
+  - 기존: `"text-gray-600 mt-1"` → `COMMON_STYLES.text.pageDescription`
+  - 기존: `"space-y-6"` → `LAYOUT_STYLES.spacing.section`
+- [x] **lint 체크**: 완료 (0 errors)
+- [x] **Playwright 검증**: SettingsPage 접근 + 토글/드롭다운 동작 확인 완료
 
-#### ✅ 1.1.3 ScriptsPage 리팩토링
-- [ ] 검색 입력 필드 스타일 교체
-- [ ] 업로드 버튼 스타일 패턴 적용
-- [ ] 테이블/카드 스타일 통일
-- [ ] **lint 체크**: `cd frontend/ && npm run lint`
-- [ ] **Playwright 검증**: 스크립트 검색 + 업로드 기능 테스트
+#### ✅ 1.1.3 ScriptsPage 리팩토링 【완료】  
+- [x] ScriptsPage.tsx SSR 섹션 하드코딩 제거
+  - 기존: `"min-h-screen bg-gray-50"` → `LAYOUT_STYLES.container.page`
+  - 기존: `"max-w-7xl mx-auto"` → `LAYOUT_STYLES.container.main`
+  - 기존: `"text-gray-600 mb-8"` → `COMMON_STYLES.text.pageDescription`
+- [x] ScriptsManager.tsx compound components 대규모 리팩토링
+  - 15개 하드코딩 패턴 중앙화 (SearchBar, FilterTabs, QuickStats 등)
+- [x] **lint 체크**: TypeScript any 타입 오류 해결 완료
+- [x] **Playwright 검증**: 검색, 필터링, 업로드 버튼 전체 기능 테스트 완료
 
-#### ✅ 1.1.4 나머지 페이지 순차 리팩토링
-- [ ] DashboardPage: 상태 카드 스타일 통일
-- [ ] UploadPage: 드래그&드롭 영역 스타일
-- [ ] YouTubePage: 필터 버튼 스타일 통일
-- [ ] StatusPage: 로그 카드 스타일
-- [ ] **lint 체크**: 각 페이지별 개별 확인
+#### ✅ 1.1.4 나머지 페이지 순차 리팩토링 【완료】
+- [x] **DashboardPage**: SSR 섹션 container/text 스타일 통일 (4개 패턴)
+- [x] **UploadFlow**: 전체 compound components 리팩토링 (11개 패턴)
+  - Header, ScriptSelection, FileUpload, ProgressIndicator, ConfirmationStep, ErrorBoundary
+  - 카드 스타일, 레이아웃, 텍스트 스타일 완전 중앙화
+- [x] **YouTubePage**: 헤더 레이아웃 및 텍스트 스타일 통일 (5개 패턴)  
+- [x] **StatusPage**: 시스템 정보 카드, 컨트롤 패널, 로그 스트림 완전 중앙화 (12개 패턴)
+- [x] **lint 체크**: ESLint 경고 3건 완전 해결 (unused imports)
+- [x] **Level 1 Playwright 검증**: 4개 페이지 스타일 일관성 및 기능 동작 확인 완료
+
+**📊 Phase 1.1 총 성과**:
+- ✅ **제거된 하드코딩 패턴**: 91개 인스턴스
+- ✅ **영향받은 파일**: 8개 (SettingsPage, ScriptsPage, DashboardPage, UploadFlow, YouTubePage, StatusPage 등)
+- ✅ **중앙화된 스타일 시스템**: COMMON_STYLES + LAYOUT_STYLES (완전 구현)
+- ✅ **품질 보증**: ESLint 0 errors + Level 1 Playwright 검증 통과
+- ✅ **Git 커밋**: 4개 커밋으로 체계적 추적 가능
 
 ### 📋 Phase 1.2: 텍스트 상수 중앙화
 

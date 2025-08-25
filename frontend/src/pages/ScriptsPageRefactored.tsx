@@ -178,14 +178,14 @@ export function ScriptsPageRefactored() {
                       <div className="p-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {sortedItems.map((script) => (
-                            <ScriptCard key={(script as { id: number }).id} script={script as any} />
+                            <ScriptCard key={(script as { id: number }).id} script={script as { id: number; title: string; description: string; created_at: string; status: string }} />
                           ))}
                         </div>
                       </div>
                     ) : (
                       <div className="divide-y divide-gray-200">
                         {sortedItems.map((script) => (
-                          <ScriptListItem key={(script as { id: number }).id} script={script as any} />
+                          <ScriptListItem key={(script as { id: number }).id} script={script as { id: number; title: string; description: string; created_at: string; status: string }} />
                         ))}
                       </div>
                     )}
@@ -333,7 +333,7 @@ function ScriptListItem({ script }: { script: unknown }) {
             </div>
             <div className="flex items-center space-x-1">
               <FileText className="h-4 w-4" />
-              <span>{(scriptData as any).filename || '파일명 없음'}</span>
+              <span>{(scriptData as { filename?: string }).filename || '파일명 없음'}</span>
             </div>
             {scriptData.tags && scriptData.tags.length > 0 && (
               <div className="flex items-center space-x-1">

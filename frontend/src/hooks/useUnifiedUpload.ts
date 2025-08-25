@@ -268,7 +268,7 @@ export function useScriptUploadState(scriptId: number) {
   const activeUploads = getActiveUploads()
   
   const uploadState = useMemo(() => {
-    const activeUpload = activeUploads.find((upload: any) => 
+    const activeUpload = activeUploads.find((upload: { scriptId?: number; script_id?: number }) => 
       upload.scriptId === scriptId || upload.script_id === scriptId
     )
     

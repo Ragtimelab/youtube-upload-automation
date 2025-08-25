@@ -1,7 +1,12 @@
 import { useState, useCallback, useEffect } from 'react'
-import { useWebSocket } from './useWebSocket'
+import { useWebSocketContext } from './useWebSocketContext'
 import { useToastHelpers } from './useToastContext'
 import { UI_CONSTANTS } from '@/constants/ui'
+
+/**
+ * Phase 3: WebSocket 시스템 통합 - Context 기반으로 마이그레이션
+ * Legacy useWebSocket → useWebSocketContext 통합
+ */
 
 export interface UploadProgressData {
   script_id: number
@@ -50,12 +55,8 @@ export function useUploadProgress() {
   // 훅
   const toast = useToastHelpers()
 
-  // WebSocket 연결 설정
-  const webSocket = useWebSocket({
-    url: UI_CONSTANTS.API.WEBSOCKET_URL,
-    clientId: `youtube-upload-${Date.now()}`,
-    enableHeartbeat: true,
-  })
+  // WebSocket 연결 (Context 기반)
+  const webSocketState = useWebSocketContext()
 
   // 업로드 상태 업데이트
   const updateUploadState = useCallback((scriptId: number, updates: Partial<UploadStates[number]>) => {
@@ -100,9 +101,9 @@ export function useUploadProgress() {
     })
   }, [updateUploadState])
 
-  // 업로드 진행률 메시지 핸들러
+  // 업로드 진행률 메시지 핸들러 (Context 기반)
   useEffect(() => {
-    const unsubscribe = webSocket.onMessage('upload_progress', (data) => {
+    const unsubscribe = webSocketState.onMessage?.('upload_progress', (data) => {
       const typedData = data as UploadProgressData
       console.log('Upload progress received:', data)
       
@@ -123,11 +124,11 @@ export function useUploadProgress() {
     })
 
     return unsubscribe
-  }, [webSocket, updateUploadState])
+  }, [webSocketState, updateUploadState, toast])
 
-  // YouTube 업로드 상태 메시지 핸들러
+  // YouTube 업로드 상태 메시지 핸들러 (Context 기반)
   useEffect(() => {
-    const unsubscribe = webSocket.onMessage('youtube_status', (data) => {
+    const unsubscribe = webSocketState.onMessage?.('youtube_status', (data) => {
       const typedData = data as YouTubeUploadData
       console.log('YouTube status received:', data)
       
@@ -163,11 +164,11 @@ export function useUploadProgress() {
     })
 
     return unsubscribe
-  }, [webSocket, updateUploadState])
+  }, [webSocketState, updateUploadState, toast])
 
-  // 시스템 알림 핸들러
+  // 시스템 알림 핸들러 (Context 기반)
   useEffect(() => {
-    const unsubscribe = webSocket.onMessage('system_notification', (data: unknown) => {
+    const unsubscribe = webSocketState.onMessage?.('system_notification', (data: unknown) => {
       console.log('System notification:', data)
       
       // 시스템 알림을 통해 전역 상태 업데이트
@@ -181,7 +182,7 @@ export function useUploadProgress() {
     })
 
     return unsubscribe
-  }, [webSocket])
+  }, [webSocketState])
 
   // 특정 스크립트의 업로드 상태 조회
   const getUploadState = useCallback((scriptId: number) => {
@@ -212,19 +213,19 @@ export function useUploadProgress() {
     })
   }, [])
 
-  // WebSocket 상태 재요청
+  // WebSocket 상태 재요청 (Context 기반)
   const refreshStatus = useCallback(() => {
-    webSocket.requestStatus()
-  }, [webSocket])
+    webSocketState.sendMessage?.({ action: 'get_status' })
+  }, [webSocketState])
 
   return {
     uploadStates,
     globalStats,
     webSocketState: {
-      isConnected: webSocket.isConnected,
-      connectionStatus: webSocket.connectionStatus,
-      error: webSocket.error,
-      reconnectAttempts: webSocket.reconnectAttempts || 0,
+      isConnected: webSocketState.isConnected || false,
+      connectionStatus: webSocketState.connectionStatus || 'disconnected',
+      error: webSocketState.error || null,
+      reconnectAttempts: 0,
       lastActivity: new Date(),
     },
     startUpload,

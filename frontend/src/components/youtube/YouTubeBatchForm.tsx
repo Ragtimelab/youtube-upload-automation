@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { uploadApi } from '@/services/api'
-import { useToast } from '@/hooks/useToast'
+import { useToastHelpers } from '@/hooks/useToastContext'
 import { getUserFriendlyErrorMessage } from '@/utils/apiUtils'
 import type { BatchSettings, Script } from '@/types'
 
@@ -27,6 +27,7 @@ interface BatchUploadState {
 
 /**
  * React 19 Actions 패턴을 활용한 배치 업로드 폼
+ * Phase 2: Toast 시스템 통합 - useToastHelpers로 마이그레이션
  * - useActionState로 자동 pending 상태 관리
  * - useOptimistic으로 낙관적 UI 업데이트
  * - 서버 액션 패턴으로 폼 제출 최적화
@@ -39,7 +40,7 @@ export function YouTubeBatchForm({
   onClearSelection,
   onUploadComplete
 }: YouTubeBatchFormProps) {
-  const { success, error } = useToast()
+  const { success, error } = useToastHelpers()
   
   // React 19 useOptimistic으로 낙관적 업데이트
   const [optimisticProgress, setOptimisticProgress] = useOptimistic<BatchUploadState>({

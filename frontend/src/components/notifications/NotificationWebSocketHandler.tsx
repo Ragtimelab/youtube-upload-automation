@@ -1,10 +1,11 @@
 /**
  * WebSocket 메시지 처리 및 알림 생성 로직
+ * Phase 3: WebSocket 시스템 통합 - Context 기반으로 마이그레이션
  * 알림 상태 관리와 WebSocket 통신을 분리
  */
 
 import { useEffect, useCallback } from 'react'
-import { useWebSocket } from '@/hooks/useWebSocket'
+import { useWebSocketContext } from '@/hooks/useWebSocketContext'
 import type { 
   Notification, 
   UploadProgressMessage, 
@@ -24,11 +25,7 @@ export function useNotificationWebSocket({
   onPlaySound,
   pauseNotifications
 }: UseNotificationWebSocketProps) {
-  const webSocket = useWebSocket({
-    url: 'ws://localhost:8000/ws/',
-    clientId: `notifications-${Date.now()}`,
-    enableHeartbeat: true,
-  })
+  const webSocketState = useWebSocketContext()
 
   // WebSocket 메시지 핸들러들
   const handleUploadProgress = useCallback((data: unknown) => {
@@ -112,22 +109,21 @@ export function useNotificationWebSocket({
 
   // WebSocket 메시지 구독
   useEffect(() => {
-    if (!webSocket.isConnected) return
+    if (!webSocketState.isConnected) return
 
     const unsubscribes = [
-      webSocket.onMessage('upload_progress', handleUploadProgress),
-      webSocket.onMessage('youtube_status', handleYouTubeStatus),
-      webSocket.onMessage('system_notification', handleSystemNotification),
-      webSocket.onMessage('system_health', handleSystemHealth)
+      webSocketState.onMessage('upload_progress', handleUploadProgress),
+      webSocketState.onMessage('youtube_status', handleYouTubeStatus),
+      webSocketState.onMessage('system_notification', handleSystemNotification),
+      webSocketState.onMessage('system_health', handleSystemHealth)
     ]
 
     return () => {
       unsubscribes.forEach(unsubscribe => unsubscribe())
     }
   }, [
-    webSocket.isConnected,
-    webSocket.onMessage,
-    webSocket,
+    webSocketState.isConnected,
+    webSocketState.onMessage,
     handleUploadProgress,
     handleYouTubeStatus,
     handleSystemNotification,
@@ -135,7 +131,7 @@ export function useNotificationWebSocket({
   ])
 
   return {
-    isConnected: webSocket.isConnected,
-    connectionStatus: webSocket.connectionStatus
+    isConnected: webSocketState.isConnected,
+    connectionStatus: webSocketState.connectionStatus
   }
 }

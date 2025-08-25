@@ -2,8 +2,8 @@ import React, { createContext, useContext, useState, useRef, useCallback, useMem
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { ErrorBoundary } from '@/components/errors/ErrorBoundary'
-import { useScripts } from '@/hooks/useScripts'
-import { useUploadVideo } from '@/hooks/useUpload'
+import { useUnifiedScripts } from '@/hooks/useUnifiedScripts'
+import { useUnifiedUpload } from '@/hooks/useUnifiedUpload'
 import { useToastHelpers } from '@/hooks/useToastContext'
 import { 
   Upload, 
@@ -89,7 +89,9 @@ export function UploadFlow({
   
   // 훅
   // const navigate = useNavigate() // Currently unused
-  const { data: scriptsData, isLoading: scriptsLoading } = useScripts(1, 50)
+  const { allScripts, isLoading } = useUnifiedScripts({ currentPage: 1, pageSize: 50 })
+  const scriptsData = { scripts: allScripts }
+  const scriptsLoading = isLoading
   const toast = useToastHelpers()
   
   // 에러 핸들러 정의
@@ -115,7 +117,13 @@ export function UploadFlow({
     }
   }, [toast])
   
-  const uploadVideo = useUploadVideo(handleUploadError)
+  const { uploadVideo: uploadVideoAction, isUploadingVideo } = useUnifiedUpload()
+  const uploadVideo = {
+    mutateAsync: async ({ scriptId, file }: { scriptId: number; file: File }) => {
+      return uploadVideoAction(scriptId, file)
+    },
+    isPending: isUploadingVideo
+  }
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   // 유틸리티 함수들
@@ -189,7 +197,7 @@ export function UploadFlow({
   
   // script_ready 상태인 스크립트만 필터링
   const availableScripts = useMemo(() => 
-    scriptsData?.items.filter(script => script.status === 'script_ready') || [],
+    scriptsData?.scripts?.filter(script => script.status === 'script_ready') || [],
     [scriptsData]
   )
   

@@ -1,6 +1,7 @@
 import { ScriptsManager } from '@/components/scripts/ScriptsManager'
 import { Environment } from '@/utils/ssrHelpers'
 import { ProfiledComponent } from '@/utils/performanceAnalyzer'
+import { COMMON_STYLES, LAYOUT_STYLES } from '@/constants/styles'
 
 /**
  * Phase 11: SSR 호환성 및 성능 모니터링 추가
@@ -19,12 +20,12 @@ export function ScriptsPage() {
   // SSR 호환성 체크
   if (Environment.isServer()) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className={`${LAYOUT_STYLES.container.page} p-8`}>
+        <div className={LAYOUT_STYLES.container.main}>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">스크립트 관리</h1>
-          <p className="text-gray-600 mb-8">마크다운 스크립트 파일을 업로드하고 관리하세요.</p>
+          <p className={`${COMMON_STYLES.text.pageDescription} mb-8`}>마크다운 스크립트 파일을 업로드하고 관리하세요.</p>
           <div className="text-center py-12">
-            <p className="text-gray-500">서버에서 렌더링 중...</p>
+            <p className={COMMON_STYLES.text.label}>서버에서 렌더링 중...</p>
           </div>
         </div>
       </div>
@@ -47,8 +48,8 @@ export function ScriptsPage() {
         <ScriptsManager.List />
         
         <ScriptsManager.Sidebar>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-sm font-medium text-gray-900">표시 옵션</h3>
+          <div className={`${LAYOUT_STYLES.flex.between} mb-4`}>
+            <h3 className={`${COMMON_STYLES.text.small} font-medium text-gray-900`}>표시 옵션</h3>
             <ScriptsManager.ViewToggle />
           </div>
           

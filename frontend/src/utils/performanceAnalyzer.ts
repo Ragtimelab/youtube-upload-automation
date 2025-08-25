@@ -132,11 +132,12 @@ export class PerformanceAnalyzer {
     const moduleMap = new Map<string, string[]>()
     
     chunks.forEach(chunk => {
-      chunk.modules.forEach((module: string) => {
+      const chunkData = chunk as { name: string; modules: string[] }
+      chunkData.modules.forEach((module: string) => {
         if (!moduleMap.has(module)) {
           moduleMap.set(module, [])
         }
-        moduleMap.get(module)!.push(chunk.name)
+        moduleMap.get(module)!.push(chunkData.name)
       })
     })
 
@@ -161,18 +162,18 @@ export class PerformanceAnalyzer {
 
   private static generateBundleRecommendations(chunks: unknown[]): string[] {
     const recommendations: string[] = []
-    const totalSize = chunks.reduce((sum, chunk) => sum + chunk.size, 0)
+    const totalSize = chunks.reduce((sum: number, chunk) => sum + (chunk as { size: number }).size, 0)
 
     if (totalSize > 500000) { // 500KB 초과
       recommendations.push('번들 크기가 500KB를 초과합니다. 코드 분할을 고려하세요.')
     }
 
-    const largeChunks = chunks.filter(chunk => chunk.size > 100000) // 100KB 초과
+    const largeChunks = chunks.filter(chunk => (chunk as { size: number }).size > 100000) // 100KB 초과
     if (largeChunks.length > 0) {
-      recommendations.push(`큰 청크를 발견했습니다: ${largeChunks.map(c => c.name).join(', ')}`)
+      recommendations.push(`큰 청크를 발견했습니다: ${largeChunks.map(c => (c as { name: string }).name).join(', ')}`)
     }
 
-    if (chunks.some(chunk => chunk.modules.includes('lodash'))) {
+    if (chunks.some(chunk => (chunk as { modules: string[] }).modules.includes('lodash'))) {
       recommendations.push('Lodash 전체 라이브러리가 포함되어 있습니다. 필요한 함수만 import하세요.')
     }
 
@@ -182,7 +183,7 @@ export class PerformanceAnalyzer {
   private static generateRuntimeRecommendations(resources: unknown[]): string[] {
     const recommendations: string[] = []
     
-    const slowResources = resources.filter(r => r.duration > 1000) // 1초 초과
+    const slowResources = resources.filter(r => (r as { duration: number }).duration > 1000) // 1초 초과
     if (slowResources.length > 0) {
       recommendations.push('로딩이 느린 리소스가 있습니다. 네트워크 최적화를 고려하세요.')
     }
@@ -258,11 +259,11 @@ export class PerformanceAnalyzer {
     }
 
     if (slowComponents.length > 0) {
-      recommendations.push(`느린 컴포넌트: ${slowComponents.slice(0, 3).map(c => c.name).join(', ')}`)
+      recommendations.push(`느린 컴포넌트: ${slowComponents.slice(0, 3).map(c => (c as { name: string }).name).join(', ')}`)
       recommendations.push('React.memo, useMemo, useCallback을 활용한 최적화를 고려하세요.')
     }
 
-    const highFrequencyComponents = slowComponents.filter(c => c.renderCount > 10)
+    const highFrequencyComponents = slowComponents.filter(c => (c as { renderCount: number }).renderCount > 10)
     if (highFrequencyComponents.length > 0) {
       recommendations.push('자주 리렌더링되는 컴포넌트가 있습니다. 상태 구조를 재검토하세요.')
     }
@@ -412,7 +413,7 @@ export class PerformanceAnalyzer {
    */
   static enableDebugMode() {
     if (typeof window !== 'undefined') {
-      (window as Window & { __PERFORMANCE_ANALYZER__: unknown }).__PERFORMANCE_ANALYZER__ = {
+      (window as unknown as Window & { __PERFORMANCE_ANALYZER__: unknown }).__PERFORMANCE_ANALYZER__ = {
         getBundleReport: () => this.generateBundleReport(),
         getRenderReport: () => this.measureRenderPerformance(),
         exportReport: () => this.exportPerformanceReport(),

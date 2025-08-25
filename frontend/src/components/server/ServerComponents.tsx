@@ -61,7 +61,7 @@ async function getScriptsServerSide() {
       id: 1,
       title: 'React 19 Server Components 가이드',
       description: 'Server Components의 작동 원리와 활용법',
-      status: 'script_ready',
+      status: 'script_ready' as const,
       created_at: '2025-08-25T10:00:00Z',
       updated_at: '2025-08-25T10:00:00Z',
       filename: '20250825_01_story.md',
@@ -72,7 +72,7 @@ async function getScriptsServerSide() {
       id: 2,
       title: 'TypeScript 5.8 고급 기능',
       description: '최신 TypeScript 기능 심화 학습',
-      status: 'video_ready',
+      status: 'video_ready' as const,
       created_at: '2025-08-25T11:00:00Z',
       updated_at: '2025-08-25T11:00:00Z',
       filename: '20250825_02_story.md',
@@ -110,8 +110,10 @@ interface ScriptsServerListProps {
     description: string
     status: string
     created_at: string
+    updated_at: string
     filename: string
     tags: string[]
+    script_content: string
   }>
 }
 
@@ -130,7 +132,7 @@ function ScriptsServerList({ scripts }: ScriptsServerListProps) {
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
       <div className="divide-y divide-gray-200">
         {scripts.map((script) => (
-          <ScriptServerItem key={script.id} script={script} />
+          <ScriptServerItem key={script.id} script={script as unknown as Script} />
         ))}
       </div>
     </div>

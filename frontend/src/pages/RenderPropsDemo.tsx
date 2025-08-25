@@ -69,20 +69,23 @@ export function RenderPropsDemo() {
                 
                 {scripts && scripts.length > 0 ? (
                   <div className="grid gap-4">
-                    {scripts.map((script: unknown, index: number) => (
-                      <div key={script?.id || index} className="border border-gray-200 rounded-lg p-4">
-                        <h3 className="font-medium text-gray-900">{script?.title || `스크립트 ${index + 1}`}</h3>
-                        <p className="text-sm text-gray-600 mt-1">{script?.description || '설명 없음'}</p>
+                    {scripts.map((script: unknown, index: number) => {
+                      const scriptData = script as { id?: number; title?: string; description?: string; status?: string; created_at?: string }
+                      return (
+                      <div key={scriptData.id || index} className="border border-gray-200 rounded-lg p-4">
+                        <h3 className="font-medium text-gray-900">{scriptData.title || `스크립트 ${index + 1}`}</h3>
+                        <p className="text-sm text-gray-600 mt-1">{scriptData.description || '설명 없음'}</p>
                         <div className="flex items-center mt-2 space-x-2">
                           <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-                            {script?.status || 'ready'}
+                            {scriptData.status || 'ready'}
                           </span>
                           <span className="text-xs text-gray-500">
-                            {script?.created_at ? new Date(script.created_at).toLocaleDateString() : '날짜 미상'}
+                            {scriptData.created_at ? new Date(scriptData.created_at).toLocaleDateString() : '날짜 미상'}
                           </span>
                         </div>
                       </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
@@ -114,7 +117,7 @@ export function RenderPropsDemo() {
                     <input
                       type="file"
                       accept="video/*"
-                      onChange={(e: _e) => {
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                         const file = e.target.files?.[0]
                         if (file) {
                           startUpload(file)
@@ -193,7 +196,7 @@ export function RenderPropsDemo() {
                 </label>
                 <input
                   type="text"
-                  value={values.query || ''}
+                  value={_values.query || ''}
                   onChange={(e) => handleChange('query')(e.target.value)}
                   className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     errors.query ? 'border-red-300' : 'border-gray-300'
@@ -245,7 +248,7 @@ export function RenderPropsDemo() {
                 <input
                   type="file"
                   accept=".md"
-                  onChange={(e: _e) => {
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                     const file = e.target.files?.[0]
                     if (file) {
                       handleChange('file')(file)
@@ -258,9 +261,9 @@ export function RenderPropsDemo() {
                 {errors.file && (
                   <p className="text-sm text-red-600 mt-1">{errors.file}</p>
                 )}
-                {values.file && (
+                {_values.file && (
                   <p className="text-sm text-gray-600 mt-1">
-                    선택된 파일: {values.file.name} ({(values.file.size / 1024 / 1024).toFixed(2)} MB)
+                    선택된 파일: {(_values.file as File).name} ({((_values.file as File).size / 1024 / 1024).toFixed(2)} MB)
                   </p>
                 )}
               </div>
@@ -271,7 +274,7 @@ export function RenderPropsDemo() {
                 </label>
                 <input
                   type="text"
-                  value={values.title || ''}
+                  value={_values.title || ''}
                   onChange={(e) => handleChange('title')(e.target.value)}
                   className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     errors.title ? 'border-red-300' : 'border-gray-300'
@@ -288,7 +291,7 @@ export function RenderPropsDemo() {
                   설명 (선택사항)
                 </label>
                 <textarea
-                  value={values.description || ''}
+                  value={_values.description || ''}
                   onChange={(e) => handleChange('description')(e.target.value)}
                   rows={3}
                   className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${

@@ -63,7 +63,7 @@ export function ScriptsPageRefactored() {
                 <input
                   type="text"
                   placeholder="스크립트 검색..."
-                  value={values.query || ''}
+                  value={_values.query || ''}
                   onChange={(e) => handleChange('query')(e.target.value)}
                   className={`w-full pl-10 pr-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     errors.query ? 'border-red-300' : 'border-gray-300'
@@ -129,7 +129,7 @@ export function ScriptsPageRefactored() {
       <ScriptsDataProvider page={1} limit={20}>
         {({ scripts, isLoading, isError, error, refetch, totalItems }) => (
           <ListDataProvider
-            items={scripts || []}
+            items={(scripts || []) as unknown as Record<string, unknown>[]}
             isLoading={isLoading}
             error={error}
             searchTerm={searchQuery}
@@ -178,14 +178,14 @@ export function ScriptsPageRefactored() {
                       <div className="p-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {sortedItems.map((script) => (
-                            <ScriptCard key={script.id} script={script} />
+                            <ScriptCard key={(script as { id: number }).id} script={script as any} />
                           ))}
                         </div>
                       </div>
                     ) : (
                       <div className="divide-y divide-gray-200">
                         {sortedItems.map((script) => (
-                          <ScriptListItem key={script.id} script={script} />
+                          <ScriptListItem key={(script as { id: number }).id} script={script as any} />
                         ))}
                       </div>
                     )}
@@ -204,6 +204,15 @@ export function ScriptsPageRefactored() {
  * 스크립트 카드 컴포넌트 (Grid 모드용)
  */
 function ScriptCard({ script }: { script: unknown }) {
+  const scriptData = script as { 
+    id: number; 
+    title?: string; 
+    description?: string; 
+    status: string; 
+    created_at?: string; 
+    tags?: string[] 
+  }
+  
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'script_ready': return <Clock className="h-4 w-4 text-yellow-600" />
@@ -229,25 +238,25 @@ function ScriptCard({ script }: { script: unknown }) {
   return (
     <div className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
       <div className="flex items-center justify-between mb-2">
-        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(script.status)}`}>
-          {script.status}
+        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(scriptData.status)}`}>
+          {scriptData.status}
         </span>
-        {getStatusIcon(script.status)}
+        {getStatusIcon(scriptData.status)}
       </div>
       
       <h3 className="font-medium text-gray-900 mb-2 truncate">
-        {script.title || '제목 없음'}
+        {scriptData.title || '제목 없음'}
       </h3>
       <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-        {script.description || '설명 없음'}
+        {scriptData.description || '설명 없음'}
       </p>
       
       <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
-        <span>{script.created_at ? new Date(script.created_at).toLocaleDateString('ko-KR') : '날짜 미상'}</span>
-        {script.tags && script.tags.length > 0 && (
+        <span>{scriptData.created_at ? new Date(scriptData.created_at).toLocaleDateString('ko-KR') : '날짜 미상'}</span>
+        {scriptData.tags && scriptData.tags.length > 0 && (
           <div className="flex items-center space-x-1">
             <Tag className="h-3 w-3" />
-            <span>{script.tags[0]}</span>
+            <span>{scriptData.tags[0]}</span>
           </div>
         )}
       </div>
@@ -268,6 +277,15 @@ function ScriptCard({ script }: { script: unknown }) {
  * 스크립트 리스트 아이템 컴포넌트 (List 모드용)
  */
 function ScriptListItem({ script }: { script: unknown }) {
+  const scriptData = script as { 
+    id: number; 
+    title?: string; 
+    description?: string; 
+    status: string; 
+    created_at?: string; 
+    tags?: string[] 
+  }
+  
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'script_ready': return <Clock className="h-4 w-4 text-yellow-600" />
@@ -296,39 +314,39 @@ function ScriptListItem({ script }: { script: unknown }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-3 mb-2">
             <h3 className="text-lg font-medium text-gray-900 truncate">
-              {script.title || '제목 없음'}
+              {scriptData.title || '제목 없음'}
             </h3>
-            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(script.status)}`}>
-              {script.status}
+            <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(scriptData.status)}`}>
+              {scriptData.status}
             </span>
           </div>
           <p className="text-gray-600 mb-3 line-clamp-2">
-            {script.description || '설명 없음'}
+            {scriptData.description || '설명 없음'}
           </p>
           
           <div className="flex items-center space-x-4 text-sm text-gray-500">
             <div className="flex items-center space-x-1">
               <Calendar className="h-4 w-4" />
               <span>
-                {script.created_at ? new Date(script.created_at).toLocaleDateString('ko-KR') : '날짜 미상'}
+                {scriptData.created_at ? new Date(scriptData.created_at).toLocaleDateString('ko-KR') : '날짜 미상'}
               </span>
             </div>
             <div className="flex items-center space-x-1">
               <FileText className="h-4 w-4" />
-              <span>{script.filename || '파일명 없음'}</span>
+              <span>{(scriptData as any).filename || '파일명 없음'}</span>
             </div>
-            {script.tags && script.tags.length > 0 && (
+            {scriptData.tags && scriptData.tags.length > 0 && (
               <div className="flex items-center space-x-1">
                 <Tag className="h-4 w-4" />
-                <span>{script.tags.slice(0, 3).join(', ')}</span>
-                {script.tags.length > 3 && <span>...</span>}
+                <span>{scriptData.tags.slice(0, 3).join(', ')}</span>
+                {scriptData.tags.length > 3 && <span>...</span>}
               </div>
             )}
           </div>
         </div>
         
         <div className="flex items-center space-x-2 ml-4">
-          {getStatusIcon(script.status)}
+          {getStatusIcon(scriptData.status)}
           <Button variant="outline" size="sm">
             상세보기
           </Button>

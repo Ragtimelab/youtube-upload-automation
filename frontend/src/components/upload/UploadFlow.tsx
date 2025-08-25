@@ -44,7 +44,7 @@ interface UploadFlowContextValue {
   isVideoFile: (_file: File) => boolean
   validateFileSize: (_file: File) => { valid: boolean; error?: string }
   formatFileSize: (_bytes: number) => string
-  getScriptStatus: (_status: string) => { icon: React.ComponentType<unknown>, color: string, text: string }
+  getScriptStatus: (_status: string) => { icon: React.ComponentType<React.SVGProps<SVGSVGElement>>, color: string, text: string }
   toast: ReturnType<typeof useToastHelpers>
   
   // 참조
@@ -297,7 +297,7 @@ function ScriptSelection({ selectedScriptId }: ScriptSelectionProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {availableScripts.map((script) => {
             const status = getScriptStatus(script.status)
-            const StatusIcon = status.icon
+            const StatusIcon = status.icon as React.ComponentType<{ className?: string }>
             return (
               <div
                 key={script.id}

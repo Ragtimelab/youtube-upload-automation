@@ -66,7 +66,7 @@ export function FormValidator<TSchema extends z.ZodSchema>({
   const validateField = useCallback((field: keyof z.input<TSchema>, value: unknown) => {
     try {
       // 전체 스키마로 임시 객체를 만들어 검증
-      const testValues = { ...values, [field]: value }
+      const testValues = { ...(values as Record<string, unknown>), [field]: value } as z.input<TSchema>
       schema.parse(testValues)
       
       setErrors(prev => {

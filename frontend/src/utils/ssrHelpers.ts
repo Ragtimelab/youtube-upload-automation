@@ -258,7 +258,7 @@ export const ProgressiveEnhancement = {
       return
     }
 
-    form.addEventListener('submit', async (e: _e) => {
+    form.addEventListener('submit', async (e: Event) => {
       e.preventDefault()
       
       const formData = new FormData(form)
@@ -555,7 +555,7 @@ export function initializeSSRHelpers(): void {
 
   // 개발 모드에서 디버깅 도구 활성화
   if (Environment.isDevelopment()) {
-    (window as Window & { __SSR_HELPERS__: unknown }).__SSR_HELPERS__ = {
+    (window as unknown as Window & { __SSR_HELPERS__: unknown }).__SSR_HELPERS__ = {
       Environment,
       SafeStorage,
       SafeBrowser,

@@ -13,6 +13,7 @@ import { commonLayouts, cn } from '@/utils/classNames'
 import { Environment } from '@/utils/ssrHelpers'
 import { ProfiledComponent } from '@/utils/performanceAnalyzer'
 import { COMMON_STYLES, LAYOUT_STYLES } from '@/constants/styles'
+import { PAGE_TEXT, UI_TEXT } from '@/constants/text'
 import { Activity, RefreshCw } from 'lucide-react'
 
 export function DashboardPage() {
@@ -37,10 +38,10 @@ export function DashboardPage() {
     return (
       <div className={`${LAYOUT_STYLES.container.page} p-8`}>
         <div className={LAYOUT_STYLES.container.main}>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">시스템 대시보드</h1>
-          <p className={`${COMMON_STYLES.text.pageDescription} mb-8`}>YouTube 업로드 자동화 시스템 실시간 모니터링</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">{PAGE_TEXT.dashboard.title}</h1>
+          <p className={`${COMMON_STYLES.text.pageDescription} mb-8`}>{PAGE_TEXT.dashboard.description}</p>
           <div className="text-center py-12">
-            <p className={COMMON_STYLES.text.label}>서버에서 렌더링 중...</p>
+            <p className={COMMON_STYLES.text.label}>{PAGE_TEXT.dashboard.serverRendering}</p>
           </div>
         </div>
       </div>
@@ -51,8 +52,8 @@ export function DashboardPage() {
   if (isLoading) {
     return (
       <FullScreenLoading
-        message="시스템 상태를 불러오는 중..."
-        title="대시보드 로딩"
+        message={PAGE_TEXT.dashboard.systemLoading}
+        title={PAGE_TEXT.dashboard.title}
       />
     )
   }
@@ -65,8 +66,8 @@ export function DashboardPage() {
         <div className="mb-8">
           <div className={commonLayouts.flexBetween}>
             <div>
-              <h1 className={cn(commonLayouts.title, 'mb-2')}>시스템 대시보드</h1>
-              <p className={commonLayouts.subtitle}>YouTube 업로드 자동화 시스템 실시간 모니터링</p>
+              <h1 className={cn(commonLayouts.title, 'mb-2')}>{PAGE_TEXT.dashboard.title}</h1>
+              <p className={commonLayouts.subtitle}>{PAGE_TEXT.dashboard.description}</p>
             </div>
             
             {/* 컨트롤 패널 */}
@@ -85,7 +86,7 @@ export function DashboardPage() {
                   className={commonLayouts.flexGapSm}
                 >
                   <Activity className={`h-4 w-4 ${isRealTimeEnabled ? 'animate-pulse' : ''}`} />
-                  실시간 {isRealTimeEnabled ? '켜짐' : '꺼짐'}
+                  실시간 {isRealTimeEnabled ? PAGE_TEXT.dashboard.realTimeOn : PAGE_TEXT.dashboard.realTimeOff}
                 </Button>
                 
                 <Button
@@ -95,12 +96,12 @@ export function DashboardPage() {
                   className={commonLayouts.flexGapSm}
                 >
                   <RefreshCw className="h-4 w-4" />
-                  새로고침
+                  {UI_TEXT.common.refresh}
                 </Button>
               </div>
               
               <div className={commonLayouts.smallText}>
-                마지막 업데이트: {formatFullTime(lastRefresh)}
+                {PAGE_TEXT.dashboard.lastUpdate}: {formatFullTime(lastRefresh)}
               </div>
             </div>
           </div>

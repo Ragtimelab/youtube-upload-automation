@@ -15,6 +15,7 @@ import { PipelineMetrics } from '@/components/pipeline/PipelineMetrics'
 import { PipelineDetailPanel } from '@/components/pipeline/PipelineDetailPanel'
 
 import { FileText, Video, Upload, CheckCircle2 } from 'lucide-react'
+import { PAGE_TEXT } from '@/constants/text'
 
 export function PipelinePage() {
   const {
@@ -37,48 +38,48 @@ export function PipelinePage() {
   const pipelineStages: PipelineStage[] = [
     {
       id: 'script_ready',
-      name: '스크립트 준비',
+      name: PAGE_TEXT.pipeline.scriptReady,
       count: systemMetrics?.scriptsByStatus.script_ready || 0,
       percentage: systemMetrics?.totalScripts ? 
         Math.round(((systemMetrics.scriptsByStatus.script_ready || 0) / systemMetrics.totalScripts) * 100) : 0,
       status: 'normal',
       icon: FileText,
-      description: '업로드된 스크립트 파일들',
+      description: PAGE_TEXT.pipeline.scriptReadyDescription,
       avgProcessingTime: 0,
       lastProcessed: '-'
     },
     {
       id: 'video_ready',
-      name: '비디오 준비',
+      name: PAGE_TEXT.pipeline.videoReady,
       count: systemMetrics?.scriptsByStatus.video_ready || 0,
       percentage: systemMetrics?.totalScripts ? 
         Math.round(((systemMetrics.scriptsByStatus.video_ready || 0) / systemMetrics.totalScripts) * 100) : 0,
       status: 'processing',
       icon: Video,
-      description: '비디오 파일이 연결된 스크립트',
+      description: PAGE_TEXT.pipeline.videoReadyDescription,
       avgProcessingTime: 0,
       lastProcessed: '-'
     },
     {
       id: 'uploading',
-      name: '업로드 중',
+      name: PAGE_TEXT.pipeline.uploading,
       count: globalStats.activeUploads || 0,
       percentage: globalStats.activeUploads > 0 ? 25 : 0,
       status: globalStats.activeUploads > 0 ? 'processing' : 'normal',
       icon: Upload,
-      description: 'YouTube에 업로드 진행 중',
+      description: PAGE_TEXT.pipeline.uploadingDescription,
       avgProcessingTime: 300, // 5분 예상
       lastProcessed: '-'
     },
     {
       id: 'uploaded',
-      name: '업로드 완료',
+      name: PAGE_TEXT.pipeline.uploadCompleted,
       count: systemMetrics?.scriptsByStatus.uploaded || 0,
       percentage: systemMetrics?.totalScripts ? 
         Math.round(((systemMetrics.scriptsByStatus.uploaded || 0) / systemMetrics.totalScripts) * 100) : 0,
       status: 'normal',
       icon: CheckCircle2,
-      description: '성공적으로 업로드된 콘텐츠',
+      description: PAGE_TEXT.pipeline.uploadCompletedDescription,
       avgProcessingTime: 0,
       lastProcessed: '-'
     }

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { COMMON_STYLES, LAYOUT_STYLES } from '@/constants/styles'
+import { PAGE_TEXT, UI_TEXT } from '@/constants/text'
 import { 
   Activity, 
   Wifi, 
@@ -196,7 +197,7 @@ export function StatusPage() {
       <div className={`${LAYOUT_STYLES.flex.center} min-h-screen`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">실시간 상태를 불러오는 중...</p>
+          <p className="text-gray-600">{PAGE_TEXT.status.realTimeStatusLoading}</p>
         </div>
       </div>
     )
@@ -209,8 +210,8 @@ export function StatusPage() {
         <div className="mb-8">
           <div className={LAYOUT_STYLES.flex.between}>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">실시간 모니터링</h1>
-              <p className={COMMON_STYLES.text.pageDescription}>시스템 상태와 업로드 진행 상황을 실시간으로 모니터링</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{PAGE_TEXT.status.title}</h1>
+              <p className={COMMON_STYLES.text.pageDescription}>{PAGE_TEXT.status.description}</p>
             </div>
             
             {/* 컨트롤 패널 */}
@@ -229,7 +230,7 @@ export function StatusPage() {
                   className={LAYOUT_STYLES.flex.start}
                 >
                   {isMonitoring ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
-                  {isMonitoring ? '모니터링 중' : '모니터링 중지'}
+                  {isMonitoring ? UI_TEXT.button.monitoringOn : UI_TEXT.button.monitoringOff}
                 </Button>
                 
                 <Button
@@ -239,7 +240,7 @@ export function StatusPage() {
                   className={LAYOUT_STYLES.flex.start}
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  새로고침
+                  {UI_TEXT.common.refresh}
                 </Button>
               </div>
               
@@ -255,9 +256,9 @@ export function StatusPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Monitor className="h-5 w-5" />
-              시스템 상태
+              {PAGE_TEXT.status.systemStatus}
             </CardTitle>
-            <CardDescription>모든 서비스 구성요소의 실시간 상태</CardDescription>
+            <CardDescription>{PAGE_TEXT.status.systemDescription}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -272,7 +273,7 @@ export function StatusPage() {
                       <StatusIcon className={`h-5 w-5 ${getStatusColor(service.status)}`} />
                     </div>
                     <h4 className={COMMON_STYLES.text.cardTitle}>{service.name}</h4>
-                    <p className={COMMON_STYLES.text.cardDescription}>지연: {service.latency}</p>
+                    <p className={COMMON_STYLES.text.cardDescription}>{PAGE_TEXT.status.delay}: {service.latency}</p>
                     <p className={`${COMMON_STYLES.text.small} text-gray-500 mt-1`}>{service.details}</p>
                   </div>
                 )
@@ -287,9 +288,9 @@ export function StatusPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Activity className="h-5 w-5" />
-                실시간 성능 모니터링
+                {PAGE_TEXT.status.performanceMonitoring}
               </CardTitle>
-              <CardDescription>CPU, 메모리, 네트워크 사용률</CardDescription>
+              <CardDescription>{PAGE_TEXT.status.performanceDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -329,9 +330,9 @@ export function StatusPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Zap className="h-5 w-5" />
-                활성 업로드
+                {PAGE_TEXT.status.activeUploads}
               </CardTitle>
-              <CardDescription>현재 진행 중인 업로드 작업</CardDescription>
+              <CardDescription>{PAGE_TEXT.status.activeUploadsDescription}</CardDescription>
             </CardHeader>
             <CardContent>
               {_getActiveUploads().length > 0 ? (
@@ -352,8 +353,8 @@ export function StatusPage() {
               ) : (
                 <div className="text-center py-8 text-gray-500">
                   <Activity className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>현재 진행 중인 업로드가 없습니다.</p>
-                  <p className={`${COMMON_STYLES.text.small} mt-2`}>업로드가 시작되면 실시간으로 표시됩니다.</p>
+                  <p>{PAGE_TEXT.status.noActiveUploads}</p>
+                  <p className={`${COMMON_STYLES.text.small} mt-2`}>{PAGE_TEXT.status.uploadsWillShow}</p>
                 </div>
               )}
             </CardContent>
@@ -367,9 +368,9 @@ export function StatusPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Terminal className="h-5 w-5" />
-                  실시간 로그 스트림
+                  {PAGE_TEXT.status.logStream}
                 </CardTitle>
-                <CardDescription>시스템 활동 및 이벤트 로그</CardDescription>
+                <CardDescription>{PAGE_TEXT.status.logStreamDescription}</CardDescription>
               </div>
               <div className={`${LAYOUT_STYLES.flex.start} gap-2`}>
                 <Button
@@ -379,7 +380,7 @@ export function StatusPage() {
                   className={LAYOUT_STYLES.flex.start}
                 >
                   <Eye className="h-4 w-4 mr-2" />
-                  {autoScroll ? '자동 스크롤 켜짐' : '자동 스크롤 꺼짐'}
+                  {autoScroll ? UI_TEXT.button.autoScrollOn : UI_TEXT.button.autoScrollOff}
                 </Button>
                 <Button
                   variant="outline"
@@ -388,7 +389,7 @@ export function StatusPage() {
                   className={LAYOUT_STYLES.flex.start}
                 >
                   <Settings className="h-4 w-4 mr-2" />
-                  로그 지우기
+                  {UI_TEXT.button.clearLogs}
                 </Button>
               </div>
             </div>

@@ -9,6 +9,7 @@ import { YouTubeBatchControls } from '@/components/youtube/YouTubeBatchControls'
 import { YouTubeScriptList } from '@/components/youtube/YouTubeScriptList'
 import { YouTubeStatsCards } from '@/components/youtube/YouTubeStatsCards'
 import { COMMON_STYLES, LAYOUT_STYLES } from '@/constants/styles'
+import { PAGE_TEXT } from '@/constants/text'
 import { Activity } from 'lucide-react'
 import type { YouTubeUploadProgress, YouTubeUploadStep } from '@/types/youtube'
 import type { Script } from '@/types/api'
@@ -99,8 +100,8 @@ export function YouTubePage() {
       <div className="mb-8">
         <div className={LAYOUT_STYLES.flex.between}>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">YouTube 업로드 관리</h1>
-            <p className={COMMON_STYLES.text.pageDescription}>스크립트를 선택하여 YouTube에 업로드하세요.</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{PAGE_TEXT.youtube.title}</h1>
+            <p className={COMMON_STYLES.text.pageDescription}>{PAGE_TEXT.youtube.description}</p>
           </div>
           
           <div className={`${LAYOUT_STYLES.flex.start} gap-4`}>
@@ -111,7 +112,7 @@ export function YouTubePage() {
             {batchUploading && (
               <div className={`${LAYOUT_STYLES.flex.start} gap-2 text-blue-600`}>
                 <Activity className="w-4 h-4 animate-pulse" />
-                <span className={`${COMMON_STYLES.text.small} font-medium`}>{batchProgress.current}개 업로드 중</span>
+                <span className={`${COMMON_STYLES.text.small} font-medium`}>{batchProgress.current}{PAGE_TEXT.youtube.uploading}</span>
               </div>
             )}
           </div>

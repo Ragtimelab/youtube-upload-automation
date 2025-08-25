@@ -1,4 +1,5 @@
 import { UploadFlow } from '@/components/upload/UploadFlow'
+import { PAGE_TEXT } from '@/constants/text'
 
 /**
  * Phase 9: Compound Components 패턴 적용
@@ -12,15 +13,15 @@ import { UploadFlow } from '@/components/upload/UploadFlow'
 export function UploadPage() {
   const handleUploadComplete = () => {
     // 업로드 완료 시 추가 작업 가능
-    console.log('업로드가 완료되었습니다!')
+    console.log(PAGE_TEXT.upload.uploadComplete)
   }
 
   return (
     <UploadFlow onComplete={handleUploadComplete}>
       <UploadFlow.ErrorBoundary>
         <UploadFlow.Header 
-          title="비디오 업로드" 
-          description="스크립트에 맞는 비디오 파일을 업로드하세요." 
+          title={PAGE_TEXT.upload.title} 
+          description={PAGE_TEXT.upload.description} 
         />
         
         <UploadFlow.ScriptSelection />

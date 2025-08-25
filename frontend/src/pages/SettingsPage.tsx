@@ -8,13 +8,14 @@ import {
 } from 'lucide-react'
 import { YOUTUBE_CATEGORIES, DEFAULT_CATEGORY_ID } from '@/constants/youtube'
 import { COMMON_STYLES, LAYOUT_STYLES } from '@/constants/styles'
+import { PAGE_TEXT, UI_TEXT } from '@/constants/text'
 
 export function SettingsPage() {
   return (
     <div className={LAYOUT_STYLES.spacing.section}>
       <div>
-        <h1 className={COMMON_STYLES.text.pageTitle}>설정</h1>
-        <p className={COMMON_STYLES.text.pageDescription}>시스템 설정을 관리하고 환경을 구성하세요.</p>
+        <h1 className={COMMON_STYLES.text.pageTitle}>{PAGE_TEXT.settings.title}</h1>
+        <p className={COMMON_STYLES.text.pageDescription}>{PAGE_TEXT.settings.description}</p>
       </div>
 
       {/* YouTube 설정 */}
@@ -22,35 +23,35 @@ export function SettingsPage() {
         <div className={COMMON_STYLES.cardHeader}>
           <div className={COMMON_STYLES.iconContainer.default}>
             <Youtube className="h-6 w-6 text-red-600" />
-            <h3 className={COMMON_STYLES.text.sectionTitle}>YouTube 설정</h3>
+            <h3 className={COMMON_STYLES.text.sectionTitle}>{PAGE_TEXT.settings.youtubeSettings}</h3>
           </div>
         </div>
         <div className={COMMON_STYLES.cardContentSpaced}>
           <div className={LAYOUT_STYLES.flex.between}>
             <div>
-              <h4 className={COMMON_STYLES.text.cardTitle}>API 연결 상태</h4>
-              <p className={COMMON_STYLES.text.cardDescription}>YouTube Data API v3 연결 상태</p>
+              <h4 className={COMMON_STYLES.text.cardTitle}>{PAGE_TEXT.settings.apiConnection}</h4>
+              <p className={COMMON_STYLES.text.cardDescription}>{PAGE_TEXT.settings.apiDescription}</p>
             </div>
             <div className={COMMON_STYLES.iconContainer.small}>
               <div className={COMMON_STYLES.indicator.online}></div>
-              <span className={COMMON_STYLES.text.success}>연결됨</span>
+              <span className={COMMON_STYLES.text.success}>{UI_TEXT.common.connected}</span>
             </div>
           </div>
           <div className={LAYOUT_STYLES.flex.between}>
             <div>
-              <h4 className={COMMON_STYLES.text.cardTitle}>기본 공개 설정</h4>
-              <p className={COMMON_STYLES.text.cardDescription}>새 업로드의 기본 공개 설정</p>
+              <h4 className={COMMON_STYLES.text.cardTitle}>{PAGE_TEXT.settings.defaultPrivacy}</h4>
+              <p className={COMMON_STYLES.text.cardDescription}>{PAGE_TEXT.settings.privacyDescription}</p>
             </div>
             <select className={COMMON_STYLES.input.select}>
-              <option value="private">비공개</option>
-              <option value="unlisted">목록에 없음</option>
-              <option value="public">공개</option>
+              <option value="private">{PAGE_TEXT.settings.private}</option>
+              <option value="unlisted">{PAGE_TEXT.settings.unlisted}</option>
+              <option value="public">{PAGE_TEXT.settings.public}</option>
             </select>
           </div>
           <div className={LAYOUT_STYLES.flex.between}>
             <div>
-              <h4 className={COMMON_STYLES.text.cardTitle}>기본 카테고리</h4>
-              <p className={COMMON_STYLES.text.cardDescription}>업로드할 비디오의 기본 카테고리</p>
+              <h4 className={COMMON_STYLES.text.cardTitle}>{PAGE_TEXT.settings.defaultCategory}</h4>
+              <p className={COMMON_STYLES.text.cardDescription}>{PAGE_TEXT.settings.categoryDescription}</p>
             </div>
             <select 
               className={COMMON_STYLES.input.select} 
@@ -71,28 +72,28 @@ export function SettingsPage() {
         <div className={COMMON_STYLES.cardHeader}>
           <div className={COMMON_STYLES.iconContainer.default}>
             <Database className="h-6 w-6 text-blue-600" />
-            <h3 className={COMMON_STYLES.text.sectionTitle}>파일 설정</h3>
+            <h3 className={COMMON_STYLES.text.sectionTitle}>{PAGE_TEXT.settings.fileSettings}</h3>
           </div>
         </div>
         <div className={COMMON_STYLES.cardContentSpaced}>
           <div className={LAYOUT_STYLES.flex.between}>
             <div>
-              <h4 className={COMMON_STYLES.text.cardTitle}>업로드 디렉토리</h4>
+              <h4 className={COMMON_STYLES.text.cardTitle}>{PAGE_TEXT.settings.uploadDirectory}</h4>
               <p className={COMMON_STYLES.text.cardDescription}>uploads/videos</p>
             </div>
-            <Button variant="outline" size="sm">변경</Button>
+            <Button variant="outline" size="sm">{PAGE_TEXT.settings.change}</Button>
           </div>
           <div className={LAYOUT_STYLES.flex.between}>
             <div>
-              <h4 className={COMMON_STYLES.text.cardTitle}>최대 파일 크기</h4>
-              <p className={COMMON_STYLES.text.cardDescription}>8GB (YouTube 제한)</p>
+              <h4 className={COMMON_STYLES.text.cardTitle}>{PAGE_TEXT.settings.maxFileSize}</h4>
+              <p className={COMMON_STYLES.text.cardDescription}>8GB {PAGE_TEXT.settings.fileSizeNote}</p>
             </div>
-            <span className={COMMON_STYLES.text.label}>수정 불가</span>
+            <span className={COMMON_STYLES.text.label}>{PAGE_TEXT.settings.cannotModify}</span>
           </div>
           <div className={LAYOUT_STYLES.flex.between}>
             <div>
-              <h4 className={COMMON_STYLES.text.cardTitle}>자동 백업</h4>
-              <p className={COMMON_STYLES.text.cardDescription}>업로드된 파일 자동 백업</p>
+              <h4 className={COMMON_STYLES.text.cardTitle}>{PAGE_TEXT.settings.autoBackup}</h4>
+              <p className={COMMON_STYLES.text.cardDescription}>{PAGE_TEXT.settings.backupDescription}</p>
             </div>
             <label className={COMMON_STYLES.toggle.container}>
               <input type="checkbox" className={COMMON_STYLES.toggle.hiddenInput} defaultChecked />
@@ -107,14 +108,14 @@ export function SettingsPage() {
         <div className={COMMON_STYLES.cardHeader}>
           <div className={COMMON_STYLES.iconContainer.default}>
             <Bell className="h-6 w-6 text-yellow-600" />
-            <h3 className={COMMON_STYLES.text.sectionTitle}>알림 설정</h3>
+            <h3 className={COMMON_STYLES.text.sectionTitle}>{PAGE_TEXT.settings.notificationSettings}</h3>
           </div>
         </div>
         <div className={COMMON_STYLES.cardContentSpaced}>
           <div className={LAYOUT_STYLES.flex.between}>
             <div>
-              <h4 className={COMMON_STYLES.text.cardTitle}>업로드 완료 알림</h4>
-              <p className={COMMON_STYLES.text.cardDescription}>YouTube 업로드 완료 시 알림</p>
+              <h4 className={COMMON_STYLES.text.cardTitle}>{PAGE_TEXT.settings.uploadComplete}</h4>
+              <p className={COMMON_STYLES.text.cardDescription}>{PAGE_TEXT.settings.uploadCompleteDescription}</p>
             </div>
             <label className={COMMON_STYLES.toggle.container}>
               <input type="checkbox" className={COMMON_STYLES.toggle.hiddenInput} defaultChecked />
@@ -123,8 +124,8 @@ export function SettingsPage() {
           </div>
           <div className={LAYOUT_STYLES.flex.between}>
             <div>
-              <h4 className={COMMON_STYLES.text.cardTitle}>오류 알림</h4>
-              <p className={COMMON_STYLES.text.cardDescription}>업로드 오류 발생 시 알림</p>
+              <h4 className={COMMON_STYLES.text.cardTitle}>{PAGE_TEXT.settings.errorNotification}</h4>
+              <p className={COMMON_STYLES.text.cardDescription}>{PAGE_TEXT.settings.errorDescription}</p>
             </div>
             <label className={COMMON_STYLES.toggle.container}>
               <input type="checkbox" className={COMMON_STYLES.toggle.hiddenInput} defaultChecked />
@@ -139,32 +140,32 @@ export function SettingsPage() {
         <div className={COMMON_STYLES.cardHeader}>
           <div className={COMMON_STYLES.iconContainer.default}>
             <Shield className="h-6 w-6 text-green-600" />
-            <h3 className={COMMON_STYLES.text.sectionTitle}>시스템 정보</h3>
+            <h3 className={COMMON_STYLES.text.sectionTitle}>{PAGE_TEXT.settings.systemInfo}</h3>
           </div>
         </div>
         <div className={COMMON_STYLES.cardContentSpaced}>
           <div className={LAYOUT_STYLES.grid.systemInfo}>
             <div>
-              <h4 className={COMMON_STYLES.text.cardTitle}>버전</h4>
+              <h4 className={COMMON_STYLES.text.cardTitle}>{PAGE_TEXT.settings.version}</h4>
               <p className={COMMON_STYLES.text.cardDescription}>v1.2.1</p>
             </div>
             <div>
-              <h4 className={COMMON_STYLES.text.cardTitle}>빌드 날짜</h4>
+              <h4 className={COMMON_STYLES.text.cardTitle}>{PAGE_TEXT.settings.buildDate}</h4>
               <p className={COMMON_STYLES.text.cardDescription}>2025-08-22</p>
             </div>
             <div>
-              <h4 className={COMMON_STYLES.text.cardTitle}>Python 버전</h4>
+              <h4 className={COMMON_STYLES.text.cardTitle}>{PAGE_TEXT.settings.pythonVersion}</h4>
               <p className={COMMON_STYLES.text.cardDescription}>3.13</p>
             </div>
             <div>
-              <h4 className={COMMON_STYLES.text.cardTitle}>FastAPI 버전</h4>
+              <h4 className={COMMON_STYLES.text.cardTitle}>{PAGE_TEXT.settings.fastapiVersion}</h4>
               <p className={COMMON_STYLES.text.cardDescription}>0.116.0</p>
             </div>
           </div>
           <div className="pt-4 border-t border-gray-200">
             <Button variant="outline">
               <Download className="h-4 w-4 mr-2" />
-              로그 다운로드
+              {PAGE_TEXT.settings.downloadLogs}
             </Button>
           </div>
         </div>

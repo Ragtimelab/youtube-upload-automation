@@ -2,6 +2,7 @@ import { ScriptsManager } from '@/components/scripts/ScriptsManager'
 import { Environment } from '@/utils/ssrHelpers'
 import { ProfiledComponent } from '@/utils/performanceAnalyzer'
 import { COMMON_STYLES, LAYOUT_STYLES } from '@/constants/styles'
+import { PAGE_TEXT, UI_TEXT } from '@/constants/text'
 
 /**
  * Phase 11: SSR 호환성 및 성능 모니터링 추가
@@ -22,10 +23,10 @@ export function ScriptsPage() {
     return (
       <div className={`${LAYOUT_STYLES.container.page} p-8`}>
         <div className={LAYOUT_STYLES.container.main}>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">스크립트 관리</h1>
-          <p className={`${COMMON_STYLES.text.pageDescription} mb-8`}>마크다운 스크립트 파일을 업로드하고 관리하세요.</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">{PAGE_TEXT.scripts.title}</h1>
+          <p className={`${COMMON_STYLES.text.pageDescription} mb-8`}>{PAGE_TEXT.scripts.description}</p>
           <div className="text-center py-12">
-            <p className={COMMON_STYLES.text.label}>서버에서 렌더링 중...</p>
+            <p className={COMMON_STYLES.text.label}>{PAGE_TEXT.dashboard.serverRendering}</p>
           </div>
         </div>
       </div>
@@ -36,11 +37,11 @@ export function ScriptsPage() {
     <ProfiledComponent name="ScriptsPage">
       <ScriptsManager>
       <ScriptsManager.Header 
-        title="스크립트 관리"
-        description="마크다운 스크립트 파일을 업로드하고 관리하세요."
+        title={PAGE_TEXT.scripts.title}
+        description={PAGE_TEXT.scripts.description}
       />
       
-      <ScriptsManager.SearchBar placeholder="스크립트 검색..." />
+      <ScriptsManager.SearchBar placeholder={PAGE_TEXT.scripts.searchPlaceholder} />
       
       <ScriptsManager.FilterTabs />
       
@@ -49,7 +50,7 @@ export function ScriptsPage() {
         
         <ScriptsManager.Sidebar>
           <div className={`${LAYOUT_STYLES.flex.between} mb-4`}>
-            <h3 className={`${COMMON_STYLES.text.small} font-medium text-gray-900`}>표시 옵션</h3>
+            <h3 className={`${COMMON_STYLES.text.small} font-medium text-gray-900`}>{UI_TEXT.common.displayOptions}</h3>
             <ScriptsManager.ViewToggle />
           </div>
           

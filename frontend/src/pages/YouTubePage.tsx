@@ -8,6 +8,7 @@ import { YouTubeSearchFilter } from '@/components/youtube/YouTubeSearchFilter'
 import { YouTubeBatchControls } from '@/components/youtube/YouTubeBatchControls'
 import { YouTubeScriptList } from '@/components/youtube/YouTubeScriptList'
 import { YouTubeStatsCards } from '@/components/youtube/YouTubeStatsCards'
+import { COMMON_STYLES, LAYOUT_STYLES } from '@/constants/styles'
 import { Activity } from 'lucide-react'
 import type { YouTubeUploadProgress, YouTubeUploadStep } from '@/types/youtube'
 import type { Script } from '@/types/api'
@@ -93,24 +94,24 @@ export function YouTubePage() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className={`${LAYOUT_STYLES.container.main} p-8`}>
       {/* 헤더 */}
       <div className="mb-8">
-        <div className="flex items-center justify-between">
+        <div className={LAYOUT_STYLES.flex.between}>
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">YouTube 업로드 관리</h1>
-            <p className="text-gray-600">스크립트를 선택하여 YouTube에 업로드하세요.</p>
+            <p className={COMMON_STYLES.text.pageDescription}>스크립트를 선택하여 YouTube에 업로드하세요.</p>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className={`${LAYOUT_STYLES.flex.start} gap-4`}>
             <WebSocketStatus 
               isConnected={webSocketState.isConnected}
               connectionStatus={webSocketState.connectionStatus}
             />
             {batchUploading && (
-              <div className="flex items-center gap-2 text-blue-600">
+              <div className={`${LAYOUT_STYLES.flex.start} gap-2 text-blue-600`}>
                 <Activity className="w-4 h-4 animate-pulse" />
-                <span className="text-sm font-medium">{batchProgress.current}개 업로드 중</span>
+                <span className={`${COMMON_STYLES.text.small} font-medium`}>{batchProgress.current}개 업로드 중</span>
               </div>
             )}
           </div>

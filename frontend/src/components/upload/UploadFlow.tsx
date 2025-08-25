@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/components/errors/ErrorBoundary'
 import { useUnifiedScripts } from '@/hooks/useUnifiedScripts'
 import { useUnifiedUpload } from '@/hooks/useUnifiedUpload'
 import { useToastHelpers } from '@/hooks/useToastContext'
+import { COMMON_STYLES, LAYOUT_STYLES } from '@/constants/styles'
 import { 
   Upload, 
   AlertCircle,
@@ -167,7 +168,7 @@ export function UploadFlow({
       
       // 완료 콜백 실행
       onComplete?.()
-    } catch (_error: unknown) {
+    } catch {
       // 에러는 handleUploadError에서 이미 처리됨
       // 여기서는 추가 작업이 필요한 경우에만 처리
     }
@@ -225,7 +226,7 @@ export function UploadFlow({
   
   return (
     <UploadFlowContext.Provider value={contextValue}>
-      <div className="space-y-6">
+      <div className={LAYOUT_STYLES.spacing.section}>
         {children}
       </div>
     </UploadFlowContext.Provider>
@@ -246,8 +247,8 @@ function Header({
 }: HeaderProps) {
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-      <p className="text-gray-600 mt-1">{description}</p>
+      <h1 className={COMMON_STYLES.text.pageTitle}>{title}</h1>
+      <p className={COMMON_STYLES.text.pageDescription}>{description}</p>
     </div>
   )
 }
@@ -278,23 +279,24 @@ function ScriptSelection({ selectedScriptId }: ScriptSelectionProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-      <h3 className="text-lg font-medium text-gray-900 mb-4">1. 스크립트 선택</h3>
+    <div className={COMMON_STYLES.card}>
+      <div className={COMMON_STYLES.cardContent}>
+      <h3 className={`${COMMON_STYLES.text.sectionTitle} mb-4`}>1. 스크립트 선택</h3>
       
       {scriptsLoading ? (
-        <div className="flex items-center justify-center py-8">
+        <div className={`${LAYOUT_STYLES.flex.center} py-8`}>
           <Loader2 className="h-6 w-6 animate-spin text-gray-400 mr-3" />
           <span className="text-gray-600">스크립트를 불러오는 중...</span>
         </div>
       ) : availableScripts.length === 0 ? (
         <div className="text-center py-8">
           <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <h4 className="text-lg font-medium text-gray-900 mb-2">업로드 가능한 스크립트가 없습니다</h4>
+          <h4 className={`${COMMON_STYLES.text.sectionTitle} mb-2`}>업로드 가능한 스크립트가 없습니다</h4>
           <p className="text-gray-600 mb-4">먼저 스크립트를 업로드해주세요.</p>
           <Button variant="outline" onClick={() => navigate('/scripts')}>스크립트 관리로 이동</Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={LAYOUT_STYLES.grid.cards}>
           {availableScripts.map((script) => {
             const status = getScriptStatus(script.status)
             const StatusIcon = status.icon as React.ComponentType<{ className?: string }>
@@ -308,17 +310,17 @@ function ScriptSelection({ selectedScriptId }: ScriptSelectionProps) {
                     : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
                 }`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <h4 className="font-medium text-gray-900 truncate">{script.title}</h4>
+                <div className={`${LAYOUT_STYLES.flex.between} mb-2`}>
+                  <div className={LAYOUT_STYLES.flex.start}>
+                    <h4 className={`${COMMON_STYLES.text.cardTitle} truncate`}>{script.title}</h4>
                     {currentSelection === script.id && (
-                      <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                      <CheckCircle2 className="h-4 w-4 text-blue-600 ml-2" />
                     )}
                   </div>
                   <StatusIcon className={`h-4 w-4 ${status.color}`} />
                 </div>
-                <p className="text-sm text-gray-600 mb-2 line-clamp-2">{script.description}</p>
-                <div className="flex items-center text-xs text-gray-500">
+                <p className={`${COMMON_STYLES.text.cardDescription} mb-2 line-clamp-2`}>{script.description}</p>
+                <div className={`${LAYOUT_STYLES.flex.start} ${COMMON_STYLES.text.small} text-gray-500`}>
                   <Calendar className="h-3 w-3 mr-1" />
                   {new Date(script.created_at).toLocaleDateString('ko-KR')}
                 </div>
@@ -327,6 +329,7 @@ function ScriptSelection({ selectedScriptId }: ScriptSelectionProps) {
           })}
         </div>
       )}
+      </div>
     </div>
   )
 }
@@ -410,8 +413,9 @@ function FileUpload({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-      <h3 className="text-lg font-medium text-gray-900 mb-4">2. 비디오 파일 업로드</h3>
+    <div className={COMMON_STYLES.card}>
+      <div className={COMMON_STYLES.cardContent}>
+      <h3 className={`${COMMON_STYLES.text.sectionTitle} mb-4`}>2. 비디오 파일 업로드</h3>
       
       <div
         className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
@@ -435,15 +439,15 @@ function FileUpload({
         />
         
         {selectedFile ? (
-          <div className="space-y-4">
-            <div className="flex items-center justify-center">
+          <div className={LAYOUT_STYLES.spacing.cardContent}>
+            <div className={LAYOUT_STYLES.flex.center}>
               <FileVideo className="h-12 w-12 text-green-600" />
             </div>
             <div>
-              <h4 className="font-medium text-gray-900">{selectedFile.name}</h4>
-              <p className="text-sm text-gray-600">{formatFileSize(selectedFile.size)}</p>
+              <h4 className={COMMON_STYLES.text.cardTitle}>{selectedFile.name}</h4>
+              <p className={COMMON_STYLES.text.cardDescription}>{formatFileSize(selectedFile.size)}</p>
             </div>
-            <div className="flex justify-center space-x-3">
+            <div className={`${LAYOUT_STYLES.flex.center} space-x-3`}>
               <Button variant="outline" onClick={() => setSelectedFile(null)}>
                 <X className="h-4 w-4 mr-2" />
                 제거
@@ -454,10 +458,10 @@ function FileUpload({
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className={LAYOUT_STYLES.spacing.cardContent}>
             <Upload className="h-12 w-12 mx-auto text-gray-400" />
             <div>
-              <h4 className="text-lg font-medium text-gray-900 mb-2">
+              <h4 className={`${COMMON_STYLES.text.sectionTitle} mb-2`}>
                 {dragActive ? '파일을 여기에 놓으세요' : '비디오 파일을 드래그하거나 클릭하여 업로드'}
               </h4>
               <Button onClick={() => fileInputRef.current?.click()}>
@@ -484,6 +488,7 @@ function FileUpload({
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
@@ -504,11 +509,12 @@ function ProgressIndicator({ showETA = false, showSpeedMeter = false }: Progress
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-      <h3 className="text-lg font-medium text-gray-900 mb-4">업로드 진행률</h3>
+    <div className={COMMON_STYLES.card}>
+      <div className={COMMON_STYLES.cardContent}>
+      <h3 className={`${COMMON_STYLES.text.sectionTitle} mb-4`}>업로드 진행률</h3>
       
-      <div className="space-y-4">
-        <div className="flex justify-between text-sm text-gray-600 mb-1">
+      <div className={LAYOUT_STYLES.spacing.cardContent}>
+        <div className={`${LAYOUT_STYLES.flex.between} ${COMMON_STYLES.text.cardDescription} mb-1`}>
           <span>진행률</span>
           <span>{uploadProgress}%</span>
         </div>
@@ -520,16 +526,17 @@ function ProgressIndicator({ showETA = false, showSpeedMeter = false }: Progress
         </div>
         
         {showETA && (
-          <div className="text-sm text-gray-600">
+          <div className={COMMON_STYLES.text.cardDescription}>
             예상 남은 시간: 계산 중...
           </div>
         )}
         
         {showSpeedMeter && (
-          <div className="text-sm text-gray-600">
+          <div className={COMMON_STYLES.text.cardDescription}>
             업로드 속도: 계산 중...
           </div>
         )}
+      </div>
       </div>
     </div>
   )
@@ -553,11 +560,12 @@ function ConfirmationStep({ onConfirm }: ConfirmationStepProps) {
   const handleConfirm = onConfirm || defaultHandleUpload
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-      <div className="flex items-center justify-between">
+    <div className={COMMON_STYLES.card}>
+      <div className={COMMON_STYLES.cardContent}>
+      <div className={LAYOUT_STYLES.flex.between}>
         <div>
-          <h3 className="text-lg font-medium text-gray-900">3. 업로드 실행</h3>
-          <p className="text-gray-600 mt-1">스크립트와 비디오 파일을 연결하여 업로드합니다.</p>
+          <h3 className={COMMON_STYLES.text.sectionTitle}>3. 업로드 실행</h3>
+          <p className={COMMON_STYLES.text.pageDescription}>스크립트와 비디오 파일을 연결하여 업로드합니다.</p>
         </div>
         <Button
           onClick={handleConfirm}
@@ -577,6 +585,7 @@ function ConfirmationStep({ onConfirm }: ConfirmationStepProps) {
           )}
         </Button>
       </div>
+      </div>
     </div>
   )
 }
@@ -587,12 +596,14 @@ function ConfirmationStep({ onConfirm }: ConfirmationStepProps) {
 
 function UploadFlowErrorBoundary({ children }: { children: React.ReactNode }) {
   const DefaultFallback = ({ error, retry }: { error: Error; retry: () => void }) => (
-    <div className="bg-white rounded-lg border border-red-200 shadow-sm p-6">
+    <div className="bg-white rounded-lg border border-red-200 shadow-sm">
+      <div className={COMMON_STYLES.cardContent}>
       <div className="text-center">
         <AlertCircle className="h-12 w-12 mx-auto text-red-500 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">업로드 오류가 발생했습니다</h3>
-        <p className="text-gray-600 mb-4">{error.message}</p>
+        <h3 className={`${COMMON_STYLES.text.sectionTitle} mb-2`}>업로드 오류가 발생했습니다</h3>
+        <p className={`${COMMON_STYLES.text.pageDescription} mb-4`}>{error.message}</p>
         <Button onClick={retry} variant="outline">다시 시도</Button>
+      </div>
       </div>
     </div>
   )

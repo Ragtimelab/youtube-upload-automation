@@ -183,7 +183,7 @@ export function DefaultErrorFallback({ error, retry, canRetry, retryCount, level
   const handleNavigateHome = () => {
     try {
       navigate('/')
-    } catch (_error) {
+    } catch {
       // Router 컨텍스트가 없는 경우 페이지 리로드로 대체
       window.location.href = '/'
     }
@@ -192,7 +192,7 @@ export function DefaultErrorFallback({ error, retry, canRetry, retryCount, level
   const handleNavigateBack = () => {
     try {
       navigate(-1)
-    } catch (_error) {
+    } catch {
       // Router 컨텍스트가 없는 경우 브라우저 뒤로가기
       window.history.back()
     }

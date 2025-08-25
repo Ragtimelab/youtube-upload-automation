@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+import { COMMON_STYLES, LAYOUT_STYLES } from '@/constants/styles'
 import { 
   Activity, 
   Wifi, 
@@ -192,7 +193,7 @@ export function StatusPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className={`${LAYOUT_STYLES.flex.center} min-h-screen`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-gray-600">실시간 상태를 불러오는 중...</p>
@@ -202,32 +203,32 @@ export function StatusPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className={`${LAYOUT_STYLES.container.page} p-6`}>
+      <div className={LAYOUT_STYLES.container.main}>
         {/* 헤더 */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className={LAYOUT_STYLES.flex.between}>
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">실시간 모니터링</h1>
-              <p className="text-gray-600">시스템 상태와 업로드 진행 상황을 실시간으로 모니터링</p>
+              <p className={COMMON_STYLES.text.pageDescription}>시스템 상태와 업로드 진행 상황을 실시간으로 모니터링</p>
             </div>
             
             {/* 컨트롤 패널 */}
-            <div className="flex items-center gap-4">
+            <div className={`${LAYOUT_STYLES.flex.start} gap-4`}>
               <WebSocketStatus 
                 isConnected={webSocketState.isConnected}
                 connectionStatus={webSocketState.connectionStatus}
                 error={webSocketState.error}
               />
               
-              <div className="flex items-center gap-2">
+              <div className={`${LAYOUT_STYLES.flex.start} gap-2`}>
                 <Button
                   variant={isMonitoring ? "default" : "outline"}
                   size="sm"
                   onClick={() => setIsMonitoring(!isMonitoring)}
-                  className="flex items-center gap-2"
+                  className={LAYOUT_STYLES.flex.start}
                 >
-                  {isMonitoring ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                  {isMonitoring ? <Pause className="h-4 w-4 mr-2" /> : <Play className="h-4 w-4 mr-2" />}
                   {isMonitoring ? '모니터링 중' : '모니터링 중지'}
                 </Button>
                 
@@ -235,14 +236,14 @@ export function StatusPage() {
                   variant="outline"
                   size="sm"
                   onClick={refreshAll}
-                  className="flex items-center gap-2"
+                  className={LAYOUT_STYLES.flex.start}
                 >
-                  <RefreshCw className="h-4 w-4" />
+                  <RefreshCw className="h-4 w-4 mr-2" />
                   새로고침
                 </Button>
               </div>
               
-              <div className="text-sm text-gray-500">
+              <div className={COMMON_STYLES.text.small}>
                 마지막 업데이트: {lastRefresh.toLocaleTimeString('ko-KR')}
               </div>
             </div>
@@ -265,14 +266,14 @@ export function StatusPage() {
                 const ServiceIcon = service.icon
                 
                 return (
-                  <div key={index} className="p-4 rounded-lg border bg-white">
-                    <div className="flex items-center justify-between mb-2">
+                  <div key={index} className={`${COMMON_STYLES.cardContent} rounded-lg border bg-white`}>
+                    <div className={`${LAYOUT_STYLES.flex.between} mb-2`}>
                       <ServiceIcon className="h-6 w-6 text-gray-600" />
                       <StatusIcon className={`h-5 w-5 ${getStatusColor(service.status)}`} />
                     </div>
-                    <h4 className="font-medium text-gray-900">{service.name}</h4>
-                    <p className="text-sm text-gray-600">지연: {service.latency}</p>
-                    <p className="text-xs text-gray-500 mt-1">{service.details}</p>
+                    <h4 className={COMMON_STYLES.text.cardTitle}>{service.name}</h4>
+                    <p className={COMMON_STYLES.text.cardDescription}>지연: {service.latency}</p>
+                    <p className={`${COMMON_STYLES.text.small} text-gray-500 mt-1`}>{service.details}</p>
                   </div>
                 )
               })}
@@ -334,17 +335,17 @@ export function StatusPage() {
             </CardHeader>
             <CardContent>
               {_getActiveUploads().length > 0 ? (
-                <div className="space-y-4">
+                <div className={LAYOUT_STYLES.spacing.cardContent}>
                   {_getActiveUploads().map((upload: { scriptId: number; progress: number; status: string; message: string }) => (
-                    <div key={upload.scriptId} className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center justify-between mb-2">
+                    <div key={upload.scriptId} className={`${COMMON_STYLES.cardContent} bg-blue-50 rounded-lg border border-blue-200`}>
+                      <div className={`${LAYOUT_STYLES.flex.between} mb-2`}>
                         <span className="font-medium text-blue-800">스크립트 #{upload.scriptId}</span>
                         <Badge className="bg-blue-100 text-blue-800 border-0">
                           {upload.progress}%
                         </Badge>
                       </div>
                       <Progress value={upload.progress} className="h-2 mb-2" />
-                      <p className="text-sm text-blue-700">{upload.message}</p>
+                      <p className={`${COMMON_STYLES.text.small} text-blue-700`}>{upload.message}</p>
                     </div>
                   ))}
                 </div>
@@ -352,7 +353,7 @@ export function StatusPage() {
                 <div className="text-center py-8 text-gray-500">
                   <Activity className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <p>현재 진행 중인 업로드가 없습니다.</p>
-                  <p className="text-sm mt-2">업로드가 시작되면 실시간으로 표시됩니다.</p>
+                  <p className={`${COMMON_STYLES.text.small} mt-2`}>업로드가 시작되면 실시간으로 표시됩니다.</p>
                 </div>
               )}
             </CardContent>
@@ -370,23 +371,23 @@ export function StatusPage() {
                 </CardTitle>
                 <CardDescription>시스템 활동 및 이벤트 로그</CardDescription>
               </div>
-              <div className="flex items-center gap-2">
+              <div className={`${LAYOUT_STYLES.flex.start} gap-2`}>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setAutoScroll(!autoScroll)}
-                  className="flex items-center gap-2"
+                  className={LAYOUT_STYLES.flex.start}
                 >
-                  <Eye className="h-4 w-4" />
+                  <Eye className="h-4 w-4 mr-2" />
                   {autoScroll ? '자동 스크롤 켜짐' : '자동 스크롤 꺼짐'}
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setLogs([])}
-                  className="flex items-center gap-2"
+                  className={LAYOUT_STYLES.flex.start}
                 >
-                  <Settings className="h-4 w-4" />
+                  <Settings className="h-4 w-4 mr-2" />
                   로그 지우기
                 </Button>
               </div>

@@ -12,6 +12,7 @@ import { formatFullTime } from '@/utils/dateFormat'
 import { commonLayouts, cn } from '@/utils/classNames'
 import { Environment } from '@/utils/ssrHelpers'
 import { ProfiledComponent } from '@/utils/performanceAnalyzer'
+import { COMMON_STYLES, LAYOUT_STYLES } from '@/constants/styles'
 import { Activity, RefreshCw } from 'lucide-react'
 
 export function DashboardPage() {
@@ -34,12 +35,12 @@ export function DashboardPage() {
   // SSR 호환성 체크
   if (Environment.isServer()) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
-        <div className="max-w-7xl mx-auto">
+      <div className={`${LAYOUT_STYLES.container.page} p-8`}>
+        <div className={LAYOUT_STYLES.container.main}>
           <h1 className="text-3xl font-bold text-gray-800 mb-2">시스템 대시보드</h1>
-          <p className="text-gray-600 mb-8">YouTube 업로드 자동화 시스템 실시간 모니터링</p>
+          <p className={`${COMMON_STYLES.text.pageDescription} mb-8`}>YouTube 업로드 자동화 시스템 실시간 모니터링</p>
           <div className="text-center py-12">
-            <p className="text-gray-500">서버에서 렌더링 중...</p>
+            <p className={COMMON_STYLES.text.label}>서버에서 렌더링 중...</p>
           </div>
         </div>
       </div>

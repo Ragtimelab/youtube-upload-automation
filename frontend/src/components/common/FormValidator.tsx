@@ -15,22 +15,22 @@ import { z } from 'zod'
 interface FormValidatorProps<TSchema extends z.ZodSchema> {
   schema: TSchema
   initialValues: z.input<TSchema>
-  onSubmit?: (values: z.output<TSchema>) => Promise<void> | void
+  onSubmit?: (_values: z.output<TSchema>) => Promise<void> | void
   validateOnChange?: boolean
   validateOnBlur?: boolean
-  children: (renderProps: {
+  children: (_renderProps: {
     values: z.input<TSchema>
     errors: Partial<Record<keyof z.input<TSchema>, string>>
     touched: Partial<Record<keyof z.input<TSchema>, boolean>>
     isValid: boolean
     isSubmitting: boolean
     isDirty: boolean
-    handleChange: (field: keyof z.input<TSchema>) => (value: any) => void
-    handleBlur: (field: keyof z.input<TSchema>) => () => void
-    handleSubmit: (e?: React.FormEvent) => Promise<void>
+    handleChange: (_field: keyof z.input<TSchema>) => (_value: unknown) => void
+    handleBlur: (_field: keyof z.input<TSchema>) => () => void
+    handleSubmit: (_e?: React.FormEvent) => Promise<void>
     resetForm: () => void
-    setFieldValue: (field: keyof z.input<TSchema>, value: any) => void
-    setFieldError: (field: keyof z.input<TSchema>, error: string) => void
+    setFieldValue: (_field: keyof z.input<TSchema>, _value: unknown) => void
+    setFieldError: (_field: keyof z.input<TSchema>, _error: string) => void
   }) => React.ReactNode
 }
 
@@ -63,34 +63,38 @@ export function FormValidator<TSchema extends z.ZodSchema>({
   }, [schema, values, errors])
 
   // 필드별 검증
-  const validateField = useCallback((field: keyof z.input<TSchema>, value: any) => {
+  const validateField = useCallback((field: keyof z.input<TSchema>, value: unknown) => {
     try {
-      // 전체 스키마에서 해당 필드만 검증
-      const fieldSchema = (schema as any).shape?.[field as string]
-      if (fieldSchema) {
-        fieldSchema.parse(value)
-        setErrors(prev => {
-          const newErrors = { ...prev }
-          delete newErrors[field]
-          return newErrors
-        })
-      }
+      // 전체 스키마로 임시 객체를 만들어 검증
+      const testValues = { ...values, [field]: value }
+      schema.parse(testValues)
+      
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
     } catch (error) {
       if (error instanceof z.ZodError) {
-        setErrors(prev => ({
-          ...prev,
-          [field]: error.issues[0]?.message || '유효하지 않은 값입니다.'
-        }))
+        const fieldError = error.issues.find(issue => 
+          issue.path.length > 0 && issue.path[0] === field
+        )
+        if (fieldError) {
+          setErrors(prev => ({
+            ...prev,
+            [field]: fieldError.message
+          }))
+        }
       }
     }
-  }, [schema])
+  }, [schema, values])
 
   // 필드 값 변경 핸들러
-  const handleChange = useCallback((field: keyof z.input<TSchema>) => (value: any) => {
+  const handleChange = useCallback((field: keyof z.input<TSchema>) => (value: unknown) => {
     setValues(prev => ({
-      ...prev as any,
+      ...(prev as Record<string, unknown>),
       [field]: value
-    }))
+    }) as z.input<TSchema>)
 
     if (validateOnChange) {
       validateField(field, value)
@@ -122,7 +126,7 @@ export function FormValidator<TSchema extends z.ZodSchema>({
       const validatedValues = schema.parse(values)
       
       // 모든 필드를 touched로 표시
-      const allTouched = Object.keys(values as any).reduce((acc, key) => ({
+      const allTouched = Object.keys(values as Record<string, unknown>).reduce((acc, key) => ({
         ...acc,
         [key]: true
       }), {})
@@ -139,17 +143,17 @@ export function FormValidator<TSchema extends z.ZodSchema>({
       if (error instanceof z.ZodError) {
         const fieldErrors: Partial<Record<keyof z.input<TSchema>, string>> = {}
         
-        error.issues.forEach((err: any) => {
-          if (err.path.length > 0) {
-            const fieldName = err.path[0] as keyof z.input<TSchema>
-            fieldErrors[fieldName] = err.message
+        error.issues.forEach((issue) => {
+          if (issue.path.length > 0) {
+            const fieldName = issue.path[0] as keyof z.input<TSchema>
+            fieldErrors[fieldName] = issue.message
           }
         })
 
         setErrors(fieldErrors)
 
         // 모든 필드를 touched로 표시
-        const allTouched = Object.keys(values as any).reduce((acc, key) => ({
+        const allTouched = Object.keys(values as Record<string, unknown>).reduce((acc, key) => ({
           ...acc,
           [key]: true
         }), {})
@@ -169,11 +173,11 @@ export function FormValidator<TSchema extends z.ZodSchema>({
   }, [initialValues])
 
   // 필드 값 직접 설정
-  const setFieldValue = useCallback((field: keyof z.input<TSchema>, value: any) => {
+  const setFieldValue = useCallback((field: keyof z.input<TSchema>, value: unknown) => {
     setValues(prev => ({
-      ...prev as any,
+      ...(prev as Record<string, unknown>),
       [field]: value
-    }))
+    }) as z.input<TSchema>)
   }, [])
 
   // 필드 에러 직접 설정
@@ -219,14 +223,14 @@ const uploadSchema = z.object({
 
 interface UploadFormValidatorProps {
   initialValues?: Partial<z.input<typeof uploadSchema>>
-  onSubmit?: (values: z.output<typeof uploadSchema>) => Promise<void>
-  children: (renderProps: {
+  onSubmit?: (_values: z.output<typeof uploadSchema>) => Promise<void>
+  children: (_renderProps: {
     values: z.input<typeof uploadSchema>
     errors: Partial<Record<keyof z.input<typeof uploadSchema>, string>>
     isValid: boolean
     isSubmitting: boolean
-    handleChange: (field: keyof z.input<typeof uploadSchema>) => (value: any) => void
-    handleSubmit: (e?: React.FormEvent) => Promise<void>
+    handleChange: (_field: keyof z.input<typeof uploadSchema>) => (_value: unknown) => void
+    handleSubmit: (_e?: React.FormEvent) => Promise<void>
     resetForm: () => void
   }) => React.ReactNode
 }
@@ -244,8 +248,8 @@ export function UploadFormValidator({
       initialValues={initialValues as z.input<typeof uploadSchema>}
       onSubmit={onSubmit}
     >
-      {({ values, errors, isValid, isSubmitting, handleChange, handleSubmit, resetForm }) => 
-        children({ values, errors, isValid, isSubmitting, handleChange, handleSubmit, resetForm })
+      {({ values: _values, errors, isValid, isSubmitting, handleChange, handleSubmit, resetForm }) => 
+        children({ values: _values, errors, isValid, isSubmitting, handleChange, handleSubmit, resetForm })
       }
     </FormValidator>
   )
@@ -268,14 +272,14 @@ const scriptUploadSchema = z.object({
 })
 
 interface ScriptUploadFormValidatorProps {
-  onSubmit?: (values: z.output<typeof scriptUploadSchema>) => Promise<void>
-  children: (renderProps: {
+  onSubmit?: (_values: z.output<typeof scriptUploadSchema>) => Promise<void>
+  children: (_renderProps: {
     values: z.input<typeof scriptUploadSchema>
     errors: Partial<Record<keyof z.input<typeof scriptUploadSchema>, string>>
     isValid: boolean
     isSubmitting: boolean
-    handleChange: (field: keyof z.input<typeof scriptUploadSchema>) => (value: any) => void
-    handleSubmit: (e?: React.FormEvent) => Promise<void>
+    handleChange: (_field: keyof z.input<typeof scriptUploadSchema>) => (_value: unknown) => void
+    handleSubmit: (_e?: React.FormEvent) => Promise<void>
     resetForm: () => void
   }) => React.ReactNode
 }
@@ -287,8 +291,8 @@ export function ScriptUploadFormValidator({ onSubmit, children }: ScriptUploadFo
       initialValues={{} as z.input<typeof scriptUploadSchema>}
       onSubmit={onSubmit}
     >
-      {({ values, errors, isValid, isSubmitting, handleChange, handleSubmit, resetForm }) => 
-        children({ values, errors, isValid, isSubmitting, handleChange, handleSubmit, resetForm })
+      {({ values: _values, errors, isValid, isSubmitting, handleChange, handleSubmit, resetForm }) => 
+        children({ values: _values, errors, isValid, isSubmitting, handleChange, handleSubmit, resetForm })
       }
     </FormValidator>
   )
@@ -309,13 +313,13 @@ const searchSchema = z.object({
 
 interface SearchFormValidatorProps {
   initialValues?: Partial<z.input<typeof searchSchema>>
-  onSearch?: (values: z.output<typeof searchSchema>) => void
-  children: (renderProps: {
+  onSearch?: (_values: z.output<typeof searchSchema>) => void
+  children: (_renderProps: {
     values: z.input<typeof searchSchema>
     errors: Partial<Record<keyof z.input<typeof searchSchema>, string>>
     isValid: boolean
-    handleChange: (field: keyof z.input<typeof searchSchema>) => (value: any) => void
-    handleSubmit: (e?: React.FormEvent) => Promise<void>
+    handleChange: (_field: keyof z.input<typeof searchSchema>) => (_value: unknown) => void
+    handleSubmit: (_e?: React.FormEvent) => Promise<void>
     resetForm: () => void
   }) => React.ReactNode
 }
@@ -336,8 +340,8 @@ export function SearchFormValidator({
       }}
       validateOnChange={true}
     >
-      {({ values, errors, isValid, handleChange, handleSubmit, resetForm }) => 
-        children({ values, errors, isValid, handleChange, handleSubmit, resetForm })
+      {({ values: _values, errors, isValid, handleChange, handleSubmit, resetForm }) => 
+        children({ values: _values, errors, isValid, handleChange, handleSubmit, resetForm })
       }
     </FormValidator>
   )

@@ -8,6 +8,7 @@
  */
 
 import { Suspense } from 'react'
+import type { Script } from '@/types'
 import { 
   FileText, 
   Calendar,
@@ -137,7 +138,7 @@ function ScriptsServerList({ scripts }: ScriptsServerListProps) {
  * - 정적 데이터만 렌더링
  * - 인터랙션은 클라이언트 컴포넌트에서 처리
  */
-function ScriptServerItem({ script }: { script: any }) {
+function ScriptServerItem({ script }: { script: Script }) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'script_ready': return <Clock className="h-4 w-4 text-yellow-600" />
@@ -245,7 +246,7 @@ function ScriptsListSkeleton() {
  * 클라이언트 인터랙션 래퍼
  * 실제 구현에서는 'use client' 지시문과 함께 별도 파일로 분리
  */
-function ScriptsInteractionWrapper({ scripts: _scripts }: { scripts: any[] }) {
+function ScriptsInteractionWrapper({ scripts: _scripts }: { scripts: unknown[] }) {
   // 이 컴포넌트는 실제로는 별도 파일로 분리되고 'use client' 사용
   return (
     <div className="space-y-4">
@@ -320,7 +321,7 @@ async function getUploadSettingsServerSide() {
 /**
  * 업로드 폼 서버 컴포넌트 (정적 부분)
  */
-function UploadServerForm({ scripts, settings }: any) {
+function UploadServerForm({ scripts, settings }: unknown) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
       <div className="space-y-6">
@@ -433,7 +434,7 @@ async function getRecentActivitiesServerSide() {
   ]
 }
 
-function StatCard({ stat }: any) {
+function StatCard({ stat }: unknown) {
   const colorClasses = {
     blue: 'bg-blue-50 text-blue-700',
     green: 'bg-green-50 text-green-700',
@@ -470,14 +471,14 @@ function StatCardSkeleton() {
   )
 }
 
-function RecentActivitiesList({ activities }: any) {
+function RecentActivitiesList({ activities }: unknown) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
       <div className="p-6 border-b border-gray-200">
         <h3 className="text-lg font-medium text-gray-900">최근 활동</h3>
       </div>
       <div className="divide-y divide-gray-200">
-        {activities.map((activity: any) => (
+        {activities.map((activity: unknown) => (
           <div key={activity.id} className="p-4">
             <div className="flex items-center justify-between">
               <div>

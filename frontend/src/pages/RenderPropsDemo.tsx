@@ -69,7 +69,7 @@ export function RenderPropsDemo() {
                 
                 {scripts && scripts.length > 0 ? (
                   <div className="grid gap-4">
-                    {scripts.map((script: any, index: number) => (
+                    {scripts.map((script: unknown, index: number) => (
                       <div key={script?.id || index} className="border border-gray-200 rounded-lg p-4">
                         <h3 className="font-medium text-gray-900">{script?.title || `스크립트 ${index + 1}`}</h3>
                         <p className="text-sm text-gray-600 mt-1">{script?.description || '설명 없음'}</p>
@@ -114,7 +114,7 @@ export function RenderPropsDemo() {
                     <input
                       type="file"
                       accept="video/*"
-                      onChange={(e) => {
+                      onChange={(e: _e) => {
                         const file = e.target.files?.[0]
                         if (file) {
                           startUpload(file)
@@ -185,7 +185,7 @@ export function RenderPropsDemo() {
             alert(`검색어: "${values.query}"로 검색을 실행합니다.`)
           }}
         >
-          {({ values, errors, isValid, handleChange, handleSubmit, resetForm }) => (
+          {({ values: _values, errors, isValid, handleChange, handleSubmit, resetForm }) => (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -236,7 +236,7 @@ export function RenderPropsDemo() {
             alert(`파일 "${values.file?.name}"를 업로드합니다.`)
           }}
         >
-          {({ values, errors, isValid, isSubmitting, handleChange, handleSubmit, resetForm }) => (
+          {({ values: _values, errors, isValid, isSubmitting, handleChange, handleSubmit, resetForm }) => (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -245,7 +245,7 @@ export function RenderPropsDemo() {
                 <input
                   type="file"
                   accept=".md"
-                  onChange={(e) => {
+                  onChange={(e: _e) => {
                     const file = e.target.files?.[0]
                     if (file) {
                       handleChange('file')(file)

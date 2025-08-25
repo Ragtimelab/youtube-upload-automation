@@ -233,7 +233,7 @@ export const ProgressiveEnhancement = {
    */
   enhanceElement(
     element: HTMLElement | null,
-    enhancer: (el: HTMLElement) => void
+    enhancer: (_el: HTMLElement) => void
   ): void {
     if (!element || Environment.isServer()) {
       return
@@ -252,13 +252,13 @@ export const ProgressiveEnhancement = {
    */
   enhanceForm(
     form: HTMLFormElement | null,
-    onSubmit: (formData: FormData) => Promise<void>
+    onSubmit: (_formData: FormData) => Promise<void>
   ): void {
     if (!form || Environment.isServer()) {
       return
     }
 
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', async (e: _e) => {
       e.preventDefault()
       
       const formData = new FormData(form)
@@ -376,7 +376,7 @@ export const DataTransfer = {
    */
   streamData<T>(
     key: string,
-    onData: (data: T) => void,
+    onData: (_data: T) => void,
     onComplete?: () => void
   ): () => void {
     if (Environment.isServer()) {
@@ -502,7 +502,7 @@ export const ErrorHandling = {
   /**
    * 에러 리포트 전송 (클라이언트만)
    */
-  sendErrorReport(errorInfo: any): void {
+  sendErrorReport(errorInfo: unknown): void {
     if (Environment.isServer()) {
       return
     }
@@ -555,7 +555,7 @@ export function initializeSSRHelpers(): void {
 
   // 개발 모드에서 디버깅 도구 활성화
   if (Environment.isDevelopment()) {
-    (window as any).__SSR_HELPERS__ = {
+    (window as Window & { __SSR_HELPERS__: unknown }).__SSR_HELPERS__ = {
       Environment,
       SafeStorage,
       SafeBrowser,

@@ -24,13 +24,14 @@ import {
   AlertCircle,
   X
 } from 'lucide-react'
+import type { Script } from '@/types'
 
 // ============================================================================
 // Scripts 페이지 클라이언트 인터랙션
 // ============================================================================
 
 interface ScriptsClientInteractionsProps {
-  initialScripts: any[]
+  initialScripts: Script[]
   serverStats: {
     total: number
     byStatus: Record<string, number>
@@ -209,7 +210,7 @@ export function ScriptsClientInteractions({
  * 스크립트 업로드 버튼 (클라이언트 전용)
  */
 interface ScriptUploadButtonProps {
-  onUploadSuccess: (script: any) => void
+  onUploadSuccess: (_script: Script) => void
 }
 
 function ScriptUploadButton({ onUploadSuccess }: ScriptUploadButtonProps) {
@@ -276,8 +277,8 @@ function ScriptUploadButton({ onUploadSuccess }: ScriptUploadButtonProps) {
  * 스크립트 액션 버튼들
  */
 interface ScriptActionButtonsProps {
-  scripts: any[]
-  onDelete: (id: number) => void
+  scripts: Script[]
+  onDelete: (_id: number) => void
 }
 
 function ScriptActionButtons({ scripts, onDelete }: ScriptActionButtonsProps) {

@@ -18,7 +18,7 @@ interface PerformanceMetrics {
   baseDuration: number
   startTime: number
   commitTime: number
-  interactions: Set<any>
+  interactions: Set<unknown>
 }
 
 interface BundleAnalysisReport {
@@ -110,8 +110,8 @@ export class PerformanceAnalyzer {
 
     const chunks = jsResources.map(resource => ({
       name: this.extractChunkName(resource.name),
-      size: (resource as any).transferSize || 0,
-      gzippedSize: (resource as any).encodedBodySize || 0,
+      size: (resource as PerformanceResourceTiming).transferSize || 0,
+      gzippedSize: (resource as PerformanceResourceTiming).encodedBodySize || 0,
       modules: [] // 런타임에서는 정확한 모듈 정보 제한적
     }))
 
@@ -124,7 +124,7 @@ export class PerformanceAnalyzer {
     }
   }
 
-  private static findDuplicateModules(chunks: any[]): Array<{
+  private static findDuplicateModules(chunks: unknown[]): Array<{
     module: string
     locations: string[]
     wastedSize: number
@@ -159,7 +159,7 @@ export class PerformanceAnalyzer {
     return duplicates
   }
 
-  private static generateBundleRecommendations(chunks: any[]): string[] {
+  private static generateBundleRecommendations(chunks: unknown[]): string[] {
     const recommendations: string[] = []
     const totalSize = chunks.reduce((sum, chunk) => sum + chunk.size, 0)
 
@@ -179,7 +179,7 @@ export class PerformanceAnalyzer {
     return recommendations
   }
 
-  private static generateRuntimeRecommendations(resources: any[]): string[] {
+  private static generateRuntimeRecommendations(resources: unknown[]): string[] {
     const recommendations: string[] = []
     
     const slowResources = resources.filter(r => r.duration > 1000) // 1초 초과
@@ -248,7 +248,7 @@ export class PerformanceAnalyzer {
   }
 
   private static generateRenderRecommendations(
-    slowComponents: any[], 
+    slowComponents: unknown[], 
     totalRenderTime: number
   ): string[] {
     const recommendations: string[] = []
@@ -281,7 +281,7 @@ export class PerformanceAnalyzer {
       baseDuration: number,
       startTime: number,
       commitTime: number,
-      interactions: Set<any>
+      interactions: Set<unknown>
     ) => {
       if (!this.isProfilingEnabled) return
 
@@ -326,7 +326,7 @@ export class PerformanceAnalyzer {
   }
 
   private static measurePageLoadPerformance() {
-    const navigation = performance.getEntriesByType('navigation')[0] as any
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
     
     const metrics = {
       domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
@@ -352,7 +352,7 @@ export class PerformanceAnalyzer {
 
   private static checkMemoryUsage() {
     if ('memory' in performance) {
-      const memory = (performance as any).memory
+      const memory = (performance as Performance & { memory: { usedJSHeapSize: number, totalJSHeapSize: number, jsHeapSizeLimit: number } }).memory
       const memoryUsage = {
         used: Math.round(memory.usedJSHeapSize / 1048576), // MB
         total: Math.round(memory.totalJSHeapSize / 1048576), // MB
@@ -412,7 +412,7 @@ export class PerformanceAnalyzer {
    */
   static enableDebugMode() {
     if (typeof window !== 'undefined') {
-      (window as any).__PERFORMANCE_ANALYZER__ = {
+      (window as Window & { __PERFORMANCE_ANALYZER__: unknown }).__PERFORMANCE_ANALYZER__ = {
         getBundleReport: () => this.generateBundleReport(),
         getRenderReport: () => this.measureRenderPerformance(),
         exportReport: () => this.exportPerformanceReport(),
@@ -433,9 +433,9 @@ interface ProfiledComponentProps {
   name: string
   children: React.ReactNode
   onRender?: (
-    id: string,
-    phase: 'mount' | 'update',
-    actualDuration: number
+    _id: string,
+    _phase: 'mount' | 'update',
+    _actualDuration: number
   ) => void
 }
 
@@ -453,7 +453,7 @@ export function ProfiledComponent({
 
   return React.createElement(
     Profiler, 
-    { id: name, onRender: handleRender as any },
+    { id: name, onRender: handleRender as React.ProfilerOnRenderCallback },
     children
   )
 }

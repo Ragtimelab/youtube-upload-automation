@@ -151,7 +151,7 @@ export function NotificationList({
             <Button
               variant="ghost"
               size="sm"
-              onClick={(e) => {
+              onClick={(e: _e) => {
                 e.stopPropagation()
                 onDismiss(notification.id)
               }}

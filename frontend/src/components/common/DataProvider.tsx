@@ -1,4 +1,5 @@
 import React, { type ReactNode } from 'react'
+import type { Script } from '@/types'
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
 
 /**
@@ -11,11 +12,11 @@ import { useQuery, type UseQueryOptions } from '@tanstack/react-query'
  * - 재사용 가능한 로딩/에러/성공 상태 처리
  */
 
-interface DataProviderProps<TData = any, TError = Error> {
+interface DataProviderProps<TData = unknown, TError = Error> {
   queryKey: string[]
   queryFn: () => Promise<TData>
   queryOptions?: Omit<UseQueryOptions<TData, TError>, 'queryKey' | 'queryFn'>
-  children: (renderProps: {
+  children: (_renderProps: {
     data: TData | undefined
     isLoading: boolean
     isError: boolean
@@ -30,7 +31,7 @@ interface DataProviderProps<TData = any, TError = Error> {
 /**
  * 데이터 로딩을 위한 Render Props 컴포넌트
  */
-export function DataProvider<TData = any, TError = Error>({
+export function DataProvider<TData = unknown, TError = Error>({
   queryKey,
   queryFn,
   queryOptions,
@@ -73,9 +74,9 @@ export function DataProvider<TData = any, TError = Error>({
 interface ScriptsDataProviderProps {
   page?: number
   limit?: number
-  filters?: Record<string, any>
-  children: (renderProps: {
-    scripts: any[] | undefined
+  filters?: Record<string, unknown>
+  children: (_renderProps: {
+    scripts: Script[] | undefined
     isLoading: boolean
     isError: boolean
     error: Error | null
@@ -124,11 +125,11 @@ export function ScriptsDataProvider({
  */
 interface UploadDataProviderProps {
   scriptId: number | null
-  children: (renderProps: {
+  children: (_renderProps: {
     uploadStatus: 'idle' | 'uploading' | 'completed' | 'error'
     uploadProgress: number
     error: Error | null
-    startUpload: (file: File) => Promise<void>
+    startUpload: (_file: File) => Promise<void>
     cancelUpload: () => void
     resetUpload: () => void
   }) => ReactNode
@@ -211,8 +212,8 @@ interface ListDataProviderProps<TItem> {
   error: Error | null
   searchTerm?: string
   sortBy?: string
-  filterBy?: Record<string, any>
-  children: (renderProps: {
+  filterBy?: Record<string, unknown>
+  children: (_renderProps: {
     items: TItem[]
     filteredItems: TItem[]
     sortedItems: TItem[]
@@ -223,7 +224,7 @@ interface ListDataProviderProps<TItem> {
   }) => ReactNode
 }
 
-export function ListDataProvider<TItem extends Record<string, any>>({
+export function ListDataProvider<TItem extends Record<string, unknown>>({
   items,
   isLoading,
   error,
@@ -259,7 +260,7 @@ export function ListDataProvider<TItem extends Record<string, any>>({
       const aVal = a[sortBy]
       const bVal = b[sortBy]
       
-      if (typeof aVal === 'string') {
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
         return aVal.localeCompare(bVal)
       }
       
@@ -267,7 +268,11 @@ export function ListDataProvider<TItem extends Record<string, any>>({
         return bVal.getTime() - aVal.getTime() // 최신순
       }
       
-      return aVal > bVal ? -1 : 1
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return bVal - aVal
+      }
+      
+      return String(aVal).localeCompare(String(bVal))
     })
   }, [filteredItems, sortBy])
 

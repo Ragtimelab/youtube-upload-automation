@@ -56,7 +56,7 @@ export function ScriptsPageRefactored() {
             setSearchQuery(values.query)
           }}
         >
-          {({ values, errors, handleChange, handleSubmit }) => (
+          {({ values: _values, errors, handleChange, handleSubmit }) => (
             <form onSubmit={handleSubmit}>
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -203,7 +203,7 @@ export function ScriptsPageRefactored() {
 /**
  * 스크립트 카드 컴포넌트 (Grid 모드용)
  */
-function ScriptCard({ script }: { script: any }) {
+function ScriptCard({ script }: { script: unknown }) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'script_ready': return <Clock className="h-4 w-4 text-yellow-600" />
@@ -267,7 +267,7 @@ function ScriptCard({ script }: { script: any }) {
 /**
  * 스크립트 리스트 아이템 컴포넌트 (List 모드용)
  */
-function ScriptListItem({ script }: { script: any }) {
+function ScriptListItem({ script }: { script: unknown }) {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'script_ready': return <Clock className="h-4 w-4 text-yellow-600" />

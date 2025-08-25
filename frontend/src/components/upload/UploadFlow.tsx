@@ -34,16 +34,16 @@ interface UploadFlowContextValue {
   isUploading: boolean
   
   // 액션
-  setSelectedScript: (scriptId: number | null) => void
-  setSelectedFile: (file: File | null) => void
-  setDragActive: (active: boolean) => void
+  setSelectedScript: (_scriptId: number | null) => void
+  setSelectedFile: (_file: File | null) => void
+  setDragActive: (_active: boolean) => void
   handleUpload: () => Promise<void>
   
   // 유틸리티
-  isVideoFile: (file: File) => boolean
-  validateFileSize: (file: File) => { valid: boolean; error?: string }
-  formatFileSize: (bytes: number) => string
-  getScriptStatus: (status: string) => { icon: React.ComponentType<any>, color: string, text: string }
+  isVideoFile: (_file: File) => boolean
+  validateFileSize: (_file: File) => { valid: boolean; error?: string }
+  formatFileSize: (_bytes: number) => string
+  getScriptStatus: (_status: string) => { icon: React.ComponentType<unknown>, color: string, text: string }
   
   // 참조
   fileInputRef: React.RefObject<HTMLInputElement | null>

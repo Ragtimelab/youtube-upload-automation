@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { uploadApi } from '@/services/api'
 
 // 비디오 업로드
-export function useUploadVideo() {
+export function useUploadVideo(onError?: (error: any) => void) {
   const queryClient = useQueryClient()
   
   return useMutation({
@@ -13,6 +13,9 @@ export function useUploadVideo() {
       queryClient.invalidateQueries({ queryKey: ['scripts'] })
       queryClient.invalidateQueries({ queryKey: ['script', data.script_id] })
     },
+    onError: onError || ((error) => {
+      console.error('Video upload failed:', error)
+    })
   })
 }
 

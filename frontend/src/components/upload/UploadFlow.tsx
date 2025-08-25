@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { ErrorBoundary } from '@/components/errors/ErrorBoundary'
 import { useScripts } from '@/hooks/useScripts'
 import { useUploadVideo } from '@/hooks/useUpload'
+import { useToastHelpers } from '@/hooks/useToastContext'
 import { 
   Upload, 
   AlertCircle,
@@ -44,6 +45,7 @@ interface UploadFlowContextValue {
   validateFileSize: (_file: File) => { valid: boolean; error?: string }
   formatFileSize: (_bytes: number) => string
   getScriptStatus: (_status: string) => { icon: React.ComponentType<unknown>, color: string, text: string }
+  toast: ReturnType<typeof useToastHelpers>
   
   // 참조
   fileInputRef: React.RefObject<HTMLInputElement | null>
@@ -88,7 +90,32 @@ export function UploadFlow({
   // 훅
   // const navigate = useNavigate() // Currently unused
   const { data: scriptsData, isLoading: scriptsLoading } = useScripts(1, 50)
-  const uploadVideo = useUploadVideo()
+  const toast = useToastHelpers()
+  
+  // 에러 핸들러 정의
+  const handleUploadError = useCallback((error: any) => {
+    console.error('Upload failed:', error)
+    
+    // API 에러에서 사용자 친화적 메시지 추출
+    let errorMessage = '알 수 없는 오류가 발생했습니다.'
+    
+    if (error?.response?.data?.message) {
+      errorMessage = error.response.data.message
+    } else if (error?.message) {
+      errorMessage = error.message
+    }
+    
+    // 특정 에러 케이스별 처리
+    if (errorMessage.includes('404') || errorMessage.includes('Not Found')) {
+      toast.error('스크립트를 찾을 수 없습니다', '선택한 스크립트가 존재하지 않습니다.')
+    } else if (errorMessage.includes('script_ready')) {
+      toast.error('스크립트 상태 오류', errorMessage)
+    } else {
+      toast.error('비디오 업로드 실패', errorMessage)
+    }
+  }, [toast])
+  
+  const uploadVideo = useUploadVideo(handleUploadError)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
   // 유틸리티 함수들
@@ -132,7 +159,7 @@ export function UploadFlow({
   // 업로드 핸들러
   const handleUpload = useCallback(async () => {
     if (!selectedScript || !selectedFile) {
-      alert('스크립트와 비디오 파일을 모두 선택해주세요.')
+      toast.warning('입력 필요', '스크립트와 비디오 파일을 모두 선택해주세요.')
       return
     }
 
@@ -141,6 +168,9 @@ export function UploadFlow({
         scriptId: selectedScript, 
         file: selectedFile 
       })
+      
+      // 업로드 성공 메시지
+      toast.success('비디오 업로드 성공', `스크립트 ID ${selectedScript}에 비디오가 성공적으로 업로드되었습니다.`)
       
       // 업로드 성공 후 초기화
       setSelectedFile(null)
@@ -151,10 +181,11 @@ export function UploadFlow({
       
       // 완료 콜백 실행
       onComplete?.()
-    } catch (error) {
-      console.error('Upload failed:', error)
+    } catch (error: any) {
+      // 에러는 handleUploadError에서 이미 처리됨
+      // 여기서는 추가 작업이 필요한 경우에만 처리
     }
-  }, [selectedScript, selectedFile, uploadVideo, onComplete])
+  }, [selectedScript, selectedFile, uploadVideo, onComplete, toast])
   
   // script_ready 상태인 스크립트만 필터링
   const availableScripts = useMemo(() => 
@@ -186,6 +217,7 @@ export function UploadFlow({
     validateFileSize,
     formatFileSize,
     getScriptStatus,
+    toast,
     
     // 참조
     fileInputRef,
@@ -198,10 +230,12 @@ export function UploadFlow({
     scriptsLoading,
     uploadVideo.isPending,
     handleUpload,
+    handleUploadError,
     isVideoFile,
     validateFileSize,
     formatFileSize,
     getScriptStatus,
+    toast,
   ])
   
   return (
@@ -329,7 +363,8 @@ function FileUpload({
     isVideoFile,
     validateFileSize,
     formatFileSize,
-    fileInputRef
+    fileInputRef,
+    toast
   } = useUploadFlow()
 
   // 드래그 앤 드롭 핸들러
@@ -352,13 +387,13 @@ function FileUpload({
       const file = e.dataTransfer.files[0]
       
       if (!isVideoFile(file)) {
-        alert('비디오 파일만 업로드할 수 있습니다.')
+        toast.warning('파일 형식 오류', '비디오 파일만 업로드할 수 있습니다. (.mp4, .avi, .mov, .mkv, .flv)')
         return
       }
       
       const sizeValidation = validateFileSize(file)
       if (!sizeValidation.valid) {
-        alert(sizeValidation.error)
+        toast.error('파일 크기 오류', sizeValidation.error!)
         return
       }
       
@@ -371,13 +406,13 @@ function FileUpload({
     if (!file) return
     
     if (!isVideoFile(file)) {
-      alert('비디오 파일만 업로드할 수 있습니다.')
+      toast.warning('파일 형식 오류', '비디오 파일만 업로드할 수 있습니다. (.mp4, .avi, .mov, .mkv, .flv)')
       return
     }
     
     const sizeValidation = validateFileSize(file)
     if (!sizeValidation.valid) {
-      alert(sizeValidation.error)
+      toast.error('파일 크기 오류', sizeValidation.error!)
       return
     }
     

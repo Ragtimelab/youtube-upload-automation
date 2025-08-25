@@ -97,7 +97,7 @@ export function useUnifiedScripts(params: Partial<FilterState> = {}) {
   // 스크립트 생성 Mutation - 낙관적 업데이트
   const createMutation = useMutation({
     mutationFn: async (scriptData: FormData) => {
-      const response = await api.post('/api/scripts/upload', scriptData, {
+      const response = await api.post('/scripts/upload', scriptData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       return response.data.data
@@ -177,7 +177,7 @@ export function useUnifiedScripts(params: Partial<FilterState> = {}) {
   // 스크립트 업데이트 Mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number, data: Partial<Script> }) => {
-      const response = await api.patch(`/api/scripts/${id}`, data)
+      const response = await api.patch(`/scripts/${id}`, data)
       return response.data.data
     },
     onMutate: async ({ id, data }) => {
@@ -225,7 +225,7 @@ export function useUnifiedScripts(params: Partial<FilterState> = {}) {
   // 스크립트 삭제 Mutation - 낙관적 업데이트
   const deleteMutation = useMutation({
     mutationFn: async (scriptId: number) => {
-      await api.delete(`/api/scripts/${scriptId}`)
+      await api.delete(`/scripts/${scriptId}`)
       return scriptId
     },
     onMutate: async (scriptId) => {
@@ -278,7 +278,7 @@ export function useUnifiedScripts(params: Partial<FilterState> = {}) {
   // 배치 삭제 Mutation
   const batchDeleteMutation = useMutation({
     mutationFn: async (scriptIds: number[]) => {
-      await api.delete('/api/scripts/batch', {
+      await api.delete('/scripts/batch', {
         data: { script_ids: scriptIds }
       })
       return scriptIds
@@ -386,7 +386,7 @@ export function useUnifiedScripts(params: Partial<FilterState> = {}) {
       return queryClient.prefetchQuery({
         queryKey: scriptQueryKeys.detail(id),
         queryFn: async () => {
-          const response = await api.get(`/api/scripts/${id}`)
+          const response = await api.get(`/scripts/${id}`)
           return response.data.data
         },
         staleTime: 5 * 60 * 1000
@@ -427,7 +427,7 @@ export function useScript(scriptId: number, enabled = true) {
   return useQuery({
     queryKey: scriptQueryKeys.detail(scriptId),
     queryFn: async () => {
-      const response = await api.get(`/api/scripts/${scriptId}`)
+      const response = await api.get(`/scripts/${scriptId}`)
       return response.data.data
     },
     staleTime: 5 * 60 * 1000, // 상세 정보는 5분간 신선

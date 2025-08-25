@@ -75,30 +75,39 @@ async def upload_script(file: UploadFile = File(...), db: Session = Depends(get_
 def get_scripts(
     page: int = 1,
     per_page: int = 10,
+    skip: Optional[int] = None,
+    limit: Optional[int] = None,
     status: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
     """등록된 대본 목록 조회
 
     Args:
-        page: 페이지 번호 (1부터 시작)
-        per_page: 페이지당 항목 수 (기본: 10)
+        page: 페이지 번호 (1부터 시작) - skip/limit와 함께 사용 불가
+        per_page: 페이지당 항목 수 (기본: 10) - skip/limit와 함께 사용 불가
+        skip: 건너뛸 개수 (CLI 호환성을 위해 추가)
+        limit: 조회할 최대 개수 (CLI 호환성을 위해 추가)
         status: 상태 필터 (script_ready, video_ready, uploaded, error, scheduled)
     """
     try:
-        # page를 skip으로 변환 (page는 1부터 시작)
-        skip = (page - 1) * per_page
-        limit = per_page
+        # skip/limit 파라미터가 제공된 경우 우선 사용 (CLI 호환성)
+        if skip is not None or limit is not None:
+            actual_skip = skip or 0
+            actual_limit = limit or 10
+        else:
+            # page/per_page 방식 (기존 웹 호환성)
+            actual_skip = (page - 1) * per_page
+            actual_limit = per_page
         
         script_service = ScriptService(db)
-        result = script_service.get_scripts(skip, limit, status)
+        result = script_service.get_scripts(actual_skip, actual_limit, status)
 
-        logger.info(f"대본 목록 조회: page={page}, per_page={per_page}, total={result['total']}, status_filter={status}")
+        logger.info(f"대본 목록 조회: skip={actual_skip}, limit={actual_limit}, total={result['total']}, status_filter={status}")
         return PaginatedResponse.create(
             data=result["scripts"],
             total=result["total"],
-            skip=skip,
-            limit=limit,
+            skip=actual_skip,
+            limit=actual_limit,
             message=f"대본 목록을 조회했습니다. (총 {result['total']}개)",
         )
 

@@ -1,13 +1,13 @@
 import { useState, useCallback } from 'react'
 import { useUploadProgress } from './useUploadProgress'
-import { useToast } from './useToast'
+import { useToastHelpers } from './useToastContext'
 import { uploadApi } from '@/services/api'
 import { logApiError, getUserFriendlyErrorMessage } from '@/utils/apiUtils'
 import type { Script, BatchProgress, YouTubeManagerReturn, YouTubeQuotaStatus, YouTubeBatchSettings } from '@/types'
 
 export function useYouTubeManager(): YouTubeManagerReturn {
   const { startUpload, webSocketState } = useUploadProgress()
-  const { success, error, info } = useToast()
+  const { success, error, info } = useToastHelpers()
   
   // 단일 업로드 예약 발행 설정
   const [singleUploadSchedule, setSingleUploadSchedule] = useState<Record<number, string>>({})

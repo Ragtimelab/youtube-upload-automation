@@ -20,15 +20,16 @@ import { Environment, HydrationSafeState } from '@/utils/ssrHelpers'
 import { ProfiledComponent } from '@/utils/performanceAnalyzer'
 
 // React 19 Lazy Loading: 페이지별 코드 분할
-// HomePage, ScriptsPage, UploadPage는 즉시 로딩 (토스트 컨텍스트 문제 해결)
+// HomePage, ScriptsPage, UploadPage, YouTubePage는 즉시 로딩 (토스트 컨텍스트 문제 해결)
 import { HomePage } from '@/pages/HomePage'
 import { ScriptsPage } from '@/pages/ScriptsPage'
 import { UploadPage } from '@/pages/UploadPage'
+import { YouTubePage } from '@/pages/YouTubePage'
 
 // 나머지 페이지들은 lazy loading으로 번들 분할
 // const ScriptsPage = lazy(() => import('@/pages/ScriptsPage').then(module => ({ default: module.ScriptsPage })))
 // const UploadPage = lazy(() => import('@/pages/UploadPage').then(module => ({ default: module.UploadPage })))
-const YouTubePage = lazy(() => import('@/pages/YouTubePage').then(module => ({ default: module.YouTubePage })))
+// const YouTubePage = lazy(() => import('@/pages/YouTubePage').then(module => ({ default: module.YouTubePage })))
 const DashboardPage = lazy(() => import('@/pages/DashboardPage').then(module => ({ default: module.DashboardPage })))
 const StatusPage = lazy(() => import('@/pages/StatusPage').then(module => ({ default: module.StatusPage })))
 const PipelinePage = lazy(() => import('@/pages/PipelinePage').then(module => ({ default: module.PipelinePage })))
@@ -121,9 +122,7 @@ function App() {
                         path="/youtube" 
                         element={
                           <YouTubePageErrorBoundary>
-                            <Suspense fallback={<PageLoadingSkeleton title="YouTube 관리" />}>
-                              <YouTubePage />
-                            </Suspense>
+                            <YouTubePage />
                           </YouTubePageErrorBoundary>
                         } 
                       />

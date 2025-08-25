@@ -3,6 +3,7 @@ import type { DefaultOptions } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
+import { logApiError } from '@/utils/apiUtils'
 
 /**
  * React 19 + TanStack Query 최적화된 캐시 전략
@@ -55,26 +56,28 @@ const createOptimizedQueryClient = () => {
     defaultOptions,
     queryCache: new QueryCache({
       onError: (error, query) => {
-        console.error('Query Error:', {
-          queryKey: query.queryKey,
-          error: error.message
-        })
+        const queryKey = Array.isArray(query.queryKey) ? query.queryKey.join(':') : String(query.queryKey)
+        logApiError(`Query ${queryKey}`, error)
+        
+        // 글로벌 에러 처리는 개별 컴포넌트에서 useErrorHandler로 처리
+        // Context 의존성 제거로 안정성 확보
       }
     }),
     mutationCache: new MutationCache({
       onError: (error, variables, _context, mutation) => {
-        console.error('Mutation Error:', {
-          mutationKey: mutation.options.mutationKey,
-          error: error.message,
-          variables
-        })
+        const mutationKey = mutation.options.mutationKey ? String(mutation.options.mutationKey) : 'Unknown'
+        logApiError(`Mutation ${mutationKey}`, error)
+        
+        // 글로벌 Mutation 에러 처리는 개별 훅에서 useErrorHandler로 처리
+        // Context 의존성 제거로 안정성 확보
       }
     })
   })
 }
 
 export function QueryProvider({ children }: QueryProviderProps) {
-  const [queryClient] = useState(createOptimizedQueryClient)
+  // Context 순서 문제 해결: Toast 없이 QueryClient 생성, 런타임에 Toast 연결
+  const [queryClient] = useState(() => createOptimizedQueryClient())
 
   return (
     <QueryClientProvider client={queryClient}>

@@ -16,6 +16,8 @@ import {
   DashboardPageErrorBoundary
 } from '@/components/errors/PageErrorBoundaries'
 import { LiveRegion, SkipToContent } from '@/components/accessibility/AccessibilityComponents'
+import { Environment, HydrationSafeState } from '@/utils/ssrHelpers'
+import { ProfiledComponent } from '@/utils/performanceAnalyzer'
 
 // React 19 Lazy Loading: 페이지별 코드 분할
 // HomePage는 즉시 로딩 (랜딩 페이지)
@@ -32,47 +34,66 @@ const SettingsPage = lazy(() => import('@/pages/SettingsPage').then(module => ({
 const RenderPropsDemo = lazy(() => import('@/pages/RenderPropsDemo').then(module => ({ default: module.RenderPropsDemo })))
 
 /**
- * React 19 + Phase 6 최적화된 메인 앱 컴포넌트
+ * React 19 + Phase 11 최적화된 메인 앱 컴포넌트
  * - 페이지별 Lazy Loading으로 초기 번들 크기 최소화
  * - Context Provider 계층으로 Props drilling 완전 제거
  * - 전역 상태 관리 최적화 (WebSocket, Toast, Permissions)
  * - 페이지별 Error Boundary로 안정성 보장 (Phase 5)
  * - WCAG 2.1 AA 접근성 완전 지원 (Phase 6)
+ * - SSR 호환성 및 Hydration 안전성 (Phase 11)
+ * - 성능 모니터링 자동화 (Phase 11)
  */
 function App() {
+  // SSR 호환성 체크 - 클라이언트에서만 라우터 활성화
+  if (Environment.isServer()) {
+    return (
+      <div id="ssr-fallback" className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-2">YouTube Upload Automation</h1>
+          <p className="text-gray-600">서버 사이드 렌더링 중...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <ErrorBoundary level="global" onError={(error, errorInfo) => {
-      console.error('Global App Error:', { error, errorInfo })
-      // 글로벌 에러 리포팅 (실무 표준)
+    <ProfiledComponent name="App" onRender={(_id, _phase, actualDuration) => {
+      if (actualDuration > 100) {
+        console.warn(`🐌 App 렌더링 느림: ${actualDuration.toFixed(2)}ms`)
+      }
     }}>
-      <QueryProvider>
-        <ToastProvider position="top-right" maxToasts={5}>
-          <PermissionsProvider fallbackRole="editor">
-            <WebSocketProvider autoConnect={true}>
-              <Router>
-                {/* 접근성: 건너뛰기 링크 */}
-                <SkipToContent />
-                
-                {/* 접근성: 스크린 리더 라이브 리전 */}
-                <LiveRegion />
-                
-                <Layout>
-                  <Suspense 
-                    fallback={
-                      <FullScreenLoading
-                        title="페이지 로딩 중"
-                        message="잠시만 기다려주세요..."
-                      />
-                    }
-                  >
-                    {/* 메인 콘텐츠 영역 */}
-                    <main 
-                      id="main-content" 
-                      className="focus:outline-none" 
-                      tabIndex={-1}
-                      role="main"
-                      aria-label="메인 콘텐츠"
+      <ErrorBoundary level="global" onError={(error, errorInfo) => {
+        console.error('Global App Error:', { error, errorInfo })
+        // 글로벌 에러 리포팅 (실무 표준)
+      }}>
+        <QueryProvider>
+          <ToastProvider position="top-right" maxToasts={5}>
+            <PermissionsProvider fallbackRole="editor">
+              <WebSocketProvider autoConnect={HydrationSafeState.isHydrated()}>
+                <Router>
+                  {/* 접근성: 건너뛰기 링크 */}
+                  <SkipToContent />
+                  
+                  {/* 접근성: 스크린 리더 라이브 리전 */}
+                  <LiveRegion />
+                  
+                  <Layout>
+                    <Suspense 
+                      fallback={
+                        <FullScreenLoading
+                          title="페이지 로딩 중"
+                          message="잠시만 기다려주세요..."
+                        />
+                      }
                     >
+                      {/* 메인 콘텐츠 영역 */}
+                      <main 
+                        id="main-content" 
+                        className="focus:outline-none" 
+                        tabIndex={-1}
+                        role="main"
+                        aria-label="메인 콘텐츠"
+                      >
                       <Routes>
                       {/* 홈페이지는 즉시 로딩 */}
                       <Route path="/" element={<HomePage />} />
@@ -176,6 +197,7 @@ function App() {
         </ToastProvider>
       </QueryProvider>
     </ErrorBoundary>
+    </ProfiledComponent>
   )
 }
 

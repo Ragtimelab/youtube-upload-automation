@@ -89,10 +89,11 @@ export function useYouTubeManager(): YouTubeManagerReturn {
     try {
       const publishAt = singleUploadSchedule[script.id]
       await uploadApi.uploadToYouTube(script.id, publishAt)
+      // 성공 시 WebSocket을 통해 실시간 상태 업데이트됨 (중복 Toast 제거)
     } catch (apiError: unknown) {
       logApiError('YouTube single upload', apiError)
-      const friendlyMessage = getUserFriendlyErrorMessage(apiError)
-      error('업로드 실패', friendlyMessage)
+      // API 에러는 WebSocket을 통해 실시간 에러 표시됨 (중복 Toast 제거)
+      // 즉시 에러 상태로 업데이트하여 UI에서 확인 가능하도록 함
     }
   }, [singleUploadSchedule, webSocketState.isConnected, startUpload, checkYouTubeQuota, error, info])
 
@@ -146,12 +147,10 @@ export function useYouTubeManager(): YouTubeManagerReturn {
 
         try {
           await uploadApi.uploadToYouTube(scriptId, batchSettings.publishAt || undefined)
-          const successType = batchSettings.publishAt ? '예약 설정' : '업로드'
-          success(`${successType} 완료`, `"${script.title}" ${successType} 성공`)
+          // 성공/실패 상태는 WebSocket을 통해 실시간 업데이트됨 (중복 Toast 제거)
         } catch (scriptError) {
           logApiError(`Script ${scriptId} batch upload`, scriptError)
-          const friendlyMessage = getUserFriendlyErrorMessage(scriptError)
-          error('개별 실패', `"${script.title}" ${uploadType} 실패: ${friendlyMessage}`)
+          // 개별 에러는 WebSocket을 통해 실시간 에러 표시됨 (중복 Toast 제거)
         }
 
         if (i < selectedScripts.length - 1) {

@@ -1,6 +1,6 @@
 # 📚 YouTube 자동화 시스템 문서 총 가이드
 
-> **모든 문서와 가이드가 한 곳에! 필요한 정보를 빠르게 찾아보세요.**
+> **React 19 + TypeScript 기반 하이브리드 시스템 - 모든 문서와 가이드가 한 곳에! 필요한 정보를 빠르게 찾아보세요.**
 
 ## 🎯 상황별 문서 선택 가이드
 
@@ -15,11 +15,13 @@
 
 ### 💻 **개발자이신가요?**
 
-1. 🏗️ [CLAUDE.md](../CLAUDE.md) - **전체 시스템 구조**
+1. 🏗️ [CLAUDE.md](../CLAUDE.md) - **하이브리드 시스템 구조 (Backend + Frontend + CLI)**
 2. ⌨️ [CLI_USAGE.md](./CLI_USAGE.md) - **명령줄 도구 (18개 명령어)**
 3. 🔌 [API.md](./API.md) - **REST API 및 WebSocket 실시간 통신 가이드**
-4. ⚛️ **React Frontend 개발** - **TypeScript + WebSocket 완전 통합**
-5. 🔄 **CLI-Frontend 매핑** - **18개 명령어 100% 웹 구현**
+4. ⚛️ [REACT_DEVELOPMENT.md](./REACT_DEVELOPMENT.md) - **React 19 + TypeScript 개발 가이드**
+5. 🎨 [FRONTEND_ARCHITECTURE.md](./FRONTEND_ARCHITECTURE.md) - **8페이지 구조 및 컴포넌트 시스템**
+6. 🔄 [WEBSOCKET_INTEGRATION.md](./WEBSOCKET_INTEGRATION.md) - **실시간 통신 및 상태 동기화**
+7. 📱 [PERFORMANCE_OPTIMIZATION.md](./PERFORMANCE_OPTIMIZATION.md) - **React 성능 최적화 및 코드 품질**
 
 ### 🎊 **시스템 완성도를 확인하고 싶으신가요?**
 
@@ -31,14 +33,18 @@
 
 ## 📋 전체 문서 목록
 
-### 🌐 **Gradio 웹 인터페이스 관련**
+### 🌐 **React 19 + TypeScript 웹 인터페이스**
 
 | 문서 | 설명 | 대상 사용자 | 예상 시간 |
 |------|------|------------|----------|
-| [USER_GUIDE.md](./USER_GUIDE.md) | 💎 **완전한 사용법 가이드** | 모든 사용자 | 15분 |
-| [QUICK_START.md](./QUICK_START.md) | ⚡ **5분 빠른 시작** | 신규 사용자 | 5분 |
+| [USER_GUIDE.md](./USER_GUIDE.md) | 💎 **React 웹 UI 완전 가이드 (8페이지)** | 모든 사용자 | 20분 |
+| [QUICK_START.md](./QUICK_START.md) | ⚡ **5분 빠른 시작 (Port 5174)** | 신규 사용자 | 5분 |
 | [FAQ.md](./FAQ.md) | 🙋‍♂️ **FAQ & 문제해결** | 문제 해결 | 상황별 |
-| [GRADIO_IMPLEMENTATION_CHECKLIST.md](../GRADIO_IMPLEMENTATION_CHECKLIST.md) | 📘 **Gradio 구현 체크리스트** | 개발자 | 10분 |
+| [REACT_DEVELOPMENT.md](./REACT_DEVELOPMENT.md) | ⚛️ **React 19 + TypeScript 개발 가이드** | 프론트엔드 개발자 | 25분 |
+| [FRONTEND_ARCHITECTURE.md](./FRONTEND_ARCHITECTURE.md) | 🎨 **프론트엔드 아키텍처 및 컴포넌트** | 시스템 설계자 | 30분 |
+| [WEBSOCKET_INTEGRATION.md](./WEBSOCKET_INTEGRATION.md) | 🔄 **실시간 통신 및 상태 동기화** | 풀스택 개발자 | 20분 |
+| [PERFORMANCE_OPTIMIZATION.md](./PERFORMANCE_OPTIMIZATION.md) | 📱 **React 성능 최적화 및 코드 품질** | 시니어 개발자 | 35분 |
+| [PLAYWRIGHT_FRONTEND_VERIFICATION_CHECKLIST.md](../PLAYWRIGHT_FRONTEND_VERIFICATION_CHECKLIST.md) | 🎭 **프론트엔드 완전 검증 체크리스트** | QA/테스터 | 15분 |
 
 ### 🛠️ **시스템 & 개발**
 
@@ -63,11 +69,11 @@
 ### 📱 **신규 사용자 (처음 시작)**
 
 ```
-1. QUICK_START.md (필수) - Gradio 웹 인터페이스 실행
+1. QUICK_START.md (필수) - React 웹 인터페이스 실행 (Port 5174)
    ↓
-2. USER_GUIDE.md (권장) - 4개 탭 기능 상세 사용법
+2. USER_GUIDE.md (권장) - 8개 페이지 기능 상세 사용법
    ↓
-3. 필요시 FAQ.md (참조) - Gradio 관련 문제해결
+3. 필요시 FAQ.md (참조) - React UI 관련 문제해결
 ```
 
 ### 🔧 **문제 해결이 필요한 경우**
@@ -83,13 +89,15 @@
 ### 💻 **개발자/고급 사용자**
 
 ```
-1. CLAUDE.md (시스템 이해) - Gradio 구조 이해
+1. CLAUDE.md (시스템 이해) - 하이브리드 아키텍처 구조
    ↓
-2. API.md (API 연동) - 표준화된 응답 구조
+2. REACT_DEVELOPMENT.md (프론트엔드) - React 19 + TypeScript 개발
    ↓
-3. CLI_USAGE.md (도구 활용) - CLI와 웹 호환성
+3. API.md (API 연동) - REST API + WebSocket 통신
    ↓
-4. USER_GUIDE.md (UI 기능) - Gradio 4개 탭 기능
+4. FRONTEND_ARCHITECTURE.md (구조) - 8페이지 컴포넌트 시스템
+   ↓
+5. CLI_USAGE.md (도구 활용) - CLI와 React 웹 호환성
 ```
 
 ### 📊 **프로젝트 검토자/PM**
@@ -110,35 +118,35 @@
 
 ### 📝 **스크립트 관리**
 
-- **기본 사용법**: USER_GUIDE.md > 스크립트 관리
-- **형식 오류**: FAQ.md > 스크립트 관리
+- **React UI 사용법**: USER_GUIDE.md > ScriptsPage 기능
+- **마크다운 형식**: FAQ.md > 스크립트 관리 (.md 파일)
 - **CLI 도구**: CLI_USAGE.md > 스크립트 명령어
 - **API 연동**: API.md > 스크립트 관리 API
 - **파싱 로직**: CLAUDE.md > 스크립트 파서
 
 ### 🎥 **비디오 업로드**
 
-- **기본 사용법**: USER_GUIDE.md > 업로드 관리
-- **파일 형식 문제**: FAQ.md > 비디오 업로드
-- **대용량 파일**: FAQ.md > 성능 최적화
+- **React UI 사용법**: USER_GUIDE.md > UploadPage 기능
+- **파일 형식 문제**: FAQ.md > 비디오 업로드 (.mp4, .avi, .mov)
+- **드래그&드롭**: REACT_DEVELOPMENT.md > 파일 업로드 컴포넌트
 - **API 엔드포인트**: API.md > 업로드 관리 API
 - **백엔드 구조**: CLAUDE.md > 업로드 서비스
 
 ### 📺 **YouTube 업로드**
 
-- **기본 사용법**: USER_GUIDE.md > YouTube 업로드
-- **인증 문제**: FAQ.md > YouTube 업로드
-- **할당량 관리**: FAQ.md > API 제한
+- **React UI 사용법**: USER_GUIDE.md > YouTubePage 기능
+- **인증 문제**: FAQ.md > YouTube 업로드 (OAuth2)
+- **할당량 관리**: FAQ.md > API 제한 (10,000 units)
 - **API 엔드포인트**: API.md > YouTube 업로드 API
-- **API 구조**: CLAUDE.md > YouTube 서비스
+- **채널 브랜딩**: CLAUDE.md > YAML 기반 자동화
 
 ### 📊 **모니터링 & 대시보드**
 
-- **대시보드 사용법**: USER_GUIDE.md > 대시보드
-- **상태 확인**: QUICK_START.md > 완료 확인
-- **시스템 상태**: FAQ.md > 시스템 오류
-- **WebSocket API**: API.md > WebSocket API
-- **WebSocket**: CLAUDE.md > 실시간 기능
+- **React 대시보드**: USER_GUIDE.md > DashboardPage (실시간 카드)
+- **상태 페이지**: USER_GUIDE.md > StatusPage (로그 스트림)
+- **파이프라인 시각화**: USER_GUIDE.md > PipelinePage (애니메이션)
+- **WebSocket 실시간**: WEBSOCKET_INTEGRATION.md > 실시간 통신
+- **성능 모니터링**: PERFORMANCE_OPTIMIZATION.md > 최적화 가이드
 
 ---
 
@@ -148,23 +156,29 @@
 
 ```
 📖 CLAUDE.md (필수)
-   → Backend Architecture
-   → Development Commands  
-   → Testing Structure
+   → FastAPI + Clean Architecture
+   → Development Commands (make run)
+   → Testing Structure (pytest)
 
-📘 streamlit_app/README.md
-   → Streamlit 컴포넌트 구조
+📘 API.md
+   → REST API 엔드포인트 (/api/)
+   → WebSocket 통신 (/ws/)
 ```
 
 ### 🎨 **Frontend/UI 개발**
 
 ```
-📖 USER_GUIDE.md
-   → 모든 UI 기능 이해
+📖 REACT_DEVELOPMENT.md (필수)
+   → React 19 + TypeScript 개발
+   → 컴포넌트 구조 및 훅 사용법
 
-📘 CLAUDE.md  
-   → 컴포넌트 재사용 방법
-   → CSS 커스터마이징
+📘 FRONTEND_ARCHITECTURE.md
+   → 8페이지 구조 및 라우팅
+   → Shadcn/ui + Tailwind CSS
+
+📘 PERFORMANCE_OPTIMIZATION.md
+   → React 성능 최적화
+   → 코드 품질 및 타입 안전성
 ```
 
 ### ⚙️ **DevOps/배포**
@@ -182,34 +196,40 @@
 ### 🧪 **QA/테스트**
 
 ```
+📖 PLAYWRIGHT_FRONTEND_VERIFICATION_CHECKLIST.md (필수)
+   → 8페이지 완전 기능 검증
+   → 브라우저 자동화 테스트
+
 📖 QUICK_START.md
-   → 기본 기능 테스트
+   → React + Backend 기본 기능 테스트
 
 📖 USER_GUIDE.md
-   → 전체 기능 테스트
+   → 8페이지 전체 기능 테스트
 
-📖 FAQ.md  
-   → 오류 시나리오 테스트
+📖 FAQ.md
+   → React UI 오류 시나리오 테스트
 ```
 
 ---
 
 ## 📱 스크린샷 및 미디어
 
-### 📸 **사용법 스크린샷** (`docs/screenshots/`)
+### 📸 **React UI 스크린샷** (`docs/screenshots/`)
 
-- `01_dashboard_overview.png` - 대시보드 전체
-- `02_dashboard_system_status.png` - 시스템 상태
-- `03_script_management_upload.png` - 스크립트 업로드
-- `04_script_direct_input.png` - 직접 입력 모드
-- `05_script_management_list.png` - 스크립트 목록
-- `06_upload_management_video.png` - 비디오 업로드  
-- `07_upload_management_youtube.png` - YouTube 업로드
+- `01_dashboard_page_overview.png` - DashboardPage 실시간 카드
+- `02_scripts_page_management.png` - ScriptsPage 완전 기능
+- `03_upload_page_drag_drop.png` - UploadPage 드래그&드롭
+- `04_youtube_page_status.png` - YouTubePage 업로드 상태
+- `05_status_page_monitoring.png` - StatusPage 로그 스트림
+- `06_pipeline_page_animation.png` - PipelinePage 시각화
+- `07_settings_page_config.png` - SettingsPage 설정
+- `08_home_page_landing.png` - HomePage 랜딩
 
 ### 🎬 **테스트 결과**
 
-- `gradio_basic_test.png` - Gradio 기본 기능 테스트
-- `gradio_test_complete.png` - Gradio 전체 테스트 완료
+- `react_basic_test.png` - React UI 기본 기능 테스트
+- `playwright_complete_test.png` - Playwright 전체 검증 완료
+- `typescript_compile_success.png` - TypeScript 컴파일 성공
 
 ---
 
@@ -217,22 +237,27 @@
 
 ### 🔥 **즉시 해결이 필요한 문제**
 
-1. **앱이 실행되지 않음**: FAQ.md > 설치 및 시작
-2. **업로드 실패**: FAQ.md > 비디오 업로드  
-3. **YouTube 인증 오류**: FAQ.md > YouTube 업로드
-4. **API 연결 실패**: FAQ.md > 시스템 오류
+1. **React 앱 실행 안됨**: FAQ.md > 설치 및 시작 (Port 5174)
+2. **TypeScript 컴파일 오류**: REACT_DEVELOPMENT.md > TypeScript 설정
+3. **업로드 실패**: FAQ.md > 비디오 업로드 (.md/.mp4 형식)  
+4. **WebSocket 연결 실패**: WEBSOCKET_INTEGRATION.md > 연결 문제
+5. **YouTube 인증 오류**: FAQ.md > YouTube 업로드 (OAuth2)
 
 ### 📞 **단계별 디버깅**
 
 ```bash
-# 1. 로그 확인
-tail -f backend/logs/app-$(date +%Y-%m-%d).log
-
-# 2. 시스템 상태 확인  
+# 1. Backend 상태 확인 (Port 8000)
 curl http://localhost:8000/health
 
-# 3. 브라우저 개발자 도구 (F12)
-# 4. FAQ.md 해당 섹션 참조
+# 2. Frontend 상태 확인 (Port 5174)
+curl http://localhost:5174
+
+# 3. TypeScript 컴파일 확인
+cd frontend/ && npm run build
+
+# 4. React DevTools + 브라우저 개발자 도구 (F12)
+# 5. WebSocket 연결 확인 (ws://localhost:8000/ws/)
+# 6. FAQ.md 해당 섹션 참조
 ```
 
 ---
@@ -241,28 +266,32 @@ curl http://localhost:8000/health
 
 | 날짜 | 문서 | 변경사항 |
 |------|------|----------|
-| 2025-08-22 | README.md | autoflake 도구 추가, v1.2.1 버전 반영 |
-| 2025-08-22 | IMPLEMENTATION_COMPLETE.md | 코드 품질 완전 최적화 섹션 추가, 최신 5개 커밋 반영 |
-| 2025-08-22 | DEPLOYMENT_READY.md | 타입 안전성·PEP 621 표준 안정성 개선사항 업데이트 |
-| 2025-08-22 | CHANGELOG.md | v1.2.1 코드 품질 완전 최적화 버전 신규 추가 |
-| 2025-08-22 | INDEX.md | 문서 업데이트 히스토리 갱신 및 동기화 |
-| 2025-08-22 | USER_GUIDE.md | Gradio 4개 탭 기반 완전 재작성 |
-| 2025-08-22 | QUICK_START.md | Gradio 웹 인터페이스 실행 가이드 |
-| 2025-08-22 | API.md | 표준화된 API 응답 구조 및 Gradio 통합 |
-| 2025-08-17 | FAQ.md | FAQ와 문제해결 모음 |
+| 2025-08-26 | INDEX.md | **Phase 3 완료** - React 19 + TypeScript 아키텍처 완전 반영 |
+| 2025-08-25 | USER_GUIDE.md | **React 8페이지 완전 재작성** - DashboardPage, ScriptsPage 등 |
+| 2025-08-25 | QUICK_START.md | **React 웹 인터페이스 가이드** - Port 5174 실행 |
+| 2025-08-25 | API.md | **REST API + WebSocket 통합** - React 연동 완전 지원 |
+| 2025-08-24 | REACT_DEVELOPMENT.md | **React 19 + TypeScript 개발 가이드** 신규 작성 |
+| 2025-08-24 | FRONTEND_ARCHITECTURE.md | **8페이지 구조 및 컴포넌트 시스템** 신규 작성 |
+| 2025-08-24 | WEBSOCKET_INTEGRATION.md | **실시간 통신 및 상태 동기화** 신규 작성 |
+| 2025-08-24 | PERFORMANCE_OPTIMIZATION.md | **React 성능 최적화 가이드** 신규 작성 |
+| 2025-08-22 | FAQ.md | Gradio → React 문제해결 가이드로 업데이트 |
 
 ---
 
 ## 🎉 시작하세요
 
-**처음 사용하시나요?** → [⚡ QUICK_START.md](./QUICK_START.md)에서 5분만에 시작하세요!
+**처음 사용하시나요?** → [⚡ QUICK_START.md](./QUICK_START.md)에서 React 웹 인터페이스를 5분만에 시작하세요!
 
-**문제가 있으신가요?** → [🙋‍♂️ FAQ.md](./FAQ.md)에서 해결책을 찾아보세요!
+**React 개발자이신가요?** → [⚛️ REACT_DEVELOPMENT.md](./REACT_DEVELOPMENT.md)에서 React 19 + TypeScript 개발을 배워보세요!
 
-**전체 기능을 알고 싶으신가요?** → [📖 USER_GUIDE.md](./USER_GUIDE.md)에서 모든 것을 배워보세요!
+**전체 기능을 알고 싶으신가요?** → [📖 USER_GUIDE.md](./USER_GUIDE.md)에서 8페이지 완전 기능을 확인하세요!
 
-**API 연동이 필요하신가요?** → [🔌 API.md](./API.md)에서 완전한 API 가이드를 확인하세요!
+**실시간 통신이 궁금하신가요?** → [🔄 WEBSOCKET_INTEGRATION.md](./WEBSOCKET_INTEGRATION.md)에서 WebSocket 가이드를 확인하세요!
+
+**성능 최적화가 필요하신가요?** → [📱 PERFORMANCE_OPTIMIZATION.md](./PERFORMANCE_OPTIMIZATION.md)에서 React 최적화를 배워보세요!
+
+**문제가 있으신가요?** → [🙋‍♂️ FAQ.md](./FAQ.md)에서 React UI 문제 해결책을 찾아보세요!
 
 ---
 
-*🚀 YouTube 자동화 시스템과 함께 효율적인 콘텐츠 제작 여정을 시작하세요!*
+*🚀 React 19 + TypeScript 기반 YouTube 자동화 시스템과 함께 현대적이고 효율적인 콘텐츠 제작 여정을 시작하세요!*

@@ -13,7 +13,7 @@ YouTube 업로드 자동화 시스템은 콘텐츠 제작자가 스크립트 작
 ### 🎯 핵심 기능
 
 - ✅ **스크립트 파일 기반 자동 등록**: 표준화된 형식의 스크립트 파일 업로드로 메타데이터 자동 추출
-- ✅ **웹 GUI 인터페이스**: Gradio 기반 사용자 친화적 웹 인터페이스 (4개 탭 구조)
+- ✅ **웹 GUI 인터페이스**: React 19 + TypeScript 웹 대시보드 (8개 페이지 구조)
 - ✅ **CLI 기반 자동화**: 명령줄 인터페이스로 빠른 업로드 워크플로우
 - ✅ **비디오-스크립트 스마트 매칭**: 드롭다운 인터페이스로 실수 없는 매칭
 - ✅ **YouTube 자동 업로드**: YouTube Data API v3 연동으로 완전 자동화
@@ -72,8 +72,9 @@ poetry run alembic upgrade head
 cd backend
 poetry run python -m app.main
 
-# 2. Gradio 웹 인터페이스 실행 (별도 터미널)
-poetry run python gradio_app.py
+# 2. React 프론트엔드 실행 (별도 터미널)
+cd frontend
+npm run dev
 ```
 
 #### **방법 2: CLI 도구**
@@ -94,7 +95,7 @@ python cli/main.py
 
 ### 6. 시스템 접속
 
-- **웹 인터페이스**: <http://localhost:7860> (권장)
+- **웹 인터페이스**: <http://localhost:5174> (권장)
 - **API 문서**: <http://localhost:8000/docs>
 - **CLI 인터페이스**: `./youtube-cli`
 
@@ -120,7 +121,7 @@ youtube-upload-automation/
 │   └── screenshots/       # 사용법 가이드 스크린샷
 ├── config/                 # 설정 파일
 │   └── channels.yaml      # YAML 기반 채널 브랜딩 설정
-├── gradio_app.py          # Gradio 웹 인터페이스 (메인)
+├── frontend/              # React 19 + TypeScript 웹 대시보드
 ├── quick-script           # 빠른 스크립트 업로드 도구
 ├── quick-upload           # 빠른 비디오 업로드 도구
 ├── youtube-cli            # 메인 CLI 인터페이스 (Poetry 자동 감지)
@@ -148,7 +149,7 @@ youtube-upload-automation/
 - **Python 3.13**: 최신 Python 버전
 - **Poetry**: 의존성 및 패키지 관리 도구
 - **FastAPI 0.116.0+**: 고성능 API 프레임워크 + WebSocket 지원
-- **Gradio 5.43.1**: 웹 인터페이스 프레임워크
+- **Alembic 1.12+**: 데이터베이스 마이그레이션 도구
 - **SQLAlchemy 2.0+**: ORM 및 데이터베이스 관리
 - **SQLite**: 경량 데이터베이스
 - **Google APIs**: YouTube Data API v3 연동
@@ -174,7 +175,7 @@ youtube-upload-automation/
 
 #### 1. 스크립트 업로드
 
-1. 웹 브라우저에서 <http://localhost:7860> 접속
+1. 웹 브라우저에서 <http://localhost:5174> 접속
 2. "📝 스크립트 관리" 탭 선택
 3. "파일 업로드" 영역에 마크다운 파일 드래그 앤 드롭
 4. "스크립트 업로드" 버튼 클릭
@@ -234,7 +235,7 @@ python cli/main.py
 
 ```bash
 # 스크립트 빠른 업로드
-./quick-script my_script.txt
+./quick-script my_script.md
 
 # 비디오 빠른 업로드 (대화형)
 ./quick-upload
@@ -244,7 +245,7 @@ python cli/main.py
 
 ```bash
 # 스크립트 관리
-./youtube-cli script upload script.txt
+./youtube-cli script upload script.md
 ./youtube-cli script list
 ./youtube-cli script delete 1
 
@@ -390,14 +391,15 @@ make migrate
 make test
 ```
 
-### Gradio 웹 인터페이스 개발
+### React 프론트엔드 개발
 
 ```bash
-# Gradio 웹 인터페이스 실행 (자동 리로드)
-poetry run python gradio_app.py
+# React 프론트엔드 개발 서버 실행 (자동 리로드)
+cd frontend
+npm run dev
 
-# 브라우저 접속: http://localhost:7860
-# 포트는 자동으로 할당됨 (7860부터 시작)
+# 브라우저 접속: http://localhost:5174
+# React + Vite 개발 서버 (자동 핫 리로드)
 ```
 
 ---
@@ -407,7 +409,7 @@ poetry run python gradio_app.py
 ### 📖 사용자 가이드
 
 - **[빠른 시작 가이드](docs/QUICK_START.md)**: 5분만에 시작하기
-- **[사용자 가이드](docs/USER_GUIDE.md)**: Gradio 웹 인터페이스 완전한 사용법
+- **[사용자 가이드](docs/USER_GUIDE.md)**: React 웹 대시보드 완전한 사용법
 - **[FAQ](docs/FAQ.md)**: 자주 묻는 질문과 해결책
 - **[문서 인덱스](docs/INDEX.md)**: 모든 문서 총정리
 
@@ -428,7 +430,7 @@ poetry run python gradio_app.py
 
 - [x] 스크립트 파일 파싱 시스템
 - [x] YouTube API 연동 및 업로드
-- [x] Gradio 웹 인터페이스 (4개 탭 구조)
+- [x] React 웹 대시보드 (8개 페이지)
 - [x] CLI 도구 및 빠른 업로드
 - [x] WebSocket 실시간 기능
 - [x] 코드 품질 완전 최적화 (타입 안전성, PEP 621)

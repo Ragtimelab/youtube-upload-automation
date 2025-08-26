@@ -244,7 +244,7 @@ Content-Type: multipart/form-data
     "id": 1,
     "title": "추출된 제목",
     "status": "script_ready",
-    "filename": "script.txt",
+    "filename": "script.md",
     "created_at": "2025-08-22T01:39:57.328977"
   }
 }
@@ -784,7 +784,7 @@ class YouTubeAutomationAPI:
 api = YouTubeAutomationAPI()
 
 # 1. 스크립트 업로드
-result = api.upload_script("my_script.txt")
+result = api.upload_script("my_script.md")
 script_id = result['data']['script_id']
 
 # 2. 비디오 업로드
@@ -864,7 +864,7 @@ ws.onmessage = (event) => {
 ```bash
 # 스크립트 업로드
 curl -X POST "http://localhost:8000/api/scripts/upload" \
-     -F "file=@my_script.txt"
+     -F "file=@my_script.md"
 
 # 스크립트 목록 조회
 curl -X GET "http://localhost:8000/api/scripts/?limit=10"
@@ -906,63 +906,264 @@ curl -X GET "http://localhost:8000/api/upload/status/1"
 
 ---
 
-## 🎨 Gradio 웹 인터페이스 통합
+## ⚛️ React 19 Frontend 통합
 
 ### 개요
 
-Gradio 웹 인터페이스는 이 REST API를 완전히 활용하여 사용자 친화적인 GUI를 제공합니다.
+React 19 + TypeScript 프론트엔드는 이 REST API와 WebSocket을 완전히 활용하여 현대적인 웹 인터페이스를 제공합니다.
 
 ### 주요 특징
 
-- **완전한 API 호환성**: 모든 API 엔드포인트 활용
-- **실시간 상태 업데이트**: WebSocket 기반 실시간 모니터링
-- **4개 탭 구조**: 스크립트 관리, 비디오 업로드, YouTube 업로드, 대시보드
-- **드래그 앤 드롭**: 직관적인 파일 업로드 인터페이스
-- **배치 처리**: 최대 5개 영상 동시 업로드
+- **React 19.1.1 + TypeScript 5.8**: 최신 Component Composition 패턴
+- **실시간 상태 동기화**: WebSocket 기반 실시간 모니터링 및 진행률 업데이트
+- **8개 페이지 구조**: Dashboard, Scripts, Upload, YouTube, Status, Pipeline, Settings, Home
+- **TanStack Query**: 서버 상태 관리 및 캐싱 최적화
+- **Zustand**: 클라이언트 상태 관리 (1,200줄 → 300줄 코드 감소)
+- **Shadcn/ui + Tailwind**: 현대적 UI/UX 컴포넌트 시스템
+- **드래그 앤 드롭**: React Hook Form + HTML5 File API 활용
 
-### Gradio-API 매핑
+### React Components-API 매핑
 
-| Gradio 기능 | API 엔드포인트 | 설명 |
-|------------|---------------|------|
-| 스크립트 업로드 | `POST /api/scripts/upload` | .md 파일 드래그 앤 드롭 |
-| 스크립트 목록 | `GET /api/scripts/` | 실시간 새로고침 |
-| 비디오 업로드 | `POST /api/upload/video/{id}` | 대용량 파일 지원 |
-| YouTube 업로드 | `POST /api/upload/youtube/{id}` | 단일/배치 업로드 |
-| 시스템 상태 | `GET /health` | 대시보드 모니터링 |
-| 실시간 업데이트 | `ws://localhost:8000/ws` | WebSocket 연결 |
+| React 페이지/컴포넌트 | API 엔드포인트 | TypeScript 타입 | 설명 |
+|-------------------|---------------|----------------|------|
+| ScriptsPage | `POST /api/scripts/upload` | `ScriptUploadResponse` | .md 파일 드래그 앤 드롭 |
+| ScriptsTable | `GET /api/scripts/` | `PaginatedScriptResponse` | 실시간 검색/필터링 |
+| UploadPage | `POST /api/upload/video/{id}` | `UploadResponse` | 대용량 파일 업로드 |
+| YouTubePage | `POST /api/upload/youtube/{id}` | `YouTubeUploadResponse` | 배치 업로드 관리 |
+| DashboardPage | `GET /health`, `GET /ws/stats` | `HealthResponse`, `WebSocketStats` | 실시간 시스템 모니터링 |
+| useWebSocket Hook | `ws://localhost:8000/ws` | `WebSocketMessage` | 실시간 양방향 통신 |
 
-### 웹 인터페이스 접속
+### 프론트엔드 개발 서버 실행
 
 ```bash
-# Gradio 웹 인터페이스 실행
-poetry run python gradio_app.py
+# React 개발 서버 실행
+cd frontend/
+npm install
+npm run dev
 
-# 브라우저 접속
-http://localhost:7860
+# 브라우저 접속 (자동 열림)
+http://localhost:5174
 ```
 
-### API 클라이언트 활용
+### TypeScript API 타입 정의
 
-Gradio 인터페이스는 `cli.utils.api_client.YouTubeAutomationAPI` 클래스를 사용하여 백엔드와 통신합니다:
+```typescript
+// frontend/src/types/api.ts
+export interface ScriptUploadResponse {
+  success: boolean;
+  message: string;
+  timestamp: string;
+  data: {
+    id: number;
+    title: string;
+    status: ScriptStatus;
+    filename: string;
+    created_at: string;
+  };
+}
 
-```python
-from cli.utils.api_client import YouTubeAutomationAPI
+export interface PaginatedScriptResponse {
+  success: boolean;
+  message: string;
+  timestamp: string;
+  data: ScriptSummary[];
+  pagination: {
+    total: number;
+    count: number;
+    skip: number;
+    limit: number;
+    has_more: boolean;
+  };
+}
 
-# API 클라이언트 초기화
-api = YouTubeAutomationAPI()
+export interface WebSocketMessage {
+  type: 'upload_progress' | 'upload_completed' | 'upload_error';
+  script_id?: number;
+  data?: any;
+  timestamp?: string;
+}
 
-# 스크립트 업로드
-result = api.upload_script("script.md")
+export type ScriptStatus = 'script_ready' | 'video_ready' | 'uploaded' | 'error';
+```
 
-# 스크립트 목록 조회
-scripts = api.get_scripts()
+### React 19 Custom Hooks 활용
 
-# YouTube 업로드
-youtube_result = api.upload_to_youtube(script_id, None, "private", 22)
+#### useYouTubeManager Hook (182줄 비즈니스 로직 추상화)
+
+```typescript
+// frontend/src/hooks/useYouTubeManager.ts
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useWebSocket } from './useWebSocket';
+
+export const useYouTubeManager = () => {
+  const queryClient = useQueryClient();
+  const { sendMessage } = useWebSocket('ws://localhost:8000/ws');
+
+  const uploadToYouTube = useMutation({
+    mutationFn: async ({ scriptId, privacy }: { scriptId: number; privacy: string }) => {
+      const response = await fetch(`/api/upload/youtube/${scriptId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ privacy_status: privacy, category_id: 22 })
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      // TanStack Query 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['scripts'] });
+    }
+  });
+
+  const subscribeToProgress = (scriptId: number) => {
+    sendMessage({
+      type: 'subscribe_script',
+      script_id: scriptId
+    });
+  };
+
+  return { uploadToYouTube, subscribeToProgress };
+};
+```
+
+#### useScriptUpload Hook (파일 업로드 완전 추상화)
+
+```typescript
+// frontend/src/hooks/useScriptUpload.ts
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+
+export const useScriptUpload = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/scripts/upload', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('스크립트 업로드 실패');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast.success(`스크립트가 업로드되었습니다: ${data.data.title}`);
+      queryClient.invalidateQueries({ queryKey: ['scripts'] });
+    },
+    onError: (error) => {
+      toast.error(`업로드 실패: ${error.message}`);
+    }
+  });
+};
+```
+
+### React Context + State Management
+
+#### 통합 상태 관리 (Zustand Store)
+
+```typescript
+// frontend/src/store/useAppStore.ts
+import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
+
+interface AppState {
+  // WebSocket 상태
+  isWebSocketConnected: boolean;
+  setWebSocketConnected: (connected: boolean) => void;
+  
+  // 업로드 진행률 상태
+  uploadProgress: Record<number, number>;
+  setUploadProgress: (scriptId: number, progress: number) => void;
+  
+  // UI 상태
+  sidebarOpen: boolean;
+  toggleSidebar: () => void;
+}
+
+export const useAppStore = create<AppState>()(
+  devtools(
+    (set) => ({
+      isWebSocketConnected: false,
+      setWebSocketConnected: (connected) => set({ isWebSocketConnected: connected }),
+      
+      uploadProgress: {},
+      setUploadProgress: (scriptId, progress) => 
+        set((state) => ({
+          uploadProgress: { ...state.uploadProgress, [scriptId]: progress }
+        })),
+      
+      sidebarOpen: true,
+      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen }))
+    }),
+    { name: 'app-store' }
+  )
+);
+```
+
+### 실시간 업로드 진행률 컴포넌트 (React 19 패턴)
+
+```typescript
+// frontend/src/components/upload/UploadProgress.tsx
+import React from 'react';
+import { Progress } from '@/components/ui/progress';
+import { useWebSocket } from '@/hooks/useWebSocket';
+import { useAppStore } from '@/store/useAppStore';
+
+interface UploadProgressProps {
+  scriptId: number;
+}
+
+export const UploadProgress: React.FC<UploadProgressProps> = ({ scriptId }) => {
+  const { uploadProgress } = useAppStore();
+  const progress = uploadProgress[scriptId] || 0;
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm">
+        <span>업로드 진행률</span>
+        <span>{progress}%</span>
+      </div>
+      <Progress value={progress} className="w-full" />
+      {progress === 100 && (
+        <p className="text-sm text-green-600">✅ 업로드 완료</p>
+      )}
+    </div>
+  );
+};
+```
+
+### 개발자 도구 통합
+
+```typescript
+// React DevTools + TanStack Query DevTools + Zustand DevTools
+// frontend/src/App.tsx
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+export default function App() {
+  return (
+    <QueryProvider>
+      <Router>
+        <Routes>
+          {/* 8개 페이지 라우팅 */}
+        </Routes>
+      </Router>
+      
+      {/* 개발 환경에서만 DevTools 활성화 */}
+      {process.env.NODE_ENV === 'development' && (
+        <ReactQueryDevtools initialIsOpen={false} />
+      )}
+    </QueryProvider>
+  );
+}
 ```
 
 ---
 
 **API 문서 버전**: 1.0.0  
-**마지막 업데이트**: 2025-08-22  
-**Gradio 통합**: v5.43.1 완전 호환
+**마지막 업데이트**: 2025-08-26  
+**React Frontend**: v19.1.1 + TypeScript 5.8 완전 통합

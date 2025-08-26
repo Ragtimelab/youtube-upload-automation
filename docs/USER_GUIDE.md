@@ -1,14 +1,14 @@
-# 📖 YouTube 자동화 React 웹 인터페이스 완전 사용법
+# 📖 YouTube 자동화 React 웹 대시보드 완전 사용법
 
-> **React + WebSocket 기반 YouTube 업로드 시스템 - 1인 개발자를 위한 실무 가이드**
+> **React 19 + TypeScript + WebSocket 기반 YouTube 업로드 시스템 - 1인 개발자를 위한 실무 가이드**
 
 ## 📋 목차
 
 1. [시작하기](#-시작하기)
-2. [스크립트 관리 탭](#-스크립트-관리-탭)
-3. [비디오 업로드 탭](#-비디오-업로드-탭)
-4. [YouTube 업로드 탭](#-youtube-업로드-탭)
-5. [대시보드 탭](#-대시보드-탭)
+2. [스크립트 페이지](#-스크립트-페이지)
+3. [업로드 페이지](#-업로드-페이지)
+4. [YouTube 페이지](#-youtube-페이지)
+5. [대시보드 페이지](#-대시보드-페이지)
 6. [전체 워크플로우](#-전체-워크플로우)
 7. [문제 해결](#-문제-해결)
 8. [고급 사용법](#-고급-사용법)
@@ -20,42 +20,46 @@
 ### 사전 준비사항
 
 - ✅ 백엔드 서버가 실행 중이어야 함 (`cd backend && make run`)
+- ✅ React 프론트엔드가 실행 중이어야 함 (`cd frontend && npm run dev`)
 - ✅ YouTube API 인증 설정 완료
 - ✅ 필요한 의존성 설치 완료
 
 ### 앱 실행하기
 
 ```bash
-# 프로젝트 루트에서
-poetry run python gradio_app.py
+# 백엔드 서버 실행 (Terminal 1)
+cd backend && make run
 
-# 브라우저에서 자동으로 열리지 않으면
-# http://localhost:7860 접속
+# React 프론트엔드 실행 (Terminal 2)
+cd frontend && npm run dev
+
+# 브라우저에서 자동으로 열리거나
+# http://localhost:5174 접속
 ```
 
 ### 첫 화면 확인
 
-- 브라우저에서 `http://localhost:7860` 접속
+- 브라우저에서 `http://localhost:5174` 접속
 - **"🎬 YouTube Upload Automation"** 헤더 확인
-- 4개 탭 확인: 📝 스크립트 관리 | 📹 비디오 업로드 | 🎬 YouTube 업로드 | 📊 대시보드
-- 하단 **"📡 연결 정보: FastAPI Backend (http://localhost:8000)"** 확인
+- 8개 페이지 확인: Dashboard, Scripts, Upload, YouTube, Status, Pipeline, Settings, Home
+- 실시간 WebSocket 연결 상태 표시기 확인
 
 ---
 
-## 📝 스크립트 관리 탭
+## 📝 스크립트 페이지
 
 ### 📤 스크립트 파일 업로드
 
 #### 파일 업로드 방법
 
-1. **"📝 스크립트 관리"** 탭 클릭
-2. **왼쪽 영역**에서 파일 업로드:
-   - **"스크립트 파일 선택 (.md만 지원)"** 클릭
+1. 사이드바에서 **"📝 Scripts"** 페이지 클릭
+2. **파일 업로드 영역**에서:
+   - **드래그 앤 드롭** 또는 **"Click to browse"** 버튼 클릭
    - 지원 형식: `.md` (마크다운 전용)
    - 파일 크기: 최대 10MB
 
-3. **📤 스크립트 업로드** 버튼 클릭
-4. **업로드 결과** 박스에서 성공/실패 확인
+3. **"Upload Script"** 버튼 클릭
+4. **실시간 알림**으로 업로드 결과 확인 (Toast 메시지)
 
 #### 스크립트 파일 형식
 
@@ -100,13 +104,13 @@ ImageFX 프롬프트: AI 이미지 생성을 위한 프롬프트
 
 ---
 
-## 📹 비디오 업로드 탭
+## 📹 업로드 페이지
 
 ### 🎥 비디오 파일 업로드
 
 #### 업로드 과정
 
-1. **"📹 비디오 업로드"** 탭 클릭
+1. **"📹 Upload"** 페이지 클릭
 2. **스크립트 선택**:
    - 드롭다운에서 `script_ready` 상태 스크립트만 표시됨
    - 형식: `[ID] 제목` (예: `[1] 첫 번째 영상`)
@@ -132,13 +136,13 @@ ImageFX 프롬프트: AI 이미지 생성을 위한 프롬프트
 
 ---
 
-## 🎬 YouTube 업로드 탭
+## 🎬 YouTube 페이지
 
 ### 📺 단일 업로드
 
 #### 업로드 설정
 
-1. **"🎬 YouTube 업로드"** 탭 클릭
+1. **"🎬 YouTube"** 페이지 클릭
 2. **스크립트 선택**:
    - 드롭다운에서 `video_ready` 상태 스크립트만 표시됨
    - 형식: `[ID] 제목`
@@ -190,13 +194,13 @@ ImageFX 프롬프트: AI 이미지 생성을 위한 프롬프트
 
 ---
 
-## 📊 대시보드 탭
+## 📊 대시보드 페이지
 
 ### 📈 시스템 상태 모니터링
 
 #### 상태 확인 영역
 
-1. **"📊 대시보드"** 탭 클릭
+1. **"📊 Dashboard"** 페이지 클릭
 2. **"시스템 상태 확인"** 버튼 클릭
 3. **시스템 상태 정보**에서 확인:
    - **API 연결**: ✅ 정상 / ❌ 오류
@@ -228,25 +232,25 @@ ImageFX 프롬프트: AI 이미지 생성을 위한 프롬프트
 
 #### 1단계: 스크립트 준비
 ```
-📝 스크립트 관리 탭 → 파일 업로드 → 📤 스크립트 업로드
+📝 Scripts 페이지 → 파일 업로드 → 📤 스크립트 업로드
 상태: script_ready
 ```
 
 #### 2단계: 비디오 업로드
 ```
-📹 비디오 업로드 탭 → 스크립트 선택 → 🎥 비디오 업로드
+📹 Upload 페이지 → 스크립트 선택 → 🎥 비디오 업로드
 상태: video_ready
 ```
 
 #### 3단계: YouTube 업로드
 ```
-🎬 YouTube 업로드 탭 → 설정 선택 → 🎬 YouTube 업로드
+🎬 YouTube 페이지 → 설정 선택 → 🎬 YouTube 업로드
 상태: uploaded
 ```
 
 #### 4단계: 확인 및 관리
 ```
-📊 대시보드 탭 → 상태 확인 → YouTube 페이지 방문
+📊 Dashboard 페이지 → 상태 확인 → YouTube 페이지 방문
 ```
 
 ### 상태 전환 다이어그램
@@ -266,7 +270,7 @@ ImageFX 프롬프트: AI 이미지 생성을 위한 프롬프트
 ```
 어느 단계에서든 오류 발생 → error 상태
                           ↓
-📊 대시보드에서 오류 확인 → 문제 해결 → 해당 단계부터 재시작
+📊 Dashboard 페이지에서 오류 확인 → 문제 해결 → 해당 단계부터 재시작
 ```
 
 ---
@@ -277,7 +281,7 @@ ImageFX 프롬프트: AI 이미지 생성을 위한 프롬프트
 
 #### 1. ❌ API 서버 연결 실패
 
-**증상**: 대시보드에서 "❌ API 연결 실패" 표시
+**증상**: Dashboard 페이지에서 "❌ API 연결 실패" 표시
 **해결**:
 
 ```bash
@@ -358,7 +362,7 @@ tail -f backend/logs/app-$(date +%Y-%m-%d).log
 # 오류 로그만 확인
 tail -f backend/logs/error-$(date +%Y-%m-%d).log
 
-# Gradio 콘솔 로그 확인 (터미널에서)
+# React 콘솔 로그 확인 (터미널에서)
 ```
 
 #### 브라우저 개발자 도구
@@ -367,11 +371,18 @@ tail -f backend/logs/error-$(date +%Y-%m-%d).log
 2. **Network** 탭에서 API 요청 실패 확인
 3. **JavaScript 오류** 메시지 확인
 
-#### Gradio 디버깅
+#### React 프론트엔드 디버깅
 
 ```bash
-# 디버그 모드로 Gradio 실행
-GRADIO_DEBUG=1 poetry run python gradio_app.py
+# 디버그 모드로 React 개발 서버 실행
+cd frontend/
+npm run dev
+
+# TypeScript 컴파일 체크
+npm run type-check
+
+# 테스트 실행 (Jest + Testing Library)
+npm run test
 ```
 
 ---
@@ -410,9 +421,10 @@ GRADIO_DEBUG=1 poetry run python gradio_app.py
 
 #### 브라우저 최적화
 
-- **Chrome 권장**: 최적의 Gradio 성능
-- **메모리 관리**: 탭을 많이 열지 않기
-- **확장 프로그램**: 광고 차단기 등이 간섭할 수 있음
+- **Chrome 권장**: 최적의 React 성능 및 WebSocket 지원
+- **메모리 관리**: 개발자 도구 및 다중 탭 주의
+- **확장 프로그램**: 광고 차단기 등이 API 요청을 차단할 수 있음
+- **WebSocket 연결**: 실시간 상태 동기화를 위해 연결 유지
 
 #### 네트워크 최적화
 
@@ -473,17 +485,20 @@ cp -r .secrets backup/secrets_$(date +%Y%m%d)/
 
 - **프로젝트**: YouTube 업로드 자동화 시스템
 - **대상 사용자**: 1인 개발자, 콘텐츠 제작자
-- **기술 스택**: FastAPI + Gradio + YouTube Data API v3
-- **포트**: Gradio 웹 인터페이스 (7860), FastAPI 백엔드 (8000)
+- **기술 스택**: FastAPI + React 19 + TypeScript + YouTube Data API v3
+- **포트**: React 웹 인터페이스 (5174), FastAPI 백엔드 (8000)
 
-### 웹 인터페이스 특징
+### React 웹 인터페이스 특징
 
-- **4개 탭 구조**: 스크립트 관리, 비디오 업로드, YouTube 업로드, 대시보드
-- **드래그 앤 드롭**: 직관적인 파일 업로드
-- **실시간 상태**: API 연결 및 업로드 진행률 표시
+- **8개 페이지 구조**: Dashboard, Scripts, Upload, YouTube, Status, Pipeline, Settings, Home
+- **드래그 앤 드롭**: 직관적인 파일 업로드 (React 19 컴포넌트)
+- **실시간 WebSocket**: API 연결 및 업로드 진행률 실시간 표시
+- **TanStack Query**: 서버 상태 관리 및 캐싱 최적화
+- **TypeScript 지원**: 완전한 타입 안전성 및 개발자 경험
+- **Shadcn/ui + Tailwind**: 현대적이고 반응형 UI 컴포넌트
 - **배치 업로드**: 최대 5개 영상 동시 처리
 - **채널 브랜딩**: YAML 기반 자동 설명/태그 결합
 
 ---
 
-*이 가이드는 YouTube 자동화 Gradio 웹 인터페이스의 모든 기능을 다룹니다. 추가적인 도움이 필요하시면 관련 문서를 참조하거나 CLI 도구를 병행하여 사용하세요.* 🚀
+*이 가이드는 YouTube 자동화 React 웹 대시보드의 모든 기능을 다룹니다. 추가적인 도움이 필요하시면 관련 문서를 참조하거나 CLI 도구를 병행하여 사용하세요.* 🚀

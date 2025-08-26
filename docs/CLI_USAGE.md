@@ -21,7 +21,7 @@
 
 ## 🎯 CLI 개요
 
-YouTube 자동화 CLI는 Gradio 웹 인터페이스와 동일한 기능을 명령줄에서 제공하며, 배치 처리와 자동화에 특화되어 있습니다.
+YouTube 자동화 CLI는 React 19 웹 인터페이스와 동일한 기능을 명령줄에서 제공하며, 배치 처리와 자동화에 특화되어 있습니다.
 
 ### 🎯 주요 특징
 
@@ -30,7 +30,7 @@ YouTube 자동화 CLI는 Gradio 웹 인터페이스와 동일한 기능을 명�
 - **🎨 Rich UI**: 컬러풀한 터미널 출력 및 진행률 표시
 - **🎮 인터랙티브 모드**: 메뉴 기반 사용자 친화적 인터페이스
 - **📊 실시간 모니터링**: 라이브 상태 추적 및 대시보드
-- **🌐 Gradio 완전 호환**: 웹 인터페이스와 동일한 백엔드 API 사용
+- **🌐 React 완전 호환**: 웹 인터페이스와 동일한 백엔드 API 및 WebSocket 실시간 동기화
 - **🔄 자동화 지원**: 스크립트 작성 및 배치 실행 가능
 
 ---
@@ -179,7 +179,7 @@ python cli/main.py
 
 ```bash
 # 단일 파일 업로드
-./youtube-cli script upload my_script.txt
+./youtube-cli script upload my_script.md
 
 # 디렉토리의 모든 스크립트 배치 업로드
 ./youtube-cli batch-upload-scripts ./scripts/
@@ -374,9 +374,9 @@ python cli/main.py
 ```bash
 # 1단계: 파일명을 날짜 형식으로 준비
 scripts/
-├── 20250817_01_story.txt
-├── 20250817_02_story.txt
-└── 20250817_03_story.txt
+├── 20250817_01_story.md
+├── 20250817_02_story.md
+└── 20250817_03_story.md
 
 videos/
 ├── 20250817_01_story.mp4
@@ -410,7 +410,7 @@ videos/
 
 ```bash
 # 1단계: 스크립트 업로드
-./youtube-cli script upload my_script.txt
+./youtube-cli script upload my_script.md
 # → 출력: 스크립트 ID: 1
 
 # 2단계: 비디오 업로드
@@ -452,9 +452,9 @@ videos/
 
 ```bash
 # 대본과 영상 파일명을 날짜_순번_이름 형식으로 통일
-20250817_01_story.txt ↔ 20250817_01_story.mp4
-20250817_02_story.txt ↔ 20250817_02_story.mp4
-20250817_03_story.txt ↔ 20250817_03_story.mp4
+20250817_01_story.md ↔ 20250817_01_story.mp4
+20250817_02_story.md ↔ 20250817_02_story.mp4
+20250817_03_story.md ↔ 20250817_03_story.mp4
 ```
 
 ### 자동 매핑 명령어
@@ -489,7 +489,7 @@ videos/
 
 ```bash
 # 빠른 스크립트 업로드
-./quick-script my_script.txt
+./quick-script my_script.md
 
 # 빠른 전체 워크플로우 (비디오 → YouTube)
 ./quick-upload 1 my_video.mp4 private
@@ -503,7 +503,7 @@ videos/
 ./youtube-cli ls --status video_ready
 
 # 빠른 스크립트 업로드 (quick-upload 별칭)
-./youtube-cli quick-upload my_script.txt
+./youtube-cli quick-upload my_script.md
 
 # 빠른 헬스 체크
 ./youtube-cli health
@@ -513,7 +513,7 @@ videos/
 
 ```bash
 # 스크립트 업로드 → 상태 확인
-./youtube-cli script upload script.txt && ./youtube-cli ls
+./youtube-cli script upload script.md && ./youtube-cli ls
 
 # 비디오 업로드 → YouTube 업로드
 ./youtube-cli video upload 1 video.mp4 && \
@@ -541,12 +541,12 @@ poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 #### 2. 파일을 찾을 수 없음
 
 ```bash
-❌ 파일이 존재하지 않습니다: my_script.txt
+❌ 파일이 존재하지 않습니다: my_script.md
 
 # 해결책:
-ls -la my_script.txt  # 파일 존재 확인
-pwd                   # 현재 디렉토리 확인
-./youtube-cli script upload ./scripts/my_script.txt  # 상대경로 사용
+ls -la my_script.md  # 파일 존재 확인
+pwd                  # 현재 디렉토리 확인
+./youtube-cli script upload ./scripts/my_script.md  # 상대경로 사용
 ```
 
 #### 3. YouTube API 인증 실패
@@ -694,19 +694,19 @@ DEFAULT_CATEGORY_ID=22
 
 ---
 
-## 🌐 Gradio 웹 인터페이스 호환성
+## 🌐 React 웹 인터페이스 호환성
 
-### CLI ↔ Gradio 데이터 호환성
+### CLI ↔ React 데이터 호환성
 
-CLI와 Gradio 웹 인터페이스는 **완전히 동일한 백엔드 API**를 사용하므로 데이터가 실시간으로 동기화됩니다:
+CLI와 React 19 + TypeScript 웹 인터페이스는 **완전히 동일한 백엔드 API와 WebSocket**을 사용하므로 데이터가 실시간으로 동기화됩니다:
 
 ```bash
 # CLI로 스크립트 업로드
 ./youtube-cli script upload my_script.md
 
-# → Gradio 웹에서 즉시 확인 가능 (새로고침)
+# → React 웹 대시보드에서 실시간 확인 가능 (WebSocket 자동 업데이트)
 
-# Gradio에서 비디오 업로드
+# React UI에서 비디오 업로드
 # → CLI에서 즉시 상태 확인 가능
 ./youtube-cli script list --status video_ready
 ```
@@ -718,32 +718,33 @@ CLI와 Gradio 웹 인터페이스는 **완전히 동일한 백엔드 API**를 �
 # CLI로 배치 처리
 ./youtube-cli batch-upload-scripts ./scripts/
 
-# Gradio 대시보드에서 진행률 모니터링
-# http://localhost:7860 → 📊 대시보드 탭
+# React 대시보드에서 실시간 진행률 모니터링
+# http://localhost:5174 → DashboardPage (실시간 WebSocket 업데이트)
 ```
 
 #### 2. **팀 협업**
 - 개발자: CLI로 자동화 스크립트 실행
-- 콘텐츠 팀: Gradio 웹에서 개별 업로드 및 모니터링
+- 콘텐츠 팀: React 웹 대시보드에서 개별 업로드 및 실시간 모니터링
 
 #### 3. **하이브리드 사용**
 ```bash
 # CLI로 스크립트 대량 업로드
 ./youtube-cli batch-upload-scripts ./weekly-content/
 
-# Gradio에서 세부 설정 조정 및 YouTube 업로드
-# (공개 설정, 카테고리 등을 GUI에서 편리하게)
+# React UI에서 세부 설정 조정 및 YouTube 업로드
+# (YouTubePage에서 공개 설정, 카테고리 등을 직관적으로 관리)
 ```
 
 ### 기능별 비교
 
-| 기능 | CLI | Gradio 웹 인터페이스 | 권장 사용 시점 |
+| 기능 | CLI | React 19 웹 인터페이스 | 권장 사용 시점 |
 |------|-----|-------------------|----------------|
-| 스크립트 업로드 | `script upload` | 드래그 앤 드롭 | CLI: 배치, Gradio: 개별 |
-| 비디오 업로드 | `video upload` | 파일 선택 | CLI: 자동화, Gradio: 수동 |
-| YouTube 업로드 | `youtube upload` | 설정 후 업로드 | CLI: 스크립트, Gradio: 세부 조정 |
-| 상태 모니터링 | `status`/`monitor` | 대시보드 탭 | CLI: 로그, Gradio: 시각적 |
-| 배치 처리 | `batch-*` 명령어 | 배치 업로드 탭 | CLI: 스크립트화, Gradio: GUI |
+| 스크립트 업로드 | `script upload` | ScriptsPage (드래그 앤 드롭) | CLI: 배치, React: 개별 관리 |
+| 비디오 업로드 | `video upload` | UploadPage (파일 선택) | CLI: 자동화, React: 수동 업로드 |
+| YouTube 업로드 | `youtube upload` | YouTubePage (설정 후 업로드) | CLI: 스크립트, React: 세부 조정 |
+| 상태 모니터링 | `status`/`monitor` | DashboardPage + StatusPage | CLI: 로그, React: 실시간 시각화 |
+| 배치 처리 | `batch-*` 명령어 | 8개 통합 페이지 | CLI: 스크립트화, React: GUI 관리 |
+| 실시간 업데이트 | 수동 명령어 실행 | WebSocket 자동 동기화 | CLI: 정확성, React: 편의성 |
 
 ### 웹 인터페이스 실행
 
@@ -751,14 +752,15 @@ CLI와 Gradio 웹 인터페이스는 **완전히 동일한 백엔드 API**를 �
 # 1. 백엔드 서버 실행 (필수)
 cd backend && make run
 
-# 2. Gradio 웹 인터페이스 실행
-poetry run python gradio_app.py
+# 2. React 19 + TypeScript 프론트엔드 실행
+cd frontend && npm run dev
 
 # 3. 브라우저 접속
-# http://localhost:7860
+# http://localhost:5174
 
-# 4. CLI와 병행 사용 가능
+# 4. CLI와 병행 사용 가능 (실시간 동기화)
 ./youtube-cli status  # CLI에서 상태 확인
+# → React 대시보드에서 즉시 WebSocket 업데이트 확인
 ```
 
 ---
@@ -768,7 +770,7 @@ poetry run python gradio_app.py
 - **개발자 가이드**: `CLAUDE.md` 참조
 - **API 문서**: `docs/API.md` 참조
 - **FAQ**: `docs/FAQ.md` 참조
-- **사용자 가이드**: `docs/USER_GUIDE.md` (Gradio 웹 인터페이스)
+- **사용자 가이드**: `docs/USER_GUIDE.md` (React 19 웹 인터페이스)
 
 ---
 
@@ -777,5 +779,5 @@ poetry run python gradio_app.py
 ---
 
 **CLI 사용 가이드**  
-**마지막 업데이트**: 2025-08-22  
-**Gradio 호환성**: 완전 지원 ✅
+**마지막 업데이트**: 2025-08-26  
+**React 19 호환성**: 완전 지원 + WebSocket 실시간 동기화 ✅

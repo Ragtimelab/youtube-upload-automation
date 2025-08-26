@@ -18,7 +18,7 @@ logger = get_router_logger("scripts")
 async def upload_script(file: UploadFile = File(...), db: Session = Depends(get_db)):
     """대본 파일 업로드 및 파싱
 
-    지원 파일 형식: .txt, .md
+    지원 파일 형식: .md (마크다운 전용)
     대본 파일 구조:
     === 대본 ===
     [대본 내용]

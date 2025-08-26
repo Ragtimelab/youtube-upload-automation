@@ -99,7 +99,7 @@ ImageFX 프롬프트: complete isolation test
 안녕하세요, 완전히 격리된 환경에서의 최종 테스트입니다.
 """
         
-        files = {"file": ("complete_test.txt", sample_content, "text/plain")}
+        files = {"file": ("complete_test.md", sample_content, "text/markdown")}
         response = client.post("/api/scripts/upload", files=files)
         
         print(f"업로드 상태: {response.status_code}")
@@ -158,7 +158,7 @@ def test_error_handling():
     try:
         # 잘못된 스크립트 업로드
         invalid_content = "잘못된 형식의 스크립트"
-        files = {"file": ("invalid.txt", invalid_content, "text/plain")}
+        files = {"file": ("invalid.md", invalid_content, "text/markdown")}
         
         response = client.post("/api/scripts/upload", files=files)
         print(f"잘못된 업로드 상태: {response.status_code}")

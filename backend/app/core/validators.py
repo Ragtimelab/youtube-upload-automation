@@ -22,7 +22,7 @@ class FileValidator:
             raise FileValidationError("파일명이 없습니다.")
 
         # 파일 확장자 검증
-        allowed_extensions = [".txt", ".md"]
+        allowed_extensions = [".md"]
         file_extension = (
             "." + file.filename.split(".")[-1].lower() if "." in file.filename else ""
         )

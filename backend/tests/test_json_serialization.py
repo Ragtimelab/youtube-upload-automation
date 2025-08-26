@@ -60,7 +60,7 @@ ImageFX 프롬프트: json serialization test
 JSON 직렬화가 정상적으로 작동하는지 확인하는 테스트입니다.
 """
         
-        files = {"file": ("json_test.txt", sample_content, "text/plain")}
+        files = {"file": ("json_test.md", sample_content, "text/markdown")}
         response = client.post("/api/scripts/upload", files=files)
         
         print(f"1. 업로드 상태: {response.status_code}")

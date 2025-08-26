@@ -41,19 +41,13 @@ class Settings(BaseSettings):
 
     # Frontend Configuration
     frontend_url: str = Field(
-        default="http://localhost:3000", validation_alias="FRONTEND_URL"
+        default="http://localhost:5174", validation_alias="FRONTEND_URL"
     )
     cors_origins: List[str] = Field(
-        default=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:5174", "http://127.0.0.1:5174"],
+        default=["http://localhost:5174", "http://127.0.0.1:5174"],
         validation_alias="CORS_ORIGINS",
     )
 
-    # Gradio Web Interface Configuration
-    gradio_port: int = Field(default=7860, validation_alias="GRADIO_PORT")
-    gradio_host: str = Field(default="0.0.0.0", validation_alias="GRADIO_HOST")
-    gradio_share: bool = Field(default=False, validation_alias="GRADIO_SHARE")
-    gradio_inbrowser: bool = Field(default=True, validation_alias="GRADIO_INBROWSER")
-    gradio_theme: str = Field(default="soft", validation_alias="GRADIO_THEME")
 
     # ===========================================
     # File Paths & Storage
@@ -217,7 +211,7 @@ class Settings(BaseSettings):
             raise ValueError(f"Invalid log level. Must be one of: {valid_levels}")
         return v.upper()
 
-    @field_validator("backend_port", "gradio_port")
+    @field_validator("backend_port")
     @classmethod
     def validate_port(cls, v):
         """포트 번호 검증"""
@@ -225,22 +219,6 @@ class Settings(BaseSettings):
             raise ValueError("Port must be between 1 and 65535")
         return v
 
-    @field_validator("gradio_theme")
-    @classmethod
-    def validate_gradio_theme(cls, v):
-        """Gradio 테마 검증"""
-        valid_themes = [
-            "default",
-            "huggingface",
-            "grass",
-            "peach",
-            "base",
-            "soft",
-            "monochrome",
-        ]
-        if v not in valid_themes:
-            raise ValueError(f"Invalid Gradio theme. Must be one of: {valid_themes}")
-        return v
 
     @field_validator("allowed_video_extensions", "allowed_script_extensions")
     @classmethod

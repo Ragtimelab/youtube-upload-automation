@@ -14,7 +14,7 @@ class TestScriptsAPI:
         """스크립트 업로드 API - 성공"""
         
         # 파일 업로드 형태로 요청
-        files = {"file": ("test_script.txt", sample_script_content, "text/plain")}
+        files = {"file": ("test_script.md", sample_script_content, "text/markdown")}
         
         response = test_client.post("/api/scripts/upload", files=files)
         
@@ -30,14 +30,14 @@ class TestScriptsAPI:
         script_data = data["data"]
         assert script_data["title"] == "시니어의 지혜 이야기"
         assert script_data["status"] == "script_ready"
-        assert script_data["filename"] == "test_script.txt"
+        assert script_data["filename"] == "test_script.md"
         assert "id" in script_data
     
     def test_upload_script_invalid_file(self, test_client: TestClient):
         """스크립트 업로드 API - 잘못된 파일"""
         
         invalid_content = "잘못된 형식의 파일 내용"
-        files = {"file": ("invalid.txt", invalid_content, "text/plain")}
+        files = {"file": ("invalid.md", invalid_content, "text/markdown")}
         
         response = test_client.post("/api/scripts/upload", files=files)
         
@@ -78,7 +78,7 @@ class TestScriptsAPI:
         """스크립트 목록 조회 API - 데이터 있음"""
         
         # 먼저 스크립트 업로드
-        files = {"file": ("test1.txt", sample_script_content, "text/plain")}
+        files = {"file": ("test1.md", sample_script_content, "text/markdown")}
         upload_response = test_client.post("/api/scripts/upload", files=files)
         assert upload_response.status_code == 200
         
@@ -87,7 +87,7 @@ class TestScriptsAPI:
             "제목: 시니어의 지혜 이야기",
             "제목: 두 번째 이야기"
         )
-        files = {"file": ("test2.txt", modified_content, "text/plain")}
+        files = {"file": ("test2.md", modified_content, "text/markdown")}
         upload_response = test_client.post("/api/scripts/upload", files=files)
         assert upload_response.status_code == 200
         
@@ -111,7 +111,7 @@ class TestScriptsAPI:
         """스크립트 목록 조회 API - 상태 필터"""
         
         # 스크립트 업로드
-        files = {"file": ("test.txt", sample_script_content, "text/plain")}
+        files = {"file": ("test.md", sample_script_content, "text/markdown")}
         upload_response = test_client.post("/api/scripts/upload", files=files)
         script_id = upload_response.json()["data"]["id"]
         
@@ -138,7 +138,7 @@ class TestScriptsAPI:
                 "제목: 시니어의 지혜 이야기",
                 f"제목: 테스트 스크립트 {i+1}"
             )
-            files = {"file": (f"test{i+1}.txt", modified_content, "text/plain")}
+            files = {"file": (f"test{i+1}.md", modified_content, "text/markdown")}
             response = test_client.post("/api/scripts/upload", files=files)
             assert response.status_code == 200
         
@@ -167,7 +167,7 @@ class TestScriptsAPI:
         """특정 스크립트 조회 API - 성공"""
         
         # 스크립트 업로드
-        files = {"file": ("test.txt", sample_script_content, "text/plain")}
+        files = {"file": ("test.md", sample_script_content, "text/markdown")}
         upload_response = test_client.post("/api/scripts/upload", files=files)
         script_id = upload_response.json()["data"]["id"]
         
@@ -201,7 +201,7 @@ class TestScriptsAPI:
         """스크립트 수정 API - 성공"""
         
         # 스크립트 업로드
-        files = {"file": ("test.txt", sample_script_content, "text/plain")}
+        files = {"file": ("test.md", sample_script_content, "text/markdown")}
         upload_response = test_client.post("/api/scripts/upload", files=files)
         script_id = upload_response.json()["data"]["id"]
         
@@ -232,7 +232,7 @@ class TestScriptsAPI:
         """스크립트 삭제 API - 성공"""
         
         # 스크립트 업로드
-        files = {"file": ("test.txt", sample_script_content, "text/plain")}
+        files = {"file": ("test.md", sample_script_content, "text/markdown")}
         upload_response = test_client.post("/api/scripts/upload", files=files)
         script_id = upload_response.json()["data"]["id"]
         
@@ -258,7 +258,7 @@ class TestScriptsAPI:
                 "제목: 시니어의 지혜 이야기",
                 f"제목: 통계 테스트 {i+1}"
             )
-            files = {"file": (f"stats_test{i+1}.txt", modified_content, "text/plain")}
+            files = {"file": (f"stats_test{i+1}.md", modified_content, "text/markdown")}
             response = test_client.post("/api/scripts/upload", files=files)
             assert response.status_code == 200
         

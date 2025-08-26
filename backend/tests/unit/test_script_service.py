@@ -8,7 +8,12 @@ from sqlalchemy.orm import Session
 
 from app.services.script_service import ScriptService
 from app.models.script import Script
-from app.core.exceptions import ScriptNotFoundError, ScriptParsingError, DatabaseError
+from app.core.exceptions import (
+    ScriptNotFoundError, 
+    ScriptParsingError, 
+    DatabaseError,
+    InvalidScriptStatusError
+)
 
 
 class TestScriptService:
@@ -20,7 +25,7 @@ class TestScriptService:
         
         result = script_service.create_script_from_file(
             content=sample_script_content, 
-            filename="test_script.txt"
+            filename="test_script.md"
         )
         
         assert result is not None
@@ -44,7 +49,7 @@ class TestScriptService:
         with pytest.raises(ScriptParsingError):
             script_service.create_script_from_file(
                 content=invalid_content,
-                filename="invalid_script.txt"
+                filename="invalid_script.md"
             )
     
     def test_get_script_by_id_success(self, test_db: Session, sample_script_content: str):
@@ -54,7 +59,7 @@ class TestScriptService:
         # 먼저 스크립트 생성
         created_script = script_service.create_script_from_file(
             content=sample_script_content,
-            filename="test_script.txt"
+            filename="test_script.md"
         )
         
         # ID로 조회
@@ -83,7 +88,7 @@ class TestScriptService:
             )
             script_service.create_script_from_file(
                 content=modified_content,
-                filename=f"test_script_{i+1}.txt"
+                filename=f"test_script_{i+1}.md"
             )
         
         result = script_service.get_scripts(skip=0, limit=10)
@@ -100,7 +105,7 @@ class TestScriptService:
         # 스크립트 생성
         created_script = script_service.create_script_from_file(
             content=sample_script_content,
-            filename="test_script.txt"
+            filename="test_script.md"
         )
         
         # script_ready 상태로 필터링
@@ -123,7 +128,7 @@ class TestScriptService:
         # 스크립트 생성
         created_script = script_service.create_script_from_file(
             content=sample_script_content,
-            filename="test_script.txt"
+            filename="test_script.md"
         )
         
         # 수정
@@ -155,7 +160,7 @@ class TestScriptService:
         # 스크립트 생성
         created_script = script_service.create_script_from_file(
             content=sample_script_content,
-            filename="test_script.txt"
+            filename="test_script.md"
         )
         
         # 삭제
@@ -176,12 +181,12 @@ class TestScriptService:
         # 여러 상태의 스크립트 생성
         script1 = script_service.create_script_from_file(
             content=sample_script_content,
-            filename="script1.txt"
+            filename="script1.md"
         )
         
         script2 = script_service.create_script_from_file(
             content=sample_script_content.replace("제목: 시니어의 지혜 이야기", "제목: 두 번째 스크립트"),
-            filename="script2.txt"
+            filename="script2.md"
         )
         
         # 하나는 video_ready 상태로 변경
@@ -210,7 +215,7 @@ class TestScriptService:
             )
             script_service.create_script_from_file(
                 content=modified_content,
-                filename=f"{title}.txt"
+                filename=f"{title}.md"
             )
         
         # "시니어" 검색
@@ -231,7 +236,7 @@ class TestScriptService:
         # 스크립트 생성
         created_script = script_service.create_script_from_file(
             content=sample_script_content,
-            filename="test_script.txt"
+            filename="test_script.md"
         )
         
         assert created_script.status == "script_ready"
@@ -255,13 +260,13 @@ class TestScriptService:
         # script_ready 상태 스크립트 생성
         script1 = script_service.create_script_from_file(
             content=sample_script_content,
-            filename="script1.txt"
+            filename="script1.md"
         )
         
         # video_ready 상태 스크립트 생성
         script2 = script_service.create_script_from_file(
             content=sample_script_content.replace("제목: 시니어의 지혜 이야기", "제목: 두 번째 스크립트"),
-            filename="script2.txt"
+            filename="script2.md"
         )
         script_service.update_script_status(script2.id, "video_ready")
         
@@ -279,7 +284,7 @@ class TestScriptService:
         # video_ready 상태 스크립트 생성
         script = script_service.create_script_from_file(
             content=sample_script_content,
-            filename="script.txt"
+            filename="script.md"
         )
         script_service.update_script_status(script.id, "video_ready")
         
@@ -289,3 +294,160 @@ class TestScriptService:
         assert len(ready_scripts) == 1
         assert ready_scripts[0].id == script.id
         assert ready_scripts[0].status == "video_ready"
+
+    def test_create_script_duplicate_prevention(self, test_db: Session, sample_script_content: str):
+        """중복 스크립트 생성 방지 테스트"""
+        script_service = ScriptService(test_db)
+        
+        # 첫 번째 스크립트 생성
+        first_script = script_service.create_script_from_file(
+            content=sample_script_content,
+            filename="script1.md"
+        )
+        assert first_script is not None
+        
+        # 동일한 내용으로 중복 생성 시도
+        with pytest.raises(ScriptParsingError) as exc_info:
+            script_service.create_script_from_file(
+                content=sample_script_content,
+                filename="script2.md"  # 파일명은 다르지만 내용이 동일
+            )
+        
+        assert "동일한 제목과 내용의 스크립트가 이미 존재합니다" in str(exc_info.value)
+        assert f"ID: {first_script.id}" in str(exc_info.value)
+
+    def test_update_script_not_found(self, test_db: Session):
+        """존재하지 않는 스크립트 수정 시도"""
+        script_service = ScriptService(test_db)
+        
+        with pytest.raises(ScriptNotFoundError):
+            script_service.update_script(
+                script_id=999,
+                title="새로운 제목"
+            )
+
+    def test_delete_script_not_found(self, test_db: Session):
+        """존재하지 않는 스크립트 삭제 시도"""
+        script_service = ScriptService(test_db)
+        
+        with pytest.raises(ScriptNotFoundError):
+            script_service.delete_script(999)
+
+    def test_delete_uploaded_script_error(self, test_db: Session, sample_script_content: str):
+        """업로드된 스크립트 삭제 시도 - 에러 예상"""
+        script_service = ScriptService(test_db)
+        
+        # 스크립트 생성 및 uploaded 상태로 변경
+        script = script_service.create_script_from_file(
+            content=sample_script_content,
+            filename="script.md"
+        )
+        script_service.update_script_status(script.id, "uploaded")
+        
+        # uploaded 상태의 스크립트 삭제 시도
+        with pytest.raises(InvalidScriptStatusError) as exc_info:
+            script_service.delete_script(script.id)
+        
+        assert "uploaded" in str(exc_info.value)
+        assert "삭제 불가능" in str(exc_info.value)
+
+    def test_get_script_dict_by_id(self, test_db: Session, sample_script_content: str):
+        """직렬화된 데이터로 스크립트 조회"""
+        script_service = ScriptService(test_db)
+        
+        # 스크립트 생성
+        script = script_service.create_script_from_file(
+            content=sample_script_content,
+            filename="script.md"
+        )
+        
+        # 직렬화된 데이터 조회
+        script_dict = script_service.get_script_dict_by_id(script.id)
+        
+        assert isinstance(script_dict, dict)
+        assert script_dict['id'] == script.id
+        assert script_dict['title'] == script.title
+        assert script_dict['status'] == "script_ready"
+        assert 'created_at' in script_dict
+
+    def test_pagination_functionality(self, test_db: Session, sample_script_content: str):
+        """페이지네이션 기능 테스트"""
+        script_service = ScriptService(test_db)
+        
+        # 10개의 스크립트 생성
+        for i in range(10):
+            modified_content = sample_script_content.replace(
+                "제목: 시니어의 지혜 이야기",
+                f"제목: 테스트 스크립트 {i+1}"
+            )
+            script_service.create_script_from_file(
+                content=modified_content,
+                filename=f"script_{i+1}.md"
+            )
+        
+        # 첫 번째 페이지 (5개)
+        page1 = script_service.get_scripts(skip=0, limit=5)
+        assert page1['total'] == 10
+        assert len(page1['scripts']) == 5
+        assert page1['skip'] == 0
+        assert page1['limit'] == 5
+        
+        # 두 번째 페이지 (5개)
+        page2 = script_service.get_scripts(skip=5, limit=5)
+        assert page2['total'] == 10
+        assert len(page2['scripts']) == 5
+        assert page2['skip'] == 5
+        assert page2['limit'] == 5
+
+    def test_search_scripts_advanced(self, test_db: Session, sample_script_content: str):
+        """고급 스크립트 검색 기능 테스트"""
+        script_service = ScriptService(test_db)
+        
+        # 다양한 제목의 스크립트 생성
+        test_titles = [
+            "시니어의 지혜 이야기 1",
+            "시니어 커뮤니티 추억",
+            "장년층의 건강 관리",
+            "한국 시니어의 삶",
+            "지혜로운 삶의 노하우"
+        ]
+        
+        for i, title in enumerate(test_titles):
+            modified_content = sample_script_content.replace(
+                "제목: 시니어의 지혜 이야기",
+                f"제목: {title}"
+            )
+            script_service.create_script_from_file(
+                content=modified_content,
+                filename=f"script_{i+1}.md"
+            )
+        
+        # "시니어" 검색
+        senior_results = script_service.search_scripts("시니어")
+        assert len(senior_results) == 3  # 시니어가 포함된 제목 3개
+        
+        # "지혜" 검색
+        wisdom_results = script_service.search_scripts("지혜")
+        assert len(wisdom_results) == 2  # 지혜가 포함된 제목 2개
+
+    def test_create_script_validation_failure(self, test_db: Session):
+        """스크립트 생성 시 유효성 검증 실패 테스트"""
+        script_service = ScriptService(test_db)
+        
+        # 비정상적으로 긴 제목 (YouTube 제한 초과)
+        invalid_long_title_content = f"""
+=== 대본 ===
+테스트 대본 내용
+
+=== 메타데이터 ===
+제목: {'A' * 101}
+설명: 테스트 설명
+"""
+        
+        with pytest.raises(ScriptParsingError) as exc_info:
+            script_service.create_script_from_file(
+                content=invalid_long_title_content,
+                filename="invalid_script.md"
+            )
+        
+        assert "파싱된 데이터가 유효하지 않습니다" in str(exc_info.value)

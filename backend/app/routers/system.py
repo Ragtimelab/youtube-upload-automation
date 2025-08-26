@@ -71,7 +71,8 @@ def get_detailed_health(db: Session = Depends(get_db)):
         
         # 각 서비스 상태 체크
         script_service = ScriptService(db)
-        total_scripts = len(script_service.get_all_scripts())
+        scripts_page = script_service.get_scripts(limit=1000)  # 대용량 조회로 전체 개수 확인
+        total_scripts = scripts_page["total"]
         
         health_data = {
             "timestamp": "2025-08-23T12:20:00Z",

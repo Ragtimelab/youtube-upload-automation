@@ -92,7 +92,7 @@ class YouTubeAutomationAPI:
             raise ValueError(f"지원하지 않는 파일 형식입니다. ({', '.join(FileConstants.ALLOWED_SCRIPT_EXTENSIONS)}만 지원)")
         
         with open(file_path, 'rb') as f:
-            files = {'file': (file_path.name, f, 'text/plain')}
+            files = {'file': (file_path.name, f, 'text/markdown')}
             
             # Content-Type 헤더 제거 (multipart/form-data를 위해)
             headers = dict(self.session.headers)

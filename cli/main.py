@@ -78,7 +78,7 @@ def show_welcome():
 3. [green]health[/green] - 🔍 시스템 상태 확인
 
 [bold]기존 명령어:[/bold]
-• script upload sample_script.txt
+• script upload sample_script.md
 • video upload <SCRIPT_ID> my_video.mp4
 • youtube upload <SCRIPT_ID>
 
@@ -122,7 +122,7 @@ def health():
         # API 연결 테스트
         health_data = api.health_check()
         
-        if health_data.get('status') == 'healthy':
+        if health_data.get('success') == True:
             console.print("✅ 시스템 정상!", style="green bold")
             
             # 간단한 통계
@@ -299,7 +299,7 @@ def examples():
 def date_upload(script_dir: str, video_dir: str, date: str, privacy: str, dry_run: bool):
     """날짜 기반 완전 자동화 업로드 (대본→영상→YouTube)
     
-    파일명 형식: YYYYMMDD_NN_story.txt, YYYYMMDD_NN_story.mp4
+    파일명 형식: YYYYMMDD_NN_story.md, YYYYMMDD_NN_story.mp4
     
     Args:
         script_dir: 대본 파일 디렉토리
@@ -329,7 +329,7 @@ def date_upload(script_dir: str, video_dir: str, date: str, privacy: str, dry_ru
         
         if not matches:
             console.print(f"📭 {formatted_date} 날짜의 매칭되는 파일이 없습니다.", style="yellow")
-            console.print("💡 파일명 형식을 확인하세요: YYYYMMDD_NN_story.txt/mp4", style="dim")
+            console.print("💡 파일명 형식을 확인하세요: YYYYMMDD_NN_story.md/mp4", style="dim")
             return
         
         # 매칭 결과 출력

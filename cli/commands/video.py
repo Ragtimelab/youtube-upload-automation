@@ -239,7 +239,7 @@ def ready():
 def auto_mapping(script_dir: str, video_dir: str, date: str, dry_run: bool):
     """날짜 기반 자동 매핑으로 대본과 영상 연결
     
-    파일명 형식: YYYYMMDD_NN_story.txt, YYYYMMDD_NN_story.mp4
+    파일명 형식: YYYYMMDD_NN_story.md, YYYYMMDD_NN_story.mp4
     
     Args:
         script_dir: 대본 파일 디렉토리
@@ -268,7 +268,7 @@ def auto_mapping(script_dir: str, video_dir: str, date: str, dry_run: bool):
         
         if not matches:
             console.print(f"📭 {formatted_date} 날짜의 매칭되는 파일이 없습니다.", style="yellow")
-            console.print("💡 파일명 형식을 확인하세요: YYYYMMDD_NN_story.txt/mp4", style="dim")
+            console.print("💡 파일명 형식을 확인하세요: YYYYMMDD_NN_story.md/mp4", style="dim")
             return
         
         # 매칭 결과 출력

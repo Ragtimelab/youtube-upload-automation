@@ -54,7 +54,7 @@ class DateBasedMapper:
         """파일명을 파싱하여 DateFile 객체 반환
         
         Args:
-            filename: 파일명 (예: 20250817_01_story.txt)
+            filename: 파일명 (예: 20250817_01_story.md)
             
         Returns:
             DateFile 객체 또는 None (파싱 실패시)
